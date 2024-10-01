@@ -9,7 +9,7 @@ package Dominio;
  * @author INEGI
  */
 public class Avatar {
-
+//para el commit de prueba
     private String urlAvatar;
 
     public Avatar() {
