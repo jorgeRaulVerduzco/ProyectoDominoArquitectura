@@ -17,5 +17,28 @@ import java.util.ArrayList;
  */
 public class ServicioJugador {
 
-  
+    public void abandonarPartida(Jugador jugador, Pozo pozo) {
+        jugador.setEstado("inactivo");
+        pozo.getFichasPozo().addAll(jugador.getFichasJugador());
+        jugador.setFichasJugador(new ArrayList<>());
+        System.out.println(jugador.getNombre() + " ha abandonado la partida.");
+    }
+
+    public boolean puedeColocarFicha(Jugador jugador, Ficha ficha, Tablero tablero) {
+        Ficha extremoIzquierdo = tablero.getFichasTablero().isEmpty() ? null : tablero.getFichasTablero().get(0);
+        Ficha extremoDerecho = tablero.getFichasTablero().isEmpty() ? null
+                : tablero.getFichasTablero().get(tablero.getFichasTablero().size() - 1);
+
+        return (extremoIzquierdo != null && (ficha.getEspacio1() == extremoIzquierdo.getEspacio1() || ficha.getEspacio2() == extremoIzquierdo.getEspacio1()))
+                || (extremoDerecho != null && (ficha.getEspacio1() == extremoDerecho.getEspacio2() || ficha.getEspacio2() == extremoDerecho.getEspacio2()));
+    }
+
+    public void configurarAvatar(Jugador jugador, Avatar avatar) {
+        jugador.setAvatar(avatar);
+        System.out.println(jugador.getNombre() + " ha elegido el avatar: " + avatar);
+    }
+
+    public boolean verificarEstadoJugador(Jugador jugador) {
+        return jugador.getEstado().equals("activo");
+    }
 }
