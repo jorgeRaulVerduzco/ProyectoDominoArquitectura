@@ -14,5 +14,20 @@ import java.util.List;
  */
 public class ServicioPozo {
 
-  
+    public Ficha tomarFichaDelPozo(Pozo pozo, int indice) {
+        if (pozo.getFichasPozo().isEmpty()) {
+            return null;
+        }
+
+        if (indice < 0 || indice >= pozo.getFichasPozo().size()) {
+            return null;
+        }
+
+        return pozo.getFichasPozo().remove(indice);
+    }
+
+    public void agregarFichasAlPozo(Pozo pozo, List<Ficha> fichas) {
+        pozo.getFichasPozo().addAll(fichas);
+    }
+
 }
