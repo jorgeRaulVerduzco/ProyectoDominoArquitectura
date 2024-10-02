@@ -1,1 +1,6 @@
-com\mycompany\dominonegocio\DominoNegocio.class
+Negocio\ServicioPartida.class
+Negocio\ServicioFicha.class
+Negocio\ServicioJugador.class
+Negocio\ServicioPozo.class
+Negocio\ServicioTablero.class
+Negocio\ServicioControlJuego.class
