@@ -34,16 +34,22 @@ public class TableroView extends javax.swing.JFrame {
         mostrarFichasEnTablero();
     }
 
-    private void cargarFichas() {
-        Random random = new Random();
-        for (int i = 0; i < 3; i++) {
-            int ladoIzquierdo = random.nextInt(7);
-            int ladoDerecho = random.nextInt(7);
-            Ficha nuevaFicha = new Ficha(ladoIzquierdo, ladoDerecho);
-            tableroModel.agregarFicha(nuevaFicha, "derecho"); // Siempre agregar al final
+   private void cargarFichas() {
+    Random random = new Random();
+    for (int i = 0; i < 3; i++) {
+        int ladoIzquierdo = random.nextInt(7);
+        int ladoDerecho = random.nextInt(7);
+        
+        // Si el tablero no está vacío, asegurarse de que al menos uno de los lados coincida
+        if (!tableroModel.getFichasTablero().isEmpty()) {
+            Ficha fichaDerecha = tableroModel.obtenerExtremoDerecho();
+            ladoIzquierdo = fichaDerecha.getEspacio2(); // Asegurando coincidencia
         }
-
+        
+        Ficha nuevaFicha = new Ficha(ladoIzquierdo, ladoDerecho);
+        tableroModel.agregarFicha(nuevaFicha, "derecho"); // Siempre agregar al final
     }
+}
 
     private void mostrarFichasEnTablero() {
         this.setLayout(new FlowLayout());
