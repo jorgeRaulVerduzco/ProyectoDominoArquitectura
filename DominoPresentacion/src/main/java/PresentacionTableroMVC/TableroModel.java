@@ -4,9 +4,11 @@
  */
 package PresentacionTableroMVC;
 
+import Negocio.ServicioTablero;
 import Dominio.Ficha;
 import java.util.ArrayList;
 import java.util.List;
+import Dominio.Tablero;
 
 /**
  *
@@ -15,46 +17,42 @@ import java.util.List;
 public class TableroModel {
 
     private List<Ficha> fichasTablero;
+    private ServicioTablero servicioTablero;
+    private Tablero tablero; // Este objeto Tablero representa el estado actual del tablero
 
     public TableroModel() {
         this.fichasTablero = new ArrayList<>();
+        this.servicioTablero = new ServicioTablero();
+        this.tablero = new Tablero(); // Inicializamos el tablero
+        tablero.setFichasTablero(fichasTablero); // Sincronizamos las fichas del modelo con el tablero
     }
 
     public List<Ficha> getFichasTablero() {
         return fichasTablero;
     }
 
+    // Llamamos a ServicioTablero para agregar una ficha
     public void agregarFicha(Ficha ficha, String lado) {
-        if (lado.equals("izquierdo")) {
-            fichasTablero.add(0, ficha); // Añadir al inicio
-        } else if (lado.equals("derecho")) {
-            fichasTablero.add(ficha); // Añadir al final
-        } else {
-            throw new IllegalArgumentException("Lado inválido. Debe ser 'izquierdo' o 'derecho'.");
-        }
+        servicioTablero.agregarFichaAlTablero(tablero, ficha, lado);
     }
 
+    // Llamamos a ServicioTablero para mover una ficha
     public void moverFicha(int indexOrigen, int indexDestino) {
-        if (indexOrigen < 0 || indexOrigen >= fichasTablero.size()
-                || indexDestino < 0 || indexDestino >= fichasTablero.size()) {
-            throw new IndexOutOfBoundsException("Índice fuera de los límites del tablero.");
-        }
-
-        // Obtener la ficha a mover
-        Ficha fichaAEncontrar = fichasTablero.get(indexOrigen);
-
-        // Quitar la ficha del índice de origen
-        fichasTablero.remove(indexOrigen);
-
-        // Insertar la ficha en la nueva posición
-        fichasTablero.add(indexDestino, fichaAEncontrar);
+        servicioTablero.moverFicha(tablero, indexOrigen, indexDestino);
     }
 
+    // Llamamos a ServicioTablero para obtener el extremo izquierdo
     public Ficha obtenerExtremoIzquierdo() {
-        return !fichasTablero.isEmpty() ? fichasTablero.get(0) : null;
+        return servicioTablero.obtenerExtremoIzquierdo(tablero);
     }
 
+    // Llamamos a ServicioTablero para obtener el extremo derecho
     public Ficha obtenerExtremoDerecho() {
-        return !fichasTablero.isEmpty() ? fichasTablero.get(fichasTablero.size() - 1) : null;
+        return servicioTablero.obtenerExtremoDerecho(tablero);
+    }
+
+    public boolean puedeAgregarAlDerecho(Ficha ficha) {
+        return !tablero.getFichasTablero().isEmpty()
+                && (ficha.getEspacio1() == tablero.getFichasTablero().get(tablero.getFichasTablero().size() - 1).getEspacio2());
     }
 }
