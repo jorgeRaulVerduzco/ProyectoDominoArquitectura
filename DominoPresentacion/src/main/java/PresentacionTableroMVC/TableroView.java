@@ -10,6 +10,7 @@ import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -34,36 +35,35 @@ public class TableroView extends javax.swing.JFrame {
         mostrarFichasEnTablero();
     }
 
-   private void cargarFichas() {
-    Random random = new Random();
-    for (int i = 0; i < 3; i++) {
-        int ladoIzquierdo = random.nextInt(7);
-        int ladoDerecho = random.nextInt(7);
-        
-        // Si el tablero no está vacío, asegurarse de que al menos uno de los lados coincida
-        if (!tableroModel.getFichasTablero().isEmpty()) {
-            Ficha fichaDerecha = tableroModel.obtenerExtremoDerecho();
-            ladoIzquierdo = fichaDerecha.getEspacio2(); // Asegurando coincidencia
+    private void cargarFichas() {
+        Random random = new Random();
+        for (int i = 0; i < 3; i++) {
+            int ladoIzquierdo = random.nextInt(7);
+            int ladoDerecho = random.nextInt(7);
+
+            // Si el tablero no está vacío, asegurarse de que al menos uno de los lados coincida
+            if (!tableroModel.getFichasTablero().isEmpty()) {
+                Ficha fichaDerecha = tableroModel.obtenerExtremoDerecho();
+                ladoIzquierdo = fichaDerecha.getEspacio2(); // Asegurando coincidencia
+            }
+
+            Ficha nuevaFicha = new Ficha(ladoIzquierdo, ladoDerecho);
+            tableroModel.agregarFicha(nuevaFicha, "derecho"); // Siempre agregar al final
         }
-        
-        Ficha nuevaFicha = new Ficha(ladoIzquierdo, ladoDerecho);
-        tableroModel.agregarFicha(nuevaFicha, "derecho"); // Siempre agregar al final
     }
-}
 
     private void mostrarFichasEnTablero() {
-        this.setLayout(new FlowLayout());
+        this.setLayout(null); // Usar layout nulo para controlar la posición manualmente
         this.getContentPane().removeAll(); // Limpiar el panel anterior
 
         for (int i = 0; i < tableroModel.getFichasTablero().size(); i++) {
             Ficha ficha = tableroModel.getFichasTablero().get(i);
             JPanel panelFicha = crearPanelFicha(ficha);
+            panelFicha.setBounds(i * 130, 0, 100, 50); // Establecer tamaño y posición inicial
             int index = i;
 
             // Agregar MouseListener para detectar clics en la ficha
             panelFicha.addMouseListener(new MouseAdapter() {
-                private JPanel panelFichaArrastrada;
-
                 @Override
                 public void mousePressed(MouseEvent e) {
                     if (e.getButton() == MouseEvent.BUTTON1) { // Click izquierdo para seleccionar
@@ -71,22 +71,6 @@ public class TableroView extends javax.swing.JFrame {
                         indiceSeleccionado = index; // Guardar su índice
                         isDragging = true; // Iniciar arrastre
                         dragStartPoint = e.getPoint(); // Guardar el punto inicial
-
-                        // Guarda la referencia al panel de ficha
-                        panelFichaArrastrada = (JPanel) e.getSource();
-                    } else if (e.getButton() == MouseEvent.BUTTON3 && indiceSeleccionado != -1) { // Click derecho para mover
-                        moverFicha(indiceSeleccionado, index); // Mover la ficha seleccionada a la posición actual
-                        fichaSeleccionada = null; // Restablecer la selección
-                        indiceSeleccionado = -1;
-                    }
-                }
-
-                @Override
-                public void mouseDragged(MouseEvent e) {
-                    if (isDragging && fichaSeleccionada != null && panelFichaArrastrada != null) {
-                        // Actualiza la posición del panel de ficha arrastrada
-                        panelFichaArrastrada.setLocation(e.getXOnScreen() - dragStartPoint.x, e.getYOnScreen() - dragStartPoint.y);
-                        panelFichaArrastrada.setVisible(true);
                     }
                 }
 
@@ -94,39 +78,27 @@ public class TableroView extends javax.swing.JFrame {
                 public void mouseReleased(MouseEvent e) {
                     if (isDragging) {
                         isDragging = false; // Detener arrastre
-                        // Determinar el índice de destino basado en la posición
-                        int indexDestino = calcularIndiceDestino(e.getX(), e.getY());
-
-                        if (indexDestino != -1 && indexDestino != indiceSeleccionado) {
-                            moverFicha(indiceSeleccionado, indexDestino); // Mover la ficha a la nueva posición
-                        } else {
-                            // Si no hay un destino válido, puedes optar por devolver la ficha a su lugar original si lo deseas.
-                            mostrarFichasEnTablero(); // Volver a mostrar las fichas
-                        }
                         fichaSeleccionada = null; // Limpiar la selección
                         indiceSeleccionado = -1; // Reiniciar el índice seleccionado
-                        panelFichaArrastrada = null; // Limpiar la referencia del panel arrastrado
                     }
-                }
-
-                private int calcularIndiceDestino(int x, int y) {
-                    for (int i = 0; i < tableroModel.getFichasTablero().size(); i++) {
-                        // Calcula la posición de cada panel de ficha
-                        JPanel panelFicha = crearPanelFicha(tableroModel.getFichasTablero().get(i));
-                        panelFicha.setSize(panelFicha.getPreferredSize()); // Establece el tamaño del panel
-                        panelFicha.setLocation(i * 130, 0); // Ajusta según cómo se alinean las fichas
-
-                        // Si el mouse está dentro de los límites del panel
-                        if (x >= panelFicha.getX() && x <= panelFicha.getX() + panelFicha.getWidth()
-                                && y >= panelFicha.getY() && y <= panelFicha.getY() + panelFicha.getHeight()) {
-                            return i; // Devuelve el índice de la ficha que está bajo el mouse
-                        }
-                    }
-                    return -1; // No se encontró un índice válido
                 }
             });
 
-            this.add(panelFicha);
+            // Agregar MouseMotionListener para permitir el arrastre de la ficha
+            panelFicha.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    if (isDragging && fichaSeleccionada != null) {
+                        // Actualiza la posición del panel de ficha arrastrada
+                        JPanel panel = (JPanel) e.getSource();
+                        int newX = panel.getX() + e.getX() - dragStartPoint.x;
+                        int newY = panel.getY() + e.getY() - dragStartPoint.y;
+                        panel.setLocation(newX, newY);
+                    }
+                }
+            });
+
+            this.add(panelFicha); // Añadir el panel de la ficha al contenedor
         }
 
         this.revalidate();
@@ -151,7 +123,7 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private ImageIcon cargarImagenPorValor(int valor) {
-        String rutaBase =  "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
+        String rutaBase = "C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\";
         String rutaImagen = rutaBase + valor + ".png";
         ImageIcon icon = new ImageIcon(rutaImagen);
         if (icon.getIconWidth() == -1) {
