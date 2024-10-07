@@ -44,13 +44,13 @@ private void cargarFichas() {
 
         // Genera un par de lados válidos
         if (tableroModel.getFichasTablero().isEmpty()) {
-            ladoIzquierdo = random.nextInt(6) + 1; // Genera un número entre 1 y 6
-            ladoDerecho = random.nextInt(6) + 1; // Genera un número entre 1 y 6
+            ladoIzquierdo = random.nextInt(6) ; // Genera un número entre 1 y 6
+            ladoDerecho = random.nextInt(6) ; // Genera un número entre 1 y 6
         } else {
             // Obtiene el extremo derecho y asegura coincidencia
             Ficha fichaDerecha = tableroModel.obtenerExtremoDerecho();
             ladoIzquierdo = fichaDerecha.getEspacio2(); // Asegurando coincidencia
-            ladoDerecho = random.nextInt(6) + 1; // Lado derecho puede ser cualquier número del 1 al 6
+            ladoDerecho = random.nextInt(6) ; // Lado derecho puede ser cualquier número del 1 al 6
         }
 
         // Verifica que los lados estén dentro del rango permitido
