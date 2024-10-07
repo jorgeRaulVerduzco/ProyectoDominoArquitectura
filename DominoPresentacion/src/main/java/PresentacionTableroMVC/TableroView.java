@@ -11,6 +11,7 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.List;
 import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -21,16 +22,13 @@ import javax.swing.JPanel;
  * @author Serva
  */
 public class TableroView extends javax.swing.JFrame {
-
-    private boolean isDragging = false; // Estado de arrastre
-    private Point dragStartPoint;
-    private TableroModel tableroModel; // Instancia del modelo
-    private Ficha fichaSeleccionada; // Para guardar la ficha seleccionada
-    private int indiceSeleccionado = -1; // Para guardar el índice de la ficha seleccionada
+private TableroModel tableroModel;
+    private TableroController tableroController;
 
     public TableroView() {
         initComponents();
         tableroModel = new TableroModel(); // Inicializar el modelo
+        tableroController = new TableroController(tableroModel, this); // Inicializar el controlador
         cargarFichas();
         mostrarFichasEnTablero();
     }
@@ -67,20 +65,13 @@ public class TableroView extends javax.swing.JFrame {
                 @Override
                 public void mousePressed(MouseEvent e) {
                     if (e.getButton() == MouseEvent.BUTTON1) { // Click izquierdo para seleccionar
-                        fichaSeleccionada = tableroModel.getFichasTablero().get(index); // Guardar la ficha seleccionada
-                        indiceSeleccionado = index; // Guardar su índice
-                        isDragging = true; // Iniciar arrastre
-                        dragStartPoint = e.getPoint(); // Guardar el punto inicial
+                        tableroController.iniciarArrastreFicha(index, e.getPoint()); // Mover la lógica al controlador
                     }
                 }
 
                 @Override
                 public void mouseReleased(MouseEvent e) {
-                    if (isDragging) {
-                        isDragging = false; // Detener arrastre
-                        fichaSeleccionada = null; // Limpiar la selección
-                        indiceSeleccionado = -1; // Reiniciar el índice seleccionado
-                    }
+                    tableroController.detenerArrastreFicha();
                 }
             });
 
@@ -88,13 +79,7 @@ public class TableroView extends javax.swing.JFrame {
             panelFicha.addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseDragged(MouseEvent e) {
-                    if (isDragging && fichaSeleccionada != null) {
-                        // Actualiza la posición del panel de ficha arrastrada
-                        JPanel panel = (JPanel) e.getSource();
-                        int newX = panel.getX() + e.getX() - dragStartPoint.x;
-                        int newY = panel.getY() + e.getY() - dragStartPoint.y;
-                        panel.setLocation(newX, newY);
-                    }
+                    tableroController.moverFichaArrastrada(e);
                 }
             });
 
@@ -132,16 +117,7 @@ public class TableroView extends javax.swing.JFrame {
         return icon;
     }
 
-    public void moverFicha(int indexOrigen, int indexDestino) {
-        if (indexOrigen < 0 || indexOrigen >= tableroModel.getFichasTablero().size()
-                || indexDestino < 0 || indexDestino >= tableroModel.getFichasTablero().size()) {
-            throw new IndexOutOfBoundsException("Índice fuera de los límites del tablero.");
-        }
-
-        // Mover la ficha en el modelo
-        tableroModel.moverFicha(indexOrigen, indexDestino);
-
-        // Actualizar la visualización
+    public void actualizarVista() {
         mostrarFichasEnTablero();
     }
 

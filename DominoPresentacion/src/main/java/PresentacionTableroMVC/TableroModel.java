@@ -15,8 +15,7 @@ import Dominio.Tablero;
  * @author Serva
  */
 public class TableroModel {
-
-    private List<Ficha> fichasTablero;
+     private List<Ficha> fichasTablero;
     private ServicioTablero servicioTablero;
     private Tablero tablero; // Este objeto Tablero representa el estado actual del tablero
 
@@ -31,22 +30,18 @@ public class TableroModel {
         return fichasTablero;
     }
 
-    // Llamamos a ServicioTablero para agregar una ficha
     public void agregarFicha(Ficha ficha, String lado) {
         servicioTablero.agregarFichaAlTablero(tablero, ficha, lado);
     }
 
-    // Llamamos a ServicioTablero para mover una ficha
     public void moverFicha(int indexOrigen, int indexDestino) {
         servicioTablero.moverFicha(tablero, indexOrigen, indexDestino);
     }
 
-    // Llamamos a ServicioTablero para obtener el extremo izquierdo
     public Ficha obtenerExtremoIzquierdo() {
         return servicioTablero.obtenerExtremoIzquierdo(tablero);
     }
 
-    // Llamamos a ServicioTablero para obtener el extremo derecho
     public Ficha obtenerExtremoDerecho() {
         return servicioTablero.obtenerExtremoDerecho(tablero);
     }
