@@ -25,6 +25,7 @@ public class TableroModel {
         this.tablero = new Tablero(); // Inicializamos el tablero
         tablero.setFichasTablero(fichasTablero); // Sincronizamos las fichas del modelo con el tablero
     }
+    
 
     public List<Ficha> getFichasTablero() {
         return fichasTablero;

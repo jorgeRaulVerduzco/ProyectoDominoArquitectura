@@ -20,33 +20,47 @@ public class TableroController {
     private Point dragStartPoint;
     private Ficha fichaSeleccionada; // Para guardar la ficha seleccionada
     private int indiceSeleccionado = -1; // Para guardar el índice de la ficha seleccionada
-
+private boolean fichaColocada = false; 
     public TableroController(TableroModel model, TableroView view) {
         this.tableroModel = model;
         this.tableroView = view;
     }
 
-    public void iniciarArrastreFicha(int index, Point point) {
-        fichaSeleccionada = tableroModel.getFichasTablero().get(index); // Guardar la ficha seleccionada
-        indiceSeleccionado = index; // Guardar su índice
-        isDragging = true; // Iniciar arrastre
-        dragStartPoint = point; // Guardar el punto inicial
+ public boolean isFichaColocada() {
+        return fichaColocada;
     }
 
+
+
+
     public void moverFichaArrastrada(MouseEvent e) {
-        if (isDragging && fichaSeleccionada != null) {
-            JPanel panel = (JPanel) e.getSource();
-            int newX = panel.getX() + e.getX() - dragStartPoint.x;
-            int newY = panel.getY() + e.getY() - dragStartPoint.y;
-            panel.setLocation(newX, newY);
+    if (isDragging && fichaSeleccionada != null && !fichaColocada) { // Solo mover si no está colocada
+        JPanel panel = (JPanel) e.getSource();
+        int newX = panel.getX() + e.getX() - dragStartPoint.x;
+        int newY = panel.getY() + e.getY() - dragStartPoint.y;
+        panel.setLocation(newX, newY);
+    }
+}
+
+ public void iniciarArrastreFicha(int index, Point point) {
+        Ficha ficha = tableroModel.getFichasTablero().get(index);
+        if (!ficha.isColocada()) { // Verificar si la ficha ya está colocada
+            fichaSeleccionada = ficha;
+            indiceSeleccionado = index;
+            isDragging = true;
+            dragStartPoint = point;
         }
     }
 
     public void detenerArrastreFicha() {
-        if (isDragging) {
-            isDragging = false; // Detener arrastre
-            fichaSeleccionada = null; // Limpiar ficha seleccionada
-            indiceSeleccionado = -1; // Limpiar índice
+        if (isDragging && fichaSeleccionada != null) {
+            // ... (lógica para colocar la ficha en el tablero)
+            fichaSeleccionada.setColocada(true); // Marcar la ficha como colocada
+            // ... (actualizar el modelo del tablero)
+            isDragging = false;
+            fichaSeleccionada = null;
+            indiceSeleccionado = -1;
         }
     }
+    
 }

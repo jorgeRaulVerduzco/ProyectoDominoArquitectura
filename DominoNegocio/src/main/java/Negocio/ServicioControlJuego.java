@@ -26,6 +26,7 @@ public class ServicioControlJuego {
 
     public void jugarTurno(Partida partida, Jugador jugador) {
         if (partida.getEstado().equals("jugando")) {
+            // Validar que el jugador esté activo
             if (!jugador.getEstado().equals("activo")) {
                 System.out.println(jugador.getNombre() + " no puede jugar porque está inactivo.");
                 return;
@@ -41,11 +42,10 @@ public class ServicioControlJuego {
                 manejarTomaDelPozo(jugador, partida);
             }
 
-            if (partida.getTablero().getFichasTablero().size() == 0) {
-                // Jugador que jugó la última ficha gana
-                servicioPartida.terminarPartida(partida);
-                System.out.println(jugador.getNombre() + " ha ganado el juego.");
-            }
+            verificarGanador(partida);
+
+            // Cambia al siguiente jugador
+            siguienteTurno(partida);
         } else {
             System.out.println("La partida no está en estado 'jugando'.");
         }
@@ -126,6 +126,10 @@ public class ServicioControlJuego {
         return "ninguno"; // No se puede determinar
     }
 
+    public Jugador obtenerJugadorActual(Partida partida) {
+        return partida.getJugadores().get(jugadorActual);
+    }
+
     public void verificarGanador(Partida partida) {
         // Verifica si un jugador ha ganado
         for (Jugador jugador : partida.getJugadores()) {
@@ -182,6 +186,14 @@ public class ServicioControlJuego {
         return false;
     }
 
+    public void siguienteTurno(Partida partida) {
+        jugadorActual = (jugadorActual + 1) % partida.getJugadores().size(); // Avanza al siguiente jugador
+        while (!partida.getJugadores().get(jugadorActual).getEstado().equals("activo")) {
+            // Si el jugador está inactivo, pasa al siguiente jugador
+            jugadorActual = (jugadorActual + 1) % partida.getJugadores().size();
+        }
+    }
+
     public void cambiarTurno(Partida partida) {
         // Asegúrate de que la lista de jugadores no esté vacía
         if (partida.getJugadores().isEmpty()) {
@@ -195,4 +207,8 @@ public class ServicioControlJuego {
         System.out.println("Es el turno de: " + partida.getJugadores().get(jugadorActual).getNombre());
     }
 
+    public void terminarPartida(Partida partida) {
+        partida.setEstado("finalizada");
+        System.out.println("La partida ha finalizado.");
+    }
 }

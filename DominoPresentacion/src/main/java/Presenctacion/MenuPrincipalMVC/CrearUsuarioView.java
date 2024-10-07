@@ -49,13 +49,13 @@ public class CrearUsuarioView extends javax.swing.JFrame {
                 ImageIcon icon = null;
                 switch (index) {
                     case 0:
-                        icon = new ImageIcon("C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\sticker-png-login-icon-system-administrator-user-user-profile-icon-design-avatar-face-head.png");
+                        icon = new ImageIcon("C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\sticker-png-login-icon-system-administrator-user-user-profile-icon-design-avatar-face-head.png");
                         break;
                     case 1:
-                        icon = new ImageIcon("C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\pngtree-user-vector-avatar-png-image_4830521.jpg");
+                        icon = new ImageIcon("C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\pngtree-user-vector-avatar-png-image_4830521.jpg");
                         break;
                     case 2:
-                        icon = new ImageIcon("C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\png-transparent-female-avatar-girl-face-woman-user-flat-classy-users-icon.png");
+                        icon = new ImageIcon("C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\png-transparent-female-avatar-girl-face-woman-user-flat-classy-users-icon.png");
                         break;
                 }
 

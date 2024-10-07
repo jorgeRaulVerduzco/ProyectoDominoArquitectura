@@ -5,6 +5,7 @@
 package PresentacionTableroMVC;
 
 import Dominio.Ficha;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
@@ -27,6 +28,8 @@ private TableroModel tableroModel;
 
     public TableroView() {
         initComponents();
+        setBackground(Color.GREEN);
+         getContentPane().setBackground(Color.GREEN);
         tableroModel = new TableroModel(); // Inicializar el modelo
         tableroController = new TableroController(tableroModel, this); // Inicializar el controlador
         cargarFichas();
@@ -74,12 +77,13 @@ private void cargarFichas() {
             // Agregar MouseListener para detectar clics en la ficha
             panelFicha.addMouseListener(new MouseAdapter() {
                 @Override
-                public void mousePressed(MouseEvent e) {
-                    if (e.getButton() == MouseEvent.BUTTON1) { // Click izquierdo para seleccionar
-                        tableroController.iniciarArrastreFicha(index, e.getPoint()); // Mover la lógica al controlador
-                    }
-                }
-
+              public void mousePressed(MouseEvent e) {
+    if (e.getButton() == MouseEvent.BUTTON1) { // Click izquierdo para seleccionar
+        if (!tableroController.isFichaColocada()) { // Check if a ficha is already placed
+            tableroController.iniciarArrastreFicha(index, e.getPoint());
+        }
+    }
+}
                 @Override
                 public void mouseReleased(MouseEvent e) {
                     tableroController.detenerArrastreFicha();

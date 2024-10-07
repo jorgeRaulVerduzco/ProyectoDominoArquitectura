@@ -12,7 +12,16 @@ public class Ficha {
 
     private int espacio1;
     private int espacio2;
+private boolean colocada = false;
 
+
+    public boolean isColocada() {
+        return colocada;
+    }
+
+    public void setColocada(boolean colocada) {
+        this.colocada = colocada;
+    }
     public Ficha() {
     }
 
