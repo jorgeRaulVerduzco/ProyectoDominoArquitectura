@@ -150,10 +150,7 @@ public class CrearUsuarioView extends javax.swing.JFrame {
         // Crear el modelo de usuario
         CrearUsuarioModel usuario = new CrearUsuarioModel(nombre, avatar);
 
-        // Mostrar el menú principal
-        MenuPrincipalView menu = new MenuPrincipalView();
-        menu.setVisible(true); // Hacer visible el menú
-        this.dispose();
+
     }//GEN-LAST:event_BtnJugarActionPerformed
 
     public String getNombre() {
@@ -167,7 +164,9 @@ public class CrearUsuarioView extends javax.swing.JFrame {
     public void addCreateUserListener(ActionListener listener) {
         BtnJugar.addActionListener(listener);
     }
-
+   public void setCreateUserListener(ActionListener actionListener) {
+        BtnJugar.addActionListener(actionListener);
+    }
     /**
      * @param args the command line arguments
      */
@@ -203,6 +202,7 @@ public class CrearUsuarioView extends javax.swing.JFrame {
         });
     }
 
+ 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtnJugar;
     private javax.swing.JCheckBox CheckBoxMembresia;
@@ -213,4 +213,6 @@ public class CrearUsuarioView extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JTextField txtNombre;
     // End of variables declaration//GEN-END:variables
+
+    
 }

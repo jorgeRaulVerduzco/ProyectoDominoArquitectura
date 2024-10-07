@@ -1,6 +1,8 @@
-Negocio\ServicioPartida.class
+Main\Juego$1.class
 Negocio\ServicioFicha.class
+Main\Juego.class
+Negocio\ServicioTablero.class
+Negocio\ServicioPartida.class
 Negocio\ServicioJugador.class
 Negocio\ServicioPozo.class
-Negocio\ServicioTablero.class
 Negocio\ServicioControlJuego.class

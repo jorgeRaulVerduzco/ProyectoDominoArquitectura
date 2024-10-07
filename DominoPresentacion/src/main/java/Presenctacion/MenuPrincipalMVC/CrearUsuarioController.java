@@ -4,6 +4,7 @@
  */
 package Presenctacion.MenuPrincipalMVC;
 
+import Presenctacion.Mediador;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
@@ -13,36 +14,44 @@ import javax.swing.JOptionPane;
  * @author Serva
  */
 public class CrearUsuarioController {
-
-    private CrearUsuarioView view;
+ private CrearUsuarioView view;
+    private Mediador mediador;
 
     public CrearUsuarioController(CrearUsuarioView view) {
         this.view = view;
-
-        // Añadir listener al botón Jugar
-        this.view.addCreateUserListener(new ActionListener() {
+        this.view.setCreateUserListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Obtener los datos del usuario
-                String nombre = view.getNombre();
-                String avatar = view.getSelectedAvatar();
-
-                // Validaciones
-                if (nombre == null || nombre.trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(view, "Por favor, ingrese un nombre.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return; 
-                }
-
-                if (avatar == null || avatar.isEmpty()) {
-                    JOptionPane.showMessageDialog(view, "Por favor, seleccione un avatar.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return; 
-                }
-
-                // Si todos los datos son válidos, ir al menú principal
-                MenuPrincipalView menuView = new MenuPrincipalView(); 
-                menuView.setVisible(true);
-                view.dispose();
+                crearUsuario();
             }
         });
     }
+
+    public void setMediator(Mediador mediador) {
+        this.mediador = mediador;
+    }
+
+    public void mostrarVista() {
+        view.setVisible(true);
+    }
+
+    private void crearUsuario() {
+        String nombre = view.getNombre();
+        String avatar = view.getSelectedAvatar();
+
+        if (nombre == null || nombre.trim().isEmpty() || avatar == null || avatar.isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Por favor, complete todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
+            return; 
+        }
+    // Crear el usuario
+    CrearUsuarioModel usuario = new CrearUsuarioModel(nombre, avatar);
+    
+    // Notificar al mediador que se ha creado un usuario
+    mediador.usuarioCreado(usuario);
+
+      
+    }
+    public void ocultarVista() {
+    view.setVisible(false);
+}
 }
