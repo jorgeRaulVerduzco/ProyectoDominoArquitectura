@@ -14,7 +14,7 @@ import javax.swing.JPanel;
  * @author Serva
  */
 public class TableroController {
-        private TableroModel tableroModel;
+       private TableroModel tableroModel;
     private TableroView tableroView;
     private boolean isDragging = false; // Estado de arrastre
     private Point dragStartPoint;

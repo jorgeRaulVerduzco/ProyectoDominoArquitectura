@@ -15,7 +15,7 @@ import Dominio.Tablero;
  * @author Serva
  */
 public class TableroModel {
-     private List<Ficha> fichasTablero;
+    private List<Ficha> fichasTablero;
     private ServicioTablero servicioTablero;
     private Tablero tablero; // Este objeto Tablero representa el estado actual del tablero
 
