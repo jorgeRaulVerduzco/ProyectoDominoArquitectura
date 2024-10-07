@@ -17,7 +17,7 @@ public class Jugador {
     private Avatar avatar;
     private String estado; //para cuando dicida abandonar partida osea si esta sale activo sino inactivo
     private int puntuacion;
-    private List<Ficha> fichasJugador;
+    private List<Ficha> fichasJugador = new ArrayList<>();
 
     public Jugador() {
         fichasJugador = new ArrayList<>();
