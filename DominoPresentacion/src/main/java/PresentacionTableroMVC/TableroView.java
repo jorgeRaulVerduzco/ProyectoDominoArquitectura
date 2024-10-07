@@ -33,22 +33,33 @@ private TableroModel tableroModel;
         mostrarFichasEnTablero();
     }
 
-    private void cargarFichas() {
-        Random random = new Random();
-        for (int i = 0; i < 3; i++) {
-            int ladoIzquierdo = random.nextInt(7);
-            int ladoDerecho = random.nextInt(7);
+private void cargarFichas() {
+    Random random = new Random();
+    for (int i = 0; i < 7; i++) {  // Genera 7 fichas
+        int ladoIzquierdo;
+        int ladoDerecho;
 
-            // Si el tablero no está vacío, asegurarse de que al menos uno de los lados coincida
-            if (!tableroModel.getFichasTablero().isEmpty()) {
-                Ficha fichaDerecha = tableroModel.obtenerExtremoDerecho();
-                ladoIzquierdo = fichaDerecha.getEspacio2(); // Asegurando coincidencia
-            }
+        // Genera un par de lados válidos
+        if (tableroModel.getFichasTablero().isEmpty()) {
+            ladoIzquierdo = random.nextInt(6) + 1; // Genera un número entre 1 y 6
+            ladoDerecho = random.nextInt(6) + 1; // Genera un número entre 1 y 6
+        } else {
+            // Obtiene el extremo derecho y asegura coincidencia
+            Ficha fichaDerecha = tableroModel.obtenerExtremoDerecho();
+            ladoIzquierdo = fichaDerecha.getEspacio2(); // Asegurando coincidencia
+            ladoDerecho = random.nextInt(6) + 1; // Lado derecho puede ser cualquier número del 1 al 6
+        }
 
+        // Verifica que los lados estén dentro del rango permitido
+        if (ladoIzquierdo >= 1 && ladoIzquierdo <= 6 && 
+            ladoDerecho >= 1 && ladoDerecho <= 6) {
             Ficha nuevaFicha = new Ficha(ladoIzquierdo, ladoDerecho);
             tableroModel.agregarFicha(nuevaFicha, "derecho"); // Siempre agregar al final
+        } else {
+            i--; // Decrementa el contador para volver a intentar en caso de ficha inválida
         }
     }
+}
 
     private void mostrarFichasEnTablero() {
         this.setLayout(null); // Usar layout nulo para controlar la posición manualmente
