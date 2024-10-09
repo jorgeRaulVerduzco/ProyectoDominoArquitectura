@@ -15,7 +15,8 @@ import java.util.List;
  * @author INEGI
  */
 public class MediadorTablero {
-
+//Ignorar por ahora
+    
     private List<Ficha> fichasTablero;
     private ServicioTablero servicioTablero;
     private Tablero tablero; // Este objeto Tablero representa el estado actual del tablero
