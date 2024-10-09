@@ -29,7 +29,8 @@ public class ServicioControlJuego {
     private ServicioPozo servicioPozo = new ServicioPozo();
     private ServicioFicha servicioFicha = new ServicioFicha();
 
-    private String determinarLado(Ficha ficha, Tablero tablero) {
+  
+    public String determinarLado(Ficha ficha, Tablero tablero) {
         if (tablero.getFichasTablero().isEmpty()) {
             return "izquierdo"; // Si el tablero está vacío, se agrega al lado izquierdo
         }

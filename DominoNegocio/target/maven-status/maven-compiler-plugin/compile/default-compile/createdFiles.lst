@@ -5,4 +5,6 @@ Negocio\ServicioTablero.class
 Negocio\ServicioPartida.class
 Negocio\ServicioJugador.class
 Negocio\ServicioPozo.class
+Singleton\PozoSingleton.class
 Negocio\ServicioControlJuego.class
+Singleton\TableroSingleton.class
