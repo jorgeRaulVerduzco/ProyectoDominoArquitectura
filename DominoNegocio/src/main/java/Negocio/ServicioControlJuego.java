@@ -11,6 +11,7 @@ import Dominio.Pozo;
 import Dominio.Tablero;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -29,7 +30,6 @@ public class ServicioControlJuego {
     private ServicioPozo servicioPozo = new ServicioPozo();
     private ServicioFicha servicioFicha = new ServicioFicha();
 
-  
     public String determinarLado(Ficha ficha, Tablero tablero) {
         if (tablero.getFichasTablero().isEmpty()) {
             return "izquierdo"; // Si el tablero está vacío, se agrega al lado izquierdo
@@ -139,4 +139,87 @@ public class ServicioControlJuego {
         partida.setEstado("finalizada");
         System.out.println("La partida ha finalizado.");
     }
+
+    public void iniciarJuego(Partida partida) {
+        // Repartir fichas
+        servicioTablero.repartirFichas(partida.getPozo(), partida.getJugadores());
+
+        // Determinar jugador inicial
+        Jugador jugadorInicial = determinarJugadorInicial(partida.getJugadores(), partida.getPozo());
+
+        // Establecer orden de turnos
+        establecerOrdenDeTurnos(jugadorInicial, partida.getJugadores());
+
+        // Colocar la primera ficha (mula) en el tablero
+        Ficha primeraFicha = encontrarMulaMayor(jugadorInicial);
+        servicioTablero.agregarFichaAlTablero(partida.getTablero(), primeraFicha, "izquierdo");
+        jugadorInicial.getFichasJugador().remove(primeraFicha);
+
+        partida.setEstado("en curso");
+    }
+
+    private Ficha encontrarMulaMayor(Jugador jugador) {
+        return jugador.getFichasJugador().stream()
+                .filter(Ficha::esMula)
+                .max(Comparator.comparingInt(Ficha::getEspacio1))
+                .orElseThrow(() -> new IllegalStateException("El jugador inicial no tiene mulas"));
+    }
+
+    public void realizarTurno(Partida partida) {
+        Jugador jugadorActual = obtenerJugadorActual(partida);
+        Tablero tablero = partida.getTablero();
+        Pozo pozo = partida.getPozo();
+
+        boolean jugadaRealizada = false;
+
+        for (Ficha ficha : new ArrayList<>(jugadorActual.getFichasJugador())) {
+            String lado = determinarLado(ficha, tablero);
+            if (!lado.equals("ninguno")) {
+                servicioTablero.agregarFichaAlTablero(tablero, ficha, lado);
+                jugadorActual.getFichasJugador().remove(ficha);
+                jugadaRealizada = true;
+                break;
+            }
+        }
+
+        if (!jugadaRealizada) {
+            while (!pozo.getFichasPozo().isEmpty() && !jugadaRealizada) {
+                Ficha nuevaFicha = servicioPozo.tomarFichaDelPozo(pozo, 0);
+                jugadorActual.getFichasJugador().add(nuevaFicha);
+                String lado = determinarLado(nuevaFicha, tablero);
+                if (!lado.equals("ninguno")) {
+                    servicioTablero.agregarFichaAlTablero(tablero, nuevaFicha, lado);
+                    jugadorActual.getFichasJugador().remove(nuevaFicha);
+                    jugadaRealizada = true;
+                }
+            }
+        }
+
+        if (!jugadaRealizada) {
+            System.out.println(jugadorActual.getNombre() + " no pudo jugar en este turno.");
+        }
+
+        verificarGanador(partida);
+        pasarTurno();
+    }
+
+    private void pasarTurno() {
+        jugadorActual = (jugadorActual + 1) % ordenDeTurnos.size();
+    }
+
+    public void calcularPuntajes(Partida partida) {
+        for (Jugador jugador : partida.getJugadores()) {
+            int puntaje = jugador.getFichasJugador().stream()
+                    .mapToInt(ficha -> ficha.getEspacio1() + ficha.getEspacio2())
+                    .sum();
+            jugador.setPuntuacion(puntaje);
+        }
+
+        Jugador ganador = partida.getJugadores().stream()
+                .min(Comparator.comparingInt(Jugador::getPuntuacion))
+                .orElseThrow(() -> new IllegalStateException("No se pudo determinar un ganador"));
+
+        System.out.println("El ganador es " + ganador.getNombre() + " con " + ganador.getPuntuacion() + " puntos.");
+    }
+
 }

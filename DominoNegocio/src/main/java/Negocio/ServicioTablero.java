@@ -110,4 +110,52 @@ public class ServicioTablero {
         System.out.println("Puede agregar al derecho: " + resultado);
         return resultado;
     }
+
+    public void agregarFichaAlTableroRenovado(Tablero tablero, Ficha ficha, String lado) {
+        if (tablero.getFichasTablero().isEmpty()) {
+            tablero.getFichasTablero().add(ficha);
+            return;
+        }
+
+        if (lado.equals("izquierdo")) {
+            if (!puedeAgregarAlIzquierdoRenovado(tablero, ficha)) {
+                throw new IllegalArgumentException("No se puede agregar la ficha al lado izquierdo.");
+            }
+            if (ficha.getEspacio2() == tablero.getFichasTablero().get(0).getEspacio1()) {
+                tablero.getFichasTablero().add(0, ficha);
+            } else {
+                Ficha fichaRotada = new Ficha(ficha.getEspacio2(), ficha.getEspacio1());
+                tablero.getFichasTablero().add(0, fichaRotada);
+            }
+        } else if (lado.equals("derecho")) {
+            if (!puedeAgregarAlDerechoRenovado(tablero, ficha)) {
+                throw new IllegalArgumentException("No se puede agregar la ficha al lado derecho.");
+            }
+            Ficha ultimaFicha = tablero.getFichasTablero().get(tablero.getFichasTablero().size() - 1);
+            if (ficha.getEspacio1() == ultimaFicha.getEspacio2()) {
+                tablero.getFichasTablero().add(ficha);
+            } else {
+                Ficha fichaRotada = new Ficha(ficha.getEspacio2(), ficha.getEspacio1());
+                tablero.getFichasTablero().add(fichaRotada);
+            }
+        } else {
+            throw new IllegalArgumentException("Lado inválido. Debe ser 'izquierdo' o 'derecho'.");
+        }
+    }
+
+    private boolean puedeAgregarAlIzquierdoRenovado(Tablero tablero, Ficha ficha) {
+        if (tablero.getFichasTablero().isEmpty()) {
+            return true;
+        }
+        Ficha primeraFicha = tablero.getFichasTablero().get(0);
+        return ficha.getEspacio1() == primeraFicha.getEspacio1() || ficha.getEspacio2() == primeraFicha.getEspacio1();
+    }
+
+    private boolean puedeAgregarAlDerechoRenovado(Tablero tablero, Ficha ficha) {
+        if (tablero.getFichasTablero().isEmpty()) {
+            return true;
+        }
+        Ficha ultimaFicha = tablero.getFichasTablero().get(tablero.getFichasTablero().size() - 1);
+        return ficha.getEspacio1() == ultimaFicha.getEspacio2() || ficha.getEspacio2() == ultimaFicha.getEspacio2();
+    }
 }
