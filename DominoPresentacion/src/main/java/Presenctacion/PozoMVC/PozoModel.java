@@ -6,6 +6,7 @@ package Presenctacion.PozoMVC;
 
 import Dominio.Ficha;
 import Dominio.Pozo;
+import Mediadores.PozoMediator;
 import Negocio.ServicioPozo;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,17 +17,16 @@ import java.util.List;
  */
 public class PozoModel {
 
-    ServicioPozo servicioPozo;
-
+PozoMediator pozoMediador;
     public PozoModel() {
     }
 
-    public PozoModel(ServicioPozo servicioPozo) {
-        this.servicioPozo = servicioPozo;
+    public PozoModel(PozoMediator pozoMediador) {
+        this.pozoMediador = pozoMediador;
     }
 
     public void guardarFichasPozo() {
-        servicioPozo.guardarFichasPozo();
+        pozoMediador.guardarFichas();
     }
 
 }
