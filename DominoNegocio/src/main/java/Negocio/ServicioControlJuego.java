@@ -7,7 +7,10 @@ package Negocio;
 import Dominio.Ficha;
 import Dominio.Jugador;
 import Dominio.Partida;
+import Dominio.Pozo;
 import Dominio.Tablero;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -17,97 +20,14 @@ import java.util.Scanner;
  */
 public class ServicioControlJuego {
 
+    private List<Jugador> ordenDeTurnos; // Lista de jugadores que contiene el orden de turnos
+    private int turnoActual;
     private int jugadorActual = 0;
     private ServicioPartida servicioPartida = new ServicioPartida();
     private ServicioJugador servicioJugador = new ServicioJugador();
     private ServicioTablero servicioTablero = new ServicioTablero();
     private ServicioPozo servicioPozo = new ServicioPozo();
     private ServicioFicha servicioFicha = new ServicioFicha();
-
-    public void jugarTurno(Partida partida, Jugador jugador) {
-        if (partida.getEstado().equals("jugando")) {
-            // Validar que el jugador esté activo
-            if (!jugador.getEstado().equals("activo")) {
-                System.out.println(jugador.getNombre() + " no puede jugar porque está inactivo.");
-                return;
-            }
-
-            Ficha fichaJugada = obtenerFichaJugable(jugador, partida);
-            if (fichaJugada != null) {
-                String lado = determinarLado(fichaJugada, partida.getTablero());
-                servicioTablero.agregarFichaAlTablero(partida.getTablero(), fichaJugada, lado);
-                jugador.getFichasJugador().remove(fichaJugada);
-                System.out.println(jugador.getNombre() + " ha jugado la ficha " + fichaJugada);
-            } else {
-                manejarTomaDelPozo(jugador, partida);
-            }
-
-            verificarGanador(partida);
-
-            // Cambia al siguiente jugador
-            siguienteTurno(partida);
-        } else {
-            System.out.println("La partida no está en estado 'jugando'.");
-        }
-    }
-
-    private Ficha obtenerFichaJugable(Jugador jugador, Partida partida) {
-        for (Ficha ficha : jugador.getFichasJugador()) {
-            if (servicioJugador.puedeColocarFicha(jugador, ficha, partida.getTablero())) {
-                return ficha; // Devuelve la primera ficha jugable
-            }
-        }
-        return null; // Ninguna ficha jugable
-    }
-
-    private void manejarTomaDelPozo(Jugador jugador, Partida partida) {
-        List<Ficha> fichasPozo = partida.getPozo().getFichasPozo();
-        if (fichasPozo.isEmpty()) {
-            System.out.println("El pozo está vacío. No se puede tomar más fichas.");
-            return;
-        }
-
-        System.out.println("Fichas en el pozo:");
-        for (int i = 0; i < fichasPozo.size(); i++) {
-            System.out.println(i + ": " + fichasPozo.get(i));
-        }
-
-        int indiceElegido = obtenerIndiceFichaDelJugador(jugador);
-        if (indiceElegido < 0 || indiceElegido >= fichasPozo.size()) {
-            System.out.println("Índice de ficha no válido.");
-            return;
-        }
-
-        // Tomar la ficha elegida
-        Ficha fichaTomada = servicioPozo.tomarFichaDelPozo(partida.getPozo(), indiceElegido);
-        jugador.getFichasJugador().add(fichaTomada);
-        System.out.println(jugador.getNombre() + " ha tomado una ficha del pozo: " + fichaTomada);
-    }
-
-    int obtenerIndiceFichaDelJugador(Jugador jugador) {
-        Scanner scanner = new Scanner(System.in);
-        int indice = -1;
-
-        System.out.println(jugador.getNombre() + ", tus fichas son:");
-        for (int i = 0; i < jugador.getFichasJugador().size(); i++) {
-            System.out.println(i + ": " + jugador.getFichasJugador().get(i));
-        }
-
-        while (indice < 0 || indice >= jugador.getFichasJugador().size()) {
-            System.out.print("Elige el índice de la ficha que deseas jugar (o -1 para cancelar): ");
-            indice = scanner.nextInt();
-
-            // Verifica si el índice es válido
-            if (indice < -1 || indice >= jugador.getFichasJugador().size()) {
-                System.out.println("Índice inválido. Por favor, elige un índice válido.");
-            } else if (indice == -1) {
-                System.out.println("Has cancelado la selección de ficha.");
-                return -1; // Permitir cancelar la selección
-            }
-        }
-
-        return indice; // Retorna el índice de la ficha elegida
-    }
 
     private String determinarLado(Ficha ficha, Tablero tablero) {
         if (tablero.getFichasTablero().isEmpty()) {
@@ -171,40 +91,47 @@ public class ServicioControlJuego {
         return true; // Ningún jugador puede jugar
     }
 
-    public boolean puedeContinuarJuego(Partida partida) {
-        return !partida.getPozo().getFichasPozo().isEmpty() || jugadoresPuedenJugar(partida.getJugadores(), partida.getTablero());
+    public void establecerOrdenDeTurnos(Jugador jugadorInicial, List<Jugador> jugadores) {
+        ordenDeTurnos = new ArrayList<>(jugadores);
+
+        // Mover al jugador inicial al inicio de la lista
+        ordenDeTurnos.remove(jugadorInicial);
+        Collections.shuffle(ordenDeTurnos);  // Ordenar al azar los jugadores restantes
+        ordenDeTurnos.add(0, jugadorInicial);  // Colocar al jugador inicial al inicio
     }
 
-    private boolean jugadoresPuedenJugar(List<Jugador> jugadores, Tablero tablero) {
+    public List<Jugador> getOrdenDeTurnos() {
+        return ordenDeTurnos;
+    }
+
+    public Jugador determinarJugadorInicial(List<Jugador> jugadores, Pozo pozo) {
+        Ficha mulaMayor = null;
+        Jugador jugadorInicial = null;
+
         for (Jugador jugador : jugadores) {
             for (Ficha ficha : jugador.getFichasJugador()) {
-                if (servicioJugador.puedeColocarFicha(jugador, ficha, tablero)) {
-                    return true;
+                if (ficha.esMula()) {
+                    if (mulaMayor == null || ficha.getEspacio1() > mulaMayor.getEspacio2()) {
+                        mulaMayor = ficha;
+                        jugadorInicial = jugador;
+                    }
                 }
             }
         }
-        return false;
-    }
 
-    public void siguienteTurno(Partida partida) {
-        jugadorActual = (jugadorActual + 1) % partida.getJugadores().size(); // Avanza al siguiente jugador
-        while (!partida.getJugadores().get(jugadorActual).getEstado().equals("activo")) {
-            // Si el jugador está inactivo, pasa al siguiente jugador
-            jugadorActual = (jugadorActual + 1) % partida.getJugadores().size();
+        // Si no se encontró mula, se asigna una ficha del pozo hasta que alguien tenga una mula
+        while (mulaMayor == null) {
+            for (Jugador jugador : jugadores) {
+                Ficha nuevaFicha = pozo.getFichasPozo().remove(0);
+                jugador.getFichasJugador().add(nuevaFicha);
+                if (nuevaFicha.esMula()) {
+                    mulaMayor = nuevaFicha;
+                    jugadorInicial = jugador;
+                    break;
+                }
+            }
         }
-    }
-
-    public void cambiarTurno(Partida partida) {
-        // Asegúrate de que la lista de jugadores no esté vacía
-        if (partida.getJugadores().isEmpty()) {
-            throw new IllegalStateException("No hay jugadores en la partida.");
-        }
-
-        // Cambia al siguiente jugador
-        jugadorActual = (jugadorActual + 1) % partida.getJugadores().size();
-
-        // Opcional: imprimir el nuevo turno
-        System.out.println("Es el turno de: " + partida.getJugadores().get(jugadorActual).getNombre());
+        return jugadorInicial;
     }
 
     public void terminarPartida(Partida partida) {

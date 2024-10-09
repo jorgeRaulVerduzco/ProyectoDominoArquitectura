@@ -6,13 +6,52 @@ package Negocio;
 
 import Dominio.Ficha;
 import Dominio.Jugador;
+import Dominio.Pozo;
 import Dominio.Tablero;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author INEGI
  */
 public class ServicioTablero {
+
+    public ServicioTablero() {
+    }
+
+    public void repartirFichas(Pozo pozo, List<Jugador> jugadores) {
+        // Obtén las fichas del pozo generadas previamente
+        List<Ficha> fichasDelPozo = pozo.getFichasPozo();
+
+        // Fijamos a 7 la cantidad de fichas a repartir por jugador
+        int fichasPorJugador = 7;
+
+        // Repartimos fichas a cada jugador
+        for (Jugador jugador : jugadores) {
+            List<Ficha> fichasJugador = new ArrayList<>();
+
+            // Reparte 7 fichas a cada jugador
+            for (int i = 0; i < fichasPorJugador; i++) {
+                if (!fichasDelPozo.isEmpty()) {
+                    // Remover una ficha del pozo y agregarla a la mano del jugador
+                    Ficha fichaRepartida = fichasDelPozo.remove(0);
+                    fichasJugador.add(fichaRepartida);
+                } else {
+                    System.out.println("No hay más fichas en el pozo para repartir.");
+                    break;
+                }
+            }
+
+            // Asignamos las fichas repartidas al jugador
+            jugador.setFichasJugador(fichasJugador);
+        }
+
+        // Actualizamos el pozo con las fichas restantes
+        pozo.setFichasPozo(fichasDelPozo);
+
+        System.out.println("Se han repartido 7 fichas a cada jugador.");
+    }
 
     // Método para agregar fichas al tablero en el lado izquierdo o derecho
     public void agregarFichaAlTablero(Tablero tablero, Ficha ficha, String lado) {
