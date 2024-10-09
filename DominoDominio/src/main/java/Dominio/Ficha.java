@@ -15,16 +15,16 @@ public class Ficha {
 private boolean colocada = false;
 
 
-    public boolean isColocada() {
+ 
+    public Ficha() {
+    }
+   public boolean isColocada() {
         return colocada;
     }
 
     public void setColocada(boolean colocada) {
         this.colocada = colocada;
     }
-    public Ficha() {
-    }
-
     public Ficha(int espacio1, int espacio2) {
         this.espacio1 = espacio1;
         this.espacio2 = espacio2;
