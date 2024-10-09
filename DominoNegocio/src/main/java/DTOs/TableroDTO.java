@@ -4,10 +4,25 @@
  */
 package DTOs;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author INEGI
  */
 public class TableroDTO {
-    
+    private List<FichaDTO> fichasTablero;
+
+    public TableroDTO() {
+        fichasTablero = new ArrayList<>();
+    }
+
+    public List<FichaDTO> getFichasTablero() {
+        return fichasTablero;
+    }
+
+    public void setFichasTablero(List<FichaDTO> fichasTablero) {
+        this.fichasTablero = fichasTablero;
+    }
 }
