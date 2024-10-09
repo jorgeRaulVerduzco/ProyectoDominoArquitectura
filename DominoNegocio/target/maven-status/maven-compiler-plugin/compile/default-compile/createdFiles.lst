@@ -7,6 +7,8 @@ Negocio\ServicioJugador.class
 Singleton\PozoSingleton.class
 Negocio\ServicioControlJuego.class
 Singleton\TableroSingleton.class
+Mediadores\PozoMediator.class
+Mediadores\MediadorTablero.class
 DTOs\JugadorDTO.class
 Main\Juego.class
 DTOs\PartidaDTO.class
