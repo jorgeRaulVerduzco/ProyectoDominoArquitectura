@@ -61,4 +61,13 @@ public class ServicioPozo {
         }
         return pozo.getFichasPozo().remove(indice);
     }
+
+    public boolean eliminarFichaDelPozo(Ficha ficha) {
+        return pozo.getFichasPozo().remove(ficha); // Elimina la ficha del pozo y devuelve true si se eliminó
+    }
+
+    // Método para obtener el pozo
+    public Pozo getPozo() {
+        return pozo;
+    }
 }
