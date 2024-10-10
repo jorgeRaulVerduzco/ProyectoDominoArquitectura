@@ -16,17 +16,23 @@ import java.util.List;
  * @author INEGI
  */
 public class PozoModel {
+    private PozoMediator pozoMediador;
+    private Pozo pozo; // Agregamos una instancia de Pozo para manejar las fichas
 
-PozoMediator pozoMediador;
     public PozoModel() {
+        this.pozo = new Pozo(); // Inicializa el pozo
     }
 
     public PozoModel(PozoMediator pozoMediador) {
         this.pozoMediador = pozoMediador;
+        this.pozo = new Pozo(); // Inicializa el pozo
     }
 
     public void guardarFichasPozo() {
         pozoMediador.guardarFichas();
     }
 
+    public List<Ficha> getFichasPozo() {
+        return pozo.getFichasPozo();
+    }
 }

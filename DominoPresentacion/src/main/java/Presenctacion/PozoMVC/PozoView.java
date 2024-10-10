@@ -4,18 +4,87 @@
  */
 package Presenctacion.PozoMVC;
 
+import Dominio.Ficha;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 /**
  *
  * @author INEGI
  */
 public class PozoView extends javax.swing.JDialog {
 
-    /**
-     * Creates new form PozoView
-     */
-    public PozoView(java.awt.Frame parent, boolean modal) {
+    private PozoModel pozoModel;
+    private PozoController pozoController; // Agregar controlador
+
+    public PozoView(Frame parent, boolean modal, PozoModel pozoModel) {
         super(parent, modal);
+        this.pozoModel = pozoModel; // Inicializa el modelo
+        setBackground(Color.GREEN);
+        getContentPane().setBackground(Color.GREEN);
         initComponents();
+        mostrarFichasEnPozo();
+    }
+
+    public void setController(PozoController pozoController) {
+        this.pozoController = pozoController; // Asigna el controlador
+    }
+
+    public void mostrarFichasEnPozo() {
+        this.getContentPane().removeAll(); // Limpiar el panel anterior
+        List<Ficha> fichas = pozoModel.getFichasPozo();
+
+        for (Ficha ficha : fichas) {
+            JPanel panelFicha = crearPanelFicha(ficha);
+            this.add(panelFicha); // Añadir el panel de la ficha al contenedor
+        }
+
+        this.revalidate();
+        this.repaint();
+    }
+
+    private JPanel crearPanelFicha(Ficha ficha) {
+        JPanel panelFicha = new JPanel();
+        panelFicha.setPreferredSize(new Dimension(60, 30)); // Establecer tamaño del panel
+        ImageIcon ladoIzquierdo = cargarImagenPorValor(ficha.getEspacio1());
+        ImageIcon ladoDerecho = cargarImagenPorValor(ficha.getEspacio2());
+        panelFicha.add(new JLabel(ladoIzquierdo));
+        panelFicha.add(new JLabel(ladoDerecho));
+
+        // Añadir evento de clic para eliminar la ficha
+        panelFicha.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                pozoController.eliminarFicha(ficha); // Llama al controlador para eliminar la ficha
+            }
+        });
+
+        return panelFicha;
+    }
+
+    void mostrarMensaje(String mensaje) {
+        javax.swing.JOptionPane.showMessageDialog(this, mensaje);
+    }
+
+    private ImageIcon cargarImagenPorValor(int valor) {
+        String rutaBase = "C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\imagenes\\";
+        String rutaImagen = rutaBase + valor + ".png";
+        ImageIcon icon = new ImageIcon(rutaImagen);
+        if (icon.getIconWidth() == -1) {
+            System.out.println("Imagen no encontrada: " + rutaImagen);
+        }
+        return icon;
     }
 
     /**
@@ -28,17 +97,7 @@ public class PozoView extends javax.swing.JDialog {
     private void initComponents() {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -46,42 +105,14 @@ public class PozoView extends javax.swing.JDialog {
     /**
      * @param args the command line arguments
      */
+    /**
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(PozoView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(PozoView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(PozoView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(PozoView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the dialog */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                PozoView dialog = new PozoView(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            PozoModel model = new PozoModel(); // Se crea un modelo vacío para pruebas
+            PozoView view = new PozoView(new Frame(), true, model);
+            view.setVisible(true);
         });
     }
 
