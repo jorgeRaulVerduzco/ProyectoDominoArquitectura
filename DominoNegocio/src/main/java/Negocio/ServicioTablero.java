@@ -55,7 +55,10 @@ public class ServicioTablero {
 
     // Método para agregar fichas al tablero en el lado izquierdo o derecho
     public void agregarFichaAlTablero(Tablero tablero, Ficha ficha, String lado) {
-        if (lado.equals("izquierdo")) {
+        if (tablero.getFichasTablero().isEmpty()) {
+            // Agregar la primera ficha directamente sin comprobar el lado
+            tablero.getFichasTablero().add(ficha);
+        } else if (lado.equals("izquierdo")) {
             if (!puedeAgregarAlIzquierdo(tablero, ficha)) {
                 throw new IllegalArgumentException("No se puede agregar la ficha al lado izquierdo.");
             }
@@ -69,8 +72,8 @@ public class ServicioTablero {
             throw new IllegalArgumentException("Lado inválido. Debe ser 'izquierdo' o 'derecho'.");
         }
     }
-
     // Método para mover una ficha de una posición a otra
+
     public void moverFicha(Tablero tablero, int indexOrigen, int indexDestino) {
         if (indexOrigen < 0 || indexOrigen >= tablero.getFichasTablero().size()
                 || indexDestino < 0 || indexDestino >= tablero.getFichasTablero().size()) {
