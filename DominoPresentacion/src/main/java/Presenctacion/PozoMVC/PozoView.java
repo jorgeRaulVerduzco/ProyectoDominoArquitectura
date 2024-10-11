@@ -37,19 +37,11 @@ public class PozoView extends javax.swing.JDialog {
         setMinimumSize(new Dimension(800, 600));
         setLocationRelativeTo(parent);
         initComponents();
-        ocultarFichasEnPozo(); // Ocultar fichas inicialmente
+         mostrarFichasEnPozo() ;
     }
 
     public void setController(PozoController pozoController) {
         this.pozoController = pozoController; 
-    }
-
-    public void ocultarFichasEnPozo() {
-        this.getContentPane().removeAll(); // Limpiar el panel anterior
-        JLabel mensaje = new JLabel("Las fichas están ocultas en el pozo.");
-        this.getContentPane().add(mensaje);
-        this.revalidate();
-        this.repaint();
     }
 
     // Método para mostrar fichas en el pozo, si es necesario

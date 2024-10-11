@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Random;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -48,7 +49,6 @@ public class TableroView extends javax.swing.JFrame {
         getContentPane().setBackground(Color.GREEN);
         tableroController = new TableroController(tableroModel, this);
 
-        inicializarPozo();
         repartirFichas();
         mostrarFichasEnTablero();
     }
@@ -142,6 +142,12 @@ public class TableroView extends javax.swing.JFrame {
     panelFicha.add(label1);
     panelFicha.add(label2);
     panelFicha.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+    JButton btnAbrirPozo = new JButton("Abrir Pozo");
+        btnAbrirPozo.addActionListener(e -> {
+            PozoView pozoView = new PozoView(this, true, pozoModel);
+            pozoView.setVisible(true);
+        });
+        panelFicha.add(btnAbrirPozo);
     return panelFicha;
 }
     private void seleccionarFicha(Ficha ficha, int index, int numJugador) {

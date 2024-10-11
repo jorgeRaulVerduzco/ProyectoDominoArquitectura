@@ -20,11 +20,11 @@ import java.util.List;
 public class PozoModel {
 
     private PozoMediator pozoMediador;
-    private Pozo pozo; // Instancia de Pozo para manejar las fichas
+    private Pozo pozo = PozoSingleton.getInstancia(); ; // Instancia de Pozo para manejar las fichas
     private ServicioPozo servicioPozo; // Instancia del servicio para gestionar el pozo
 
   public PozoModel() {
-    this.pozo = PozoSingleton.getInstancia(); // Usar la instancia Singleton
+    // Usar la instancia Singleton
     this.pozo.inicializarFichas(); // Inicializa las fichas en el pozo
     this.servicioPozo = new ServicioPozo(); // Inicializa el servicio
 }
