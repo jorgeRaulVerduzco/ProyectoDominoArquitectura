@@ -19,6 +19,16 @@ public class Pozo {
         fichasPozo = new ArrayList<>();
     }
 
+    // Método para inicializar las fichas del dominó en el pozo
+    public void inicializarFichas() {
+        fichasPozo.clear(); // Limpia las fichas existentes
+        for (int i = 0; i <= 6; i++) { // Cambia según las reglas de tu dominó
+            for (int j = i; j <= 6; j++) {
+                fichasPozo.add(new Ficha(i, j)); // Asegúrate de que Ficha tenga el constructor correcto
+            }
+        }
+    }
+
     public Pozo(List<Ficha> fichasPozo) {
         this.fichasPozo = fichasPozo;
     }
