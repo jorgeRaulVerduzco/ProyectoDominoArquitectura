@@ -8,6 +8,7 @@ import Dominio.Ficha;
 import Dominio.Jugador;
 import Dominio.Pozo;
 import Dominio.Tablero;
+import PresentacionTableroMVC.TableroModel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,37 +115,36 @@ public class ServicioTablero {
         return resultado;
     }
 
-    public void agregarFichaAlTableroRenovado(Tablero tablero, Ficha ficha, String lado) {
-        if (tablero.getFichasTablero().isEmpty()) {
-            tablero.getFichasTablero().add(ficha);
+  public void agregarFichaAlTableroRenovado(TableroModel tablero, Ficha ficha, String lado) {
+        List<Ficha> fichasTablero = tablero.getFichasTablero();
+        if (fichasTablero.isEmpty()) {
+            fichasTablero.add(ficha);
             return;
         }
 
         if (lado.equals("izquierdo")) {
-            if (!puedeAgregarAlIzquierdoRenovado(tablero, ficha)) {
-                throw new IllegalArgumentException("No se puede agregar la ficha al lado izquierdo.");
-            }
-            if (ficha.getEspacio2() == tablero.getFichasTablero().get(0).getEspacio1()) {
-                tablero.getFichasTablero().add(0, ficha);
+            Ficha primeraFicha = fichasTablero.get(0);
+            if (ficha.getEspacio2() == primeraFicha.getEspacio1()) {
+                fichasTablero.add(0, ficha);
+            } else if (ficha.getEspacio1() == primeraFicha.getEspacio1()) {
+                fichasTablero.add(0, new Ficha(ficha.getEspacio2(), ficha.getEspacio1()));
             } else {
-                Ficha fichaRotada = new Ficha(ficha.getEspacio2(), ficha.getEspacio1());
-                tablero.getFichasTablero().add(0, fichaRotada);
+                throw new IllegalArgumentException("La ficha no coincide con el extremo izquierdo del tablero.");
             }
         } else if (lado.equals("derecho")) {
-            if (!puedeAgregarAlDerechoRenovado(tablero, ficha)) {
-                throw new IllegalArgumentException("No se puede agregar la ficha al lado derecho.");
-            }
-            Ficha ultimaFicha = tablero.getFichasTablero().get(tablero.getFichasTablero().size() - 1);
+            Ficha ultimaFicha = fichasTablero.get(fichasTablero.size() - 1);
             if (ficha.getEspacio1() == ultimaFicha.getEspacio2()) {
-                tablero.getFichasTablero().add(ficha);
+                fichasTablero.add(ficha);
+            } else if (ficha.getEspacio2() == ultimaFicha.getEspacio2()) {
+                fichasTablero.add(new Ficha(ficha.getEspacio2(), ficha.getEspacio1()));
             } else {
-                Ficha fichaRotada = new Ficha(ficha.getEspacio2(), ficha.getEspacio1());
-                tablero.getFichasTablero().add(fichaRotada);
+                throw new IllegalArgumentException("La ficha no coincide con el extremo derecho del tablero.");
             }
         } else {
             throw new IllegalArgumentException("Lado inválido. Debe ser 'izquierdo' o 'derecho'.");
         }
     }
+
 
     private boolean puedeAgregarAlIzquierdoRenovado(Tablero tablero, Ficha ficha) {
         if (tablero.getFichasTablero().isEmpty()) {

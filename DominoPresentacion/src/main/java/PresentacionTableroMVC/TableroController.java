@@ -13,6 +13,7 @@ import javax.swing.JPanel;
  * @author Serva
  */
 import Presenctacion.Mediador;
+import javax.swing.JOptionPane;
 
 public class TableroController {
 
@@ -52,9 +53,11 @@ public class TableroController {
             dragStartPoint = point;
         }
     }
- public void setMediator(Mediador mediador) {
+
+    public void setMediator(Mediador mediador) {
         this.mediador = mediador;
     }
+
     public void detenerArrastreFicha() {
         if (isDragging && fichaSeleccionada != null) {
             // ... (lógica para colocar la ficha en el tablero)
@@ -66,4 +69,13 @@ public class TableroController {
         }
     }
 
+    public boolean colocarFichaEnTablero(Ficha ficha, String lado) {
+        try {
+            tableroModel.agregarFicha(ficha, lado);
+            return true;
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(tableroView, "Jugada no válida: " + e.getMessage());
+            return false;
+        }
+    }
 }

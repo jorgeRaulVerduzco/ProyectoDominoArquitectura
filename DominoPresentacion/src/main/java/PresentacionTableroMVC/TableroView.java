@@ -11,6 +11,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -18,8 +20,10 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -28,14 +32,13 @@ import javax.swing.JPanel;
  */
 public class TableroView extends javax.swing.JFrame {
 
-    private TableroModel tableroModel;
+       private TableroModel tableroModel;
     private TableroController tableroController;
     private PozoModel pozoModel;
     private List<Ficha> fichasJugadores1;
     private List<Ficha> fichasJugadores2;
-
-    public TableroView() {
-    }
+    private Ficha fichaSeleccionada;
+    private int jugadorActual = 1; // 1 para jugador 1, 2 para jugador 2
 
     public TableroView(Frame parent, boolean modal, TableroModel tableroModel, PozoModel pozoModel) {
         this.pozoModel = pozoModel;
@@ -45,175 +48,145 @@ public class TableroView extends javax.swing.JFrame {
         getContentPane().setBackground(Color.GREEN);
         tableroController = new TableroController(tableroModel, this);
 
-        // Inicializa el pozo primero
         inicializarPozo();
-
-        // Reparte las fichas después de inicializar el pozo
         repartirFichas();
         mostrarFichasEnTablero();
+    }
 
-        // Crear y mostrar PozoView
-        PozoView pozoView = new PozoView(parent, modal, pozoModel);
-        pozoView.setVisible(false); // Mantener el pozo oculto
+    private void inicializarPozo() {
+        for (int i = 0; i <= 6; i++) {
+            for (int j = i; j <= 6; j++) {
+                Ficha ficha = new Ficha(i, j);
+                pozoModel.getFichasPozo().add(ficha);
+            }
+        }
     }
 
     private void repartirFichas() {
         Random random = new Random();
-        List<Ficha> fichas = new ArrayList<>(pozoModel.getFichasPozo()); // Obtiene las fichas del pozo
+        List<Ficha> fichas = new ArrayList<>(pozoModel.getFichasPozo());
 
-        // Verifica si hay suficientes fichas para repartir
-        if (fichas.size() < 14) { // Necesitas 14 fichas para repartir 7 a cada jugador
-            throw new IllegalArgumentException("No hay suficientes fichas para repartir a los jugadores.");
-        }
-
-        // Seleccionar 7 fichas aleatorias para el jugador 1
         fichasJugadores1 = new ArrayList<>();
-        for (int i = 0; i < 7; i++) {
-            int index = random.nextInt(fichas.size());
-            fichasJugadores1.add(fichas.remove(index)); // Quita la ficha de la lista original
-        }
-
-        // Seleccionar 7 fichas aleatorias para el jugador 2
         fichasJugadores2 = new ArrayList<>();
+
         for (int i = 0; i < 7; i++) {
-            int index = random.nextInt(fichas.size());
-            fichasJugadores2.add(fichas.remove(index)); // Quita la ficha de la lista original
+            fichasJugadores1.add(fichas.remove(random.nextInt(fichas.size())));
+            fichasJugadores2.add(fichas.remove(random.nextInt(fichas.size())));
         }
 
-        // Actualiza el pozo con las fichas restantes
         pozoModel.setFichasPozo(fichas);
     }
 
-    private void inicializarPozo() {
-        // Inicializar el pozo con 28 fichas
-        for (int i = 0; i <= 6; i++) {
-            for (int j = i; j <= 6; j++) {
-                Ficha ficha = new Ficha(i, j);
-                pozoModel.getFichasPozo().add(ficha); // Añadir ficha al pozo directamente
-            }
-        }
-    }
-
-    private void cargarFichas() {
-        Random random = new Random();
-
-        // Inicializa una lista para controlar las fichas generadas
-        List<Ficha> fichasGeneradas = new ArrayList<>();
-
-        for (int i = 0; i < 7; i++) { // Genera 7 fichas
-            int ladoIzquierdo;
-            int ladoDerecho;
-
-            // Genera un par de lados válidos
-            if (tableroModel.getFichasTablero().isEmpty()) {
-                ladoIzquierdo = random.nextInt(7); // Genera un número entre 0 y 6
-                ladoDerecho = random.nextInt(7); // Genera un número entre 0 y 6
-            } else {
-                // Obtiene el extremo derecho y asegura coincidencia
-                Ficha fichaDerecha = tableroModel.obtenerExtremoDerecho();
-                ladoIzquierdo = fichaDerecha.getEspacio2(); // Asegurando coincidencia
-                ladoDerecho = random.nextInt(7); // Lado derecho puede ser cualquier número del 0 al 6
-            }
-
-            // Crea una nueva ficha
-            Ficha nuevaFicha = new Ficha(ladoIzquierdo, ladoDerecho);
-
-            // Verifica que la ficha no se haya generado anteriormente
-            if (!fichasGeneradas.contains(nuevaFicha)) {
-                fichasGeneradas.add(nuevaFicha); // Agrega a la lista de fichas generadas
-                tableroModel.agregarFicha(nuevaFicha, "derecho"); // Siempre agregar al final
-            } else {
-                i--; // Decrementa el contador para volver a intentar en caso de ficha duplicada
-            }
-        }
-    }
-
     private void mostrarFichasEnTablero() {
-        this.setLayout(null); // Usar layout nulo para controlar la posición manualmente
-        this.getContentPane().removeAll(); // Limpiar el panel anterior
+        this.getContentPane().removeAll();
+        this.setLayout(null);
 
-        // Mostrar fichas del jugador 1
-        for (int i = 0; i < fichasJugadores1.size(); i++) {
-            Ficha ficha = fichasJugadores1.get(i);
-            JPanel panelFicha = crearPanelFicha(ficha);
-            panelFicha.setBounds(i * 130, 0, 100, 50); // Posición para el jugador 1
-            this.add(panelFicha); // Añadir el panel de la ficha al contenedor
-        }
-
-        // Mostrar fichas del jugador 2 en la fila inferior
-        for (int i = 0; i < fichasJugadores2.size(); i++) {
-            Ficha ficha = fichasJugadores2.get(i);
-            JPanel panelFicha = crearPanelFicha(ficha);
-            panelFicha.setBounds(i * 130, 350, 100, 50); // Aumenta la posición Y para el jugador 2
-            this.add(panelFicha); // Añadir el panel de la ficha al contenedor
-        }
-
-        // Mostrar fichas en el tablero (si es necesario)
-        for (int i = 0; i < tableroModel.getFichasTablero().size(); i++) {
-            Ficha ficha = tableroModel.getFichasTablero().get(i);
-            JPanel panelFicha = crearPanelFicha(ficha);
-            panelFicha.setBounds(i * 130, 200, 100, 50); // Establecer tamaño y posición inicial para el tablero
-            int index = i;
-
-            // Agregar MouseListener para detectar clics en la ficha
-            panelFicha.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    if (e.getButton() == MouseEvent.BUTTON1) { // Click izquierdo para seleccionar
-                        if (!tableroController.isFichaColocada()) { // Check if a ficha is already placed
-                            tableroController.iniciarArrastreFicha(index, e.getPoint());
-                        }
-                    }
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    tableroController.detenerArrastreFicha();
-                }
-            });
-
-            // Agregar MouseMotionListener para permitir el arrastre de la ficha
-            panelFicha.addMouseMotionListener(new MouseMotionAdapter() {
-                @Override
-                public void mouseDragged(MouseEvent e) {
-                    tableroController.moverFichaArrastrada(e);
-                }
-            });
-
-            this.add(panelFicha); // Añadir el panel de la ficha al contenedor
-        }
+        mostrarFichasJugador(fichasJugadores1, 1);
+        mostrarFichasJugador(fichasJugadores2, 2);
+        mostrarTablero();
 
         this.revalidate();
         this.repaint();
     }
 
-    private JPanel crearPanelFicha(Ficha ficha) {
-        JPanel panelFicha = new JPanel();
-        panelFicha.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        panelFicha.setPreferredSize(new Dimension(120, 60));
-
-        ImageIcon ladoIzquierdo = cargarImagenPorValor(ficha.getEspacio1());
-        ImageIcon ladoDerecho = cargarImagenPorValor(ficha.getEspacio2());
-
-        JLabel labelIzquierdo = new JLabel(ladoIzquierdo);
-        JLabel labelDerecho = new JLabel(ladoDerecho);
-
-        panelFicha.add(labelIzquierdo);
-        panelFicha.add(labelDerecho);
-
-        return panelFicha;
-    }
-
-    private ImageIcon cargarImagenPorValor(int valor) {
-        String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
-        String rutaImagen = rutaBase + valor + ".png";
-        ImageIcon icon = new ImageIcon(rutaImagen);
-        if (icon.getIconWidth() == -1) {
-            System.out.println("Imagen no encontrada: " + rutaImagen);
+    private void mostrarFichasJugador(List<Ficha> fichasJugador, int numJugador) {
+        int y = numJugador == 1 ? 10 : this.getHeight() - 70;
+        for (int i = 0; i < fichasJugador.size(); i++) {
+            Ficha ficha = fichasJugador.get(i);
+            JPanel panelFicha = crearPanelFicha(ficha);
+            panelFicha.setBounds(i * 110, y, 100, 50);
+            final int index = i;
+            panelFicha.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (jugadorActual == numJugador) {
+                        seleccionarFicha(ficha, index, numJugador);
+                    }
+                }
+            });
+            this.add(panelFicha);
         }
-        return icon;
     }
 
+    private void mostrarTablero() {
+        JPanel tableroPanel = new JPanel();
+        tableroPanel.setLayout(null);
+        tableroPanel.setBounds(0, 100, this.getWidth(), 200);
+        tableroPanel.setBackground(Color.LIGHT_GRAY);
+        tableroPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (fichaSeleccionada != null) {
+                    colocarFichaEnTablero(e.getPoint());
+                }
+            }
+        });
+        this.add(tableroPanel);
+
+        // Mostrar fichas ya colocadas en el tablero
+        List<Ficha> fichasTablero = tableroModel.getFichasTablero();
+        int x = tableroPanel.getWidth() / 2;
+        int y = tableroPanel.getHeight() / 2;
+        for (Ficha ficha : fichasTablero) {
+            JPanel panelFicha = crearPanelFicha(ficha);
+            panelFicha.setBounds(x, y - 25, 100, 50);
+            tableroPanel.add(panelFicha);
+            x += 110; // Ajustar según sea necesario
+        }
+    }
+
+  private JPanel crearPanelFicha(Ficha ficha) {
+    JPanel panelFicha = new JPanel(new GridLayout(1, 2));
+    JLabel label1 = new JLabel(cargarImagenPorValor(ficha.getEspacio1()));
+    JLabel label2 = new JLabel(cargarImagenPorValor(ficha.getEspacio2()));
+    panelFicha.add(label1);
+    panelFicha.add(label2);
+    panelFicha.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+    return panelFicha;
+}
+    private void seleccionarFicha(Ficha ficha, int index, int numJugador) {
+        fichaSeleccionada = ficha;
+        // Añadir efecto visual para la ficha seleccionada
+    }
+
+    private void colocarFichaEnTablero(Point point) {
+        if (fichaSeleccionada != null) {
+            String lado = point.x < this.getWidth() / 2 ? "izquierdo" : "derecho";
+            if (tableroController.colocarFichaEnTablero(fichaSeleccionada, lado)) {
+                if (jugadorActual == 1) {
+                    fichasJugadores1.remove(fichaSeleccionada);
+                } else {
+                    fichasJugadores2.remove(fichaSeleccionada);
+                }
+                fichaSeleccionada = null;
+                cambiarTurno();
+                mostrarFichasEnTablero();
+                verificarFinJuego();
+            }
+        }
+    }
+
+    private void cambiarTurno() {
+        jugadorActual = jugadorActual == 1 ? 2 : 1;
+    }
+
+    private void verificarFinJuego() {
+        if (fichasJugadores1.isEmpty() || fichasJugadores2.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "¡Juego terminado! Ganó el jugador " + jugadorActual);
+            // Aquí puedes añadir lógica para reiniciar el juego si lo deseas
+        }
+    }
+
+  private ImageIcon cargarImagenPorValor(int valor) {
+    String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
+    String rutaImagen = rutaBase + valor + ".png";
+    ImageIcon icon = new ImageIcon(rutaImagen);
+    if (icon.getIconWidth() == -1) {
+        System.out.println("Imagen no encontrada: " + rutaImagen);
+        return null;
+    }
+    return new ImageIcon(icon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+}
     public void actualizarVista() {
         mostrarFichasEnTablero();
     }

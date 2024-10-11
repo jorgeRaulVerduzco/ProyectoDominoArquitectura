@@ -27,7 +27,13 @@ public class TableroModel {
         this.tablero = new Tablero(); // Inicializamos el tablero
         tablero.setFichasTablero(fichasTablero); // Sincronizamos las fichas del modelo con el tablero
     }
+public void agregarFicha(Ficha ficha, String lado) {
+        servicioTablero.agregarFichaAlTableroRenovado(this, ficha, lado);
+    }
 
+    public List<Ficha> getFichasTablero() {
+        return fichasTablero;
+    }
     // Método para establecer las fichas del pozo
     public void setFichasPozo(List<Ficha> fichas) {
         this.fichasPozo = fichas;
@@ -38,13 +44,7 @@ public class TableroModel {
         return fichasPozo;
     }
 
-    public List<Ficha> getFichasTablero() {
-        return fichasTablero;
-    }
-
-    public void agregarFicha(Ficha ficha, String lado) {
-        servicioTablero.agregarFichaAlTablero(tablero, ficha, lado);
-    }
+   
 
     public void moverFicha(int indexOrigen, int indexDestino) {
         servicioTablero.moverFicha(tablero, indexOrigen, indexDestino);
