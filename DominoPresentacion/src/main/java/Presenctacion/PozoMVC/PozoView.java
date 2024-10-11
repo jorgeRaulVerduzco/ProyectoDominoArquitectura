@@ -84,7 +84,7 @@ public class PozoView extends javax.swing.JDialog {
     }
 
     private ImageIcon cargarImagenPorValor(int valor) {
-        String rutaBase = "C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\";
+        String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
         String rutaImagen = rutaBase + valor + ".png";
         ImageIcon icon = new ImageIcon(rutaImagen);
         if (icon.getIconWidth() == -1) {
