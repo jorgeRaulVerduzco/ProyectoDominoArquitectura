@@ -45,14 +45,16 @@ public class ServicioPozo {
 
     public void guardarFichasPozo() {
         List<Ficha> fichas = new ArrayList<>();
-        for (int i = 0; i < 28; i++) {
-            int ladoIzquierdo = random.nextInt(7);
-            int ladoDerecho = random.nextInt(7);
 
-            Ficha nuevaFicha = new Ficha(ladoIzquierdo, ladoDerecho);
-            fichas.add(nuevaFicha);  // Agregar ficha generada
+        // Genera combinaciones de fichas únicas
+        for (int i = 0; i <= 6; i++) {
+            for (int j = i; j <= 6; j++) { // Asegura que (i, j) y (j, i) sean la misma ficha
+                Ficha nuevaFicha = new Ficha(i, j);
+                fichas.add(nuevaFicha);
+            }
         }
-        pozo.setFichasPozo(fichas);  // Asigna las fichas generadas al pozo
+
+        pozo.setFichasPozo(fichas); // Asigna las fichas generadas al pozo
     }
 
     public Ficha tomarFichaDelPozo(Pozo pozo, int indice) {
