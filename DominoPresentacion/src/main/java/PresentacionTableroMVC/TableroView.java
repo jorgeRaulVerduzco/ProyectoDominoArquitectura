@@ -142,14 +142,10 @@ public class TableroView extends javax.swing.JFrame {
     panelFicha.add(label1);
     panelFicha.add(label2);
     panelFicha.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-    JButton btnAbrirPozo = new JButton("Abrir Pozo");
-        btnAbrirPozo.addActionListener(e -> {
-            PozoView pozoView = new PozoView(this, true, pozoModel);
-            pozoView.setVisible(true);
-        });
-        panelFicha.add(btnAbrirPozo);
+
     return panelFicha;
 }
+  
     private void seleccionarFicha(Ficha ficha, int index, int numJugador) {
         fichaSeleccionada = ficha;
         // Añadir efecto visual para la ficha seleccionada
