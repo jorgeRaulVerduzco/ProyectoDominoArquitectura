@@ -23,46 +23,47 @@ import javax.swing.JPanel;
  * @author Serva
  */
 public class TableroView extends javax.swing.JFrame {
-private TableroModel tableroModel;
+
+    private TableroModel tableroModel;
     private TableroController tableroController;
 
     public TableroView() {
         initComponents();
         setBackground(Color.GREEN);
-         getContentPane().setBackground(Color.GREEN);
+        getContentPane().setBackground(Color.GREEN);
         tableroModel = new TableroModel(); // Inicializar el modelo
         tableroController = new TableroController(tableroModel, this); // Inicializar el controlador
         cargarFichas();
         mostrarFichasEnTablero();
     }
 
-private void cargarFichas() {
-    Random random = new Random();
-    for (int i = 0; i < 7; i++) {  // Genera 7 fichas
-        int ladoIzquierdo;
-        int ladoDerecho;
+    private void cargarFichas() {
+        Random random = new Random();
+        for (int i = 0; i < 7; i++) {  // Genera 7 fichas
+            int ladoIzquierdo;
+            int ladoDerecho;
 
-        // Genera un par de lados válidos
-        if (tableroModel.getFichasTablero().isEmpty()) {
-            ladoIzquierdo = random.nextInt(7); // Genera un número entre 0 y 6
-            ladoDerecho = random.nextInt(7);  // Genera un número entre 0 y 6
-        } else {
-            // Obtiene el extremo derecho y asegura coincidencia
-            Ficha fichaDerecha = tableroModel.obtenerExtremoDerecho();
-            ladoIzquierdo = fichaDerecha.getEspacio2(); // Asegurando coincidencia
-            ladoDerecho = random.nextInt(7);  // Lado derecho puede ser cualquier número del 0 al 6
-        }
+            // Genera un par de lados válidos
+            if (tableroModel.getFichasTablero().isEmpty()) {
+                ladoIzquierdo = random.nextInt(7); // Genera un número entre 0 y 6
+                ladoDerecho = random.nextInt(7);  // Genera un número entre 0 y 6
+            } else {
+                // Obtiene el extremo derecho y asegura coincidencia
+                Ficha fichaDerecha = tableroModel.obtenerExtremoDerecho();
+                ladoIzquierdo = fichaDerecha.getEspacio2(); // Asegurando coincidencia
+                ladoDerecho = random.nextInt(7);  // Lado derecho puede ser cualquier número del 0 al 6
+            }
 
-        // Verifica que los lados estén dentro del rango permitido (0 a 6)
-        if (ladoIzquierdo >= 0 && ladoIzquierdo <= 6 && 
-            ladoDerecho >= 0 && ladoDerecho <= 6) {
-            Ficha nuevaFicha = new Ficha(ladoIzquierdo, ladoDerecho);
-            tableroModel.agregarFicha(nuevaFicha, "derecho"); // Siempre agregar al final
-        } else {
-            i--; // Decrementa el contador para volver a intentar en caso de ficha inválida
+            // Verifica que los lados estén dentro del rango permitido (0 a 6)
+            if (ladoIzquierdo >= 0 && ladoIzquierdo <= 6
+                    && ladoDerecho >= 0 && ladoDerecho <= 6) {
+                Ficha nuevaFicha = new Ficha(ladoIzquierdo, ladoDerecho);
+                tableroModel.agregarFicha(nuevaFicha, "derecho"); // Siempre agregar al final
+            } else {
+                i--; // Decrementa el contador para volver a intentar en caso de ficha inválida
+            }
         }
     }
-}
 
     private void mostrarFichasEnTablero() {
         this.setLayout(null); // Usar layout nulo para controlar la posición manualmente
@@ -77,13 +78,14 @@ private void cargarFichas() {
             // Agregar MouseListener para detectar clics en la ficha
             panelFicha.addMouseListener(new MouseAdapter() {
                 @Override
-              public void mousePressed(MouseEvent e) {
-    if (e.getButton() == MouseEvent.BUTTON1) { // Click izquierdo para seleccionar
-        if (!tableroController.isFichaColocada()) { // Check if a ficha is already placed
-            tableroController.iniciarArrastreFicha(index, e.getPoint());
-        }
-    }
-}
+                public void mousePressed(MouseEvent e) {
+                    if (e.getButton() == MouseEvent.BUTTON1) { // Click izquierdo para seleccionar
+                        if (!tableroController.isFichaColocada()) { // Check if a ficha is already placed
+                            tableroController.iniciarArrastreFicha(index, e.getPoint());
+                        }
+                    }
+                }
+
                 @Override
                 public void mouseReleased(MouseEvent e) {
                     tableroController.detenerArrastreFicha();
@@ -123,7 +125,7 @@ private void cargarFichas() {
     }
 
     private ImageIcon cargarImagenPorValor(int valor) {
-        String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
+        String rutaBase = "C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\";
         String rutaImagen = rutaBase + valor + ".png";
         ImageIcon icon = new ImageIcon(rutaImagen);
         if (icon.getIconWidth() == -1) {

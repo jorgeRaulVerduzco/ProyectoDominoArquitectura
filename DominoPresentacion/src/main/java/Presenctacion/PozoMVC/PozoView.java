@@ -34,6 +34,8 @@ public class PozoView extends javax.swing.JDialog {
         this.pozoModel = pozoModel; // Inicializa el modelo
         setBackground(Color.GREEN);
         getContentPane().setBackground(Color.GREEN);
+        setMinimumSize(new Dimension(800, 600));
+        setLocationRelativeTo(parent);
         initComponents();
         mostrarFichasEnPozo();
     }
@@ -48,7 +50,7 @@ public class PozoView extends javax.swing.JDialog {
 
         for (Ficha ficha : fichas) {
             JPanel panelFicha = crearPanelFicha(ficha);
-            this.add(panelFicha); // Añadir el panel de la ficha al contenedor
+            this.getContentPane().add(panelFicha);// Añadir el panel de la ficha al contenedor
         }
 
         this.revalidate();
@@ -57,7 +59,7 @@ public class PozoView extends javax.swing.JDialog {
 
     private JPanel crearPanelFicha(Ficha ficha) {
         JPanel panelFicha = new JPanel();
-        panelFicha.setPreferredSize(new Dimension(60, 30)); // Establecer tamaño del panel
+        panelFicha.setPreferredSize(new Dimension(120, 60)); // Establecer tamaño del panel
         ImageIcon ladoIzquierdo = cargarImagenPorValor(ficha.getEspacio1());
         ImageIcon ladoDerecho = cargarImagenPorValor(ficha.getEspacio2());
         panelFicha.add(new JLabel(ladoIzquierdo));
@@ -66,7 +68,11 @@ public class PozoView extends javax.swing.JDialog {
         // Añadir evento de clic para eliminar la ficha
         panelFicha.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                pozoController.eliminarFicha(ficha); // Llama al controlador para eliminar la ficha
+                if (pozoController != null) {
+                    pozoController.eliminarFicha(ficha); // Llama al controlador para eliminar la ficha
+                } else {
+                    System.err.println("Error: PozoController no ha sido inicializado.");
+                }
             }
         });
 
@@ -78,11 +84,11 @@ public class PozoView extends javax.swing.JDialog {
     }
 
     private ImageIcon cargarImagenPorValor(int valor) {
-        String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
+        String rutaBase = "C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\";
         String rutaImagen = rutaBase + valor + ".png";
         ImageIcon icon = new ImageIcon(rutaImagen);
         if (icon.getIconWidth() == -1) {
-            System.out.println("Imagen no encontrada: " + rutaImagen);
+            System.out.println("Imagen no encontrada para valor: " + valor + " en ruta: " + rutaImagen);
         }
         return icon;
     }
@@ -97,7 +103,7 @@ public class PozoView extends javax.swing.JDialog {
     private void initComponents() {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        getContentPane().setLayout(new java.awt.FlowLayout());
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
