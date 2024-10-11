@@ -5,9 +5,12 @@
 package PresentacionTableroMVC;
 
 import Dominio.Ficha;
+import Presenctacion.PozoMVC.PozoModel;
+import Presenctacion.PozoMVC.PozoView;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -27,20 +30,65 @@ public class TableroView extends javax.swing.JFrame {
 
     private TableroModel tableroModel;
     private TableroController tableroController;
-
+    private PozoModel pozoModel;
     private List<Ficha> fichasJugadores1;
     private List<Ficha> fichasJugadores2;
 
-    public TableroView() {
+    public TableroView(Frame parent, boolean modal, TableroModel tableroModel, PozoModel pozoModel) {
+        this.pozoModel = pozoModel;
+        this.tableroModel = tableroModel;
         initComponents();
         setBackground(Color.GREEN);
         getContentPane().setBackground(Color.GREEN);
-        tableroModel = new TableroModel(); // Inicializar el modelo
-        tableroController = new TableroController(tableroModel, this); // Inicializar el controlador
-        cargarFichas();
+        tableroController = new TableroController(tableroModel, this);
+
+        // Inicializa el pozo primero
         inicializarPozo();
-        repartirFichas(); // Llamada al método para repartir las fichas
+
+        // Reparte las fichas después de inicializar el pozo
+        repartirFichas();
         mostrarFichasEnTablero();
+
+        // Crear y mostrar PozoView
+        PozoView pozoView = new PozoView(parent, modal, pozoModel);
+        pozoView.setVisible(false); // Mantener el pozo oculto
+    }
+
+    private void repartirFichas() {
+        Random random = new Random();
+        List<Ficha> fichas = new ArrayList<>(pozoModel.getFichasPozo()); // Obtiene las fichas del pozo
+
+        // Verifica si hay suficientes fichas para repartir
+        if (fichas.size() < 14) { // Necesitas 14 fichas para repartir 7 a cada jugador
+            throw new IllegalArgumentException("No hay suficientes fichas para repartir a los jugadores.");
+        }
+
+        // Seleccionar 7 fichas aleatorias para el jugador 1
+        fichasJugadores1 = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            int index = random.nextInt(fichas.size());
+            fichasJugadores1.add(fichas.remove(index)); // Quita la ficha de la lista original
+        }
+
+        // Seleccionar 7 fichas aleatorias para el jugador 2
+        fichasJugadores2 = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            int index = random.nextInt(fichas.size());
+            fichasJugadores2.add(fichas.remove(index)); // Quita la ficha de la lista original
+        }
+
+        // Actualiza el pozo con las fichas restantes
+        pozoModel.setFichasPozo(fichas);
+    }
+
+    private void inicializarPozo() {
+        // Inicializar el pozo con 28 fichas
+        for (int i = 0; i <= 6; i++) {
+            for (int j = i; j <= 6; j++) {
+                Ficha ficha = new Ficha(i, j);
+                pozoModel.getFichasPozo().add(ficha); // Añadir ficha al pozo directamente
+            }
+        }
     }
 
     private void cargarFichas() {
@@ -77,47 +125,11 @@ public class TableroView extends javax.swing.JFrame {
         }
     }
 
-    private void inicializarPozo() {
-        // Inicializar el pozo con 28 fichas
-        for (int i = 0; i <= 6; i++) {
-            for (int j = i; j <= 6; j++) {
-                Ficha ficha = new Ficha(i, j);
-                tableroModel.agregarFicha(ficha, "pozo"); // Añadir ficha al pozo
-            }
-        }
-    }
-
-    private void repartirFichas() {
-        Random random = new Random();
-        List<Ficha> fichas = new ArrayList<>(tableroModel.getFichasTablero());
-
-        // Verifica si hay suficientes fichas para repartir
-        if (fichas.size() < 14) { // Necesitas 14 fichas para repartir 7 a cada jugador
-            throw new IllegalArgumentException("No hay suficientes fichas para repartir a los jugadores.");
-        }
-
-        // Seleccionar 7 fichas aleatorias para el jugador 1
-        fichasJugadores1 = new ArrayList<>();
-        for (int i = 0; i < 7; i++) {
-            int index = random.nextInt(fichas.size());
-            fichasJugadores1.add(fichas.remove(index)); // Quita la ficha de la lista original
-        }
-
-        // Seleccionar 7 fichas aleatorias para el jugador 2
-        fichasJugadores2 = new ArrayList<>();
-        for (int i = 0; i < 7; i++) {
-            int index = random.nextInt(fichas.size());
-            fichasJugadores2.add(fichas.remove(index)); // Quita la ficha de la lista original
-        }
-
-        // Actualiza el pozo con las fichas restantes
-        tableroModel.setFichasPozo(fichas);
-    }
-
     private void mostrarFichasEnTablero() {
         this.setLayout(null); // Usar layout nulo para controlar la posición manualmente
         this.getContentPane().removeAll(); // Limpiar el panel anterior
 
+        // Mostrar fichas del jugador 1
         for (int i = 0; i < fichasJugadores1.size(); i++) {
             Ficha ficha = fichasJugadores1.get(i);
             JPanel panelFicha = crearPanelFicha(ficha);
@@ -129,14 +141,15 @@ public class TableroView extends javax.swing.JFrame {
         for (int i = 0; i < fichasJugadores2.size(); i++) {
             Ficha ficha = fichasJugadores2.get(i);
             JPanel panelFicha = crearPanelFicha(ficha);
-            panelFicha.setBounds(i * 130, 70, 100, 50); // Posición para el jugador 2
+            panelFicha.setBounds(i * 130, 350, 100, 50); // Aumenta la posición Y para el jugador 2
             this.add(panelFicha); // Añadir el panel de la ficha al contenedor
         }
 
+        // Mostrar fichas en el tablero (si es necesario)
         for (int i = 0; i < tableroModel.getFichasTablero().size(); i++) {
             Ficha ficha = tableroModel.getFichasTablero().get(i);
             JPanel panelFicha = crearPanelFicha(ficha);
-            panelFicha.setBounds(i * 130, 0, 100, 50); // Establecer tamaño y posición inicial
+            panelFicha.setBounds(i * 130, 200, 100, 50); // Establecer tamaño y posición inicial para el tablero
             int index = i;
 
             // Agregar MouseListener para detectar clics en la ficha
@@ -228,39 +241,21 @@ public class TableroView extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(TableroView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(TableroView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(TableroView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(TableroView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
+        java.awt.EventQueue.invokeLater(() -> {
+            PozoModel pozoModel = new PozoModel(); // Crear un modelo de pozo
+            pozoModel.getPozo().inicializarFichas(); // Asegúrate de inicializar las fichas aquí
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new TableroView().setVisible(true);
-            }
+            PozoView pozoView = new PozoView(new Frame(), true, pozoModel);
+            pozoView.setVisible(false); // Mantener el pozo invisible
+
+            TableroModel tableroModel = new TableroModel(); // Crear un modelo de tablero
+            TableroView tableroView = new TableroView(new Frame(), true, tableroModel, pozoModel);
+
+            // Repartir fichas a los jugadores
+            tableroView.repartirFichas(); // Asegúrate de que este método se ejecute después de inicializar el pozo
+
+            tableroView.setVisible(true); // Mostrar la vista del tablero
         });
     }
 
