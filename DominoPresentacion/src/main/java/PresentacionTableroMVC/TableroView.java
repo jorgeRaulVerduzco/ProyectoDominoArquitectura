@@ -34,6 +34,9 @@ public class TableroView extends javax.swing.JFrame {
     private List<Ficha> fichasJugadores1;
     private List<Ficha> fichasJugadores2;
 
+    public TableroView() {
+    }
+
     public TableroView(Frame parent, boolean modal, TableroModel tableroModel, PozoModel pozoModel) {
         this.pozoModel = pozoModel;
         this.tableroModel = tableroModel;
@@ -202,7 +205,7 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private ImageIcon cargarImagenPorValor(int valor) {
-        String rutaBase = "C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\";
+        String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
         String rutaImagen = rutaBase + valor + ".png";
         ImageIcon icon = new ImageIcon(rutaImagen);
         if (icon.getIconWidth() == -1) {
