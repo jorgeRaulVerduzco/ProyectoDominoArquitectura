@@ -5,25 +5,38 @@
 package Mediadores;
 
 import Dominio.Ficha;
+import Dominio.Jugador;
 import Negocio.ServicioPozo;
 import Presenctacion.PozoMVC.PozoModel;
+import java.util.List;
 
 /**
  *
  * @author INEGI
  */
-public class PozoMediator {
+public class PozoMediator implements IPozoMediador{
 
-    private ServicioPozo servicioPozo;
     private PozoModel pozoModel;
+    private ServicioPozo servicioPozo;
 
-    public PozoMediator(ServicioPozo servicioPozo, PozoModel pozoModel) {
-        this.servicioPozo = servicioPozo;
+    public PozoMediator(PozoModel pozoModel, ServicioPozo servicioPozo) {
         this.pozoModel = pozoModel;
+        this.servicioPozo = servicioPozo;
     }
 
-    public void guardarFichas() {
-        servicioPozo.guardarFichasPozo();
+    @Override
+    public void iniciarNuevoJuego(List<Jugador> jugadores) {
+        pozoModel.iniciarNuevoJuego(jugadores); // Delegar a PozoModel
+    }
+
+    @Override
+    public void guardarFichasPozo() {
+        servicioPozo.guardarFichasPozo(); // Delegar a ServicioPozo
+    }
+
+    @Override
+    public List<Ficha> getFichasPozo() {
+        return servicioPozo.getPozo().getFichasPozo(); // Delegar a ServicioPozo
     }
 
 }

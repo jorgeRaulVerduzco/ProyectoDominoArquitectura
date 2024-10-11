@@ -6,11 +6,13 @@ Negocio\ServicioPartida.class
 Negocio\ServicioJugador.class
 Singleton\PozoSingleton.class
 Negocio\ServicioControlJuego.class
+Observers\PozoObserver.class
 Singleton\TableroSingleton.class
 Mediadores\PozoMediator.class
 Mediadores\MediadorTablero.class
 DTOs\JugadorDTO.class
 Main\Juego.class
+Mediadores\IPozoMediador.class
 DTOs\PartidaDTO.class
 DTOs\PozoDTO.class
 Negocio\ServicioPozo.class

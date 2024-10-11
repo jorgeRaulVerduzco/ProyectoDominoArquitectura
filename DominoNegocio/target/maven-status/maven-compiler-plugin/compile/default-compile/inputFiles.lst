@@ -5,6 +5,7 @@ C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegoc
 C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\DTOs\PozoDTO.java
 C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\DTOs\TableroDTO.java
 C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\Main\Juego.java
+C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\Mediadores\IPozoMediador.java
 C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\Mediadores\MediadorTablero.java
 C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\Mediadores\PozoMediator.java
 C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\Negocio\ServicioControlJuego.java
@@ -13,5 +14,6 @@ C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegoc
 C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\Negocio\ServicioPartida.java
 C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\Negocio\ServicioPozo.java
 C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\Negocio\ServicioTablero.java
+C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\Observers\PozoObserver.java
 C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\Singleton\PozoSingleton.java
 C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoNegocio\src\main\java\Singleton\TableroSingleton.java
