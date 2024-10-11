@@ -16,16 +16,27 @@ import Dominio.Tablero;
  */
 public class TableroModel {
     private List<Ficha> fichasTablero;
+    private List<Ficha> fichasPozo; // Nueva lista para las fichas del pozo
     private ServicioTablero servicioTablero;
     private Tablero tablero; // Este objeto Tablero representa el estado actual del tablero
 
     public TableroModel() {
         this.fichasTablero = new ArrayList<>();
+        this.fichasPozo = new ArrayList<>(); // Inicializamos la lista de fichas del pozo
         this.servicioTablero = new ServicioTablero();
         this.tablero = new Tablero(); // Inicializamos el tablero
         tablero.setFichasTablero(fichasTablero); // Sincronizamos las fichas del modelo con el tablero
     }
-    
+
+    // Método para establecer las fichas del pozo
+    public void setFichasPozo(List<Ficha> fichas) {
+        this.fichasPozo = fichas;
+    }
+
+    // Método para obtener las fichas del pozo
+    public List<Ficha> getFichasPozo() {
+        return fichasPozo;
+    }
 
     public List<Ficha> getFichasTablero() {
         return fichasTablero;

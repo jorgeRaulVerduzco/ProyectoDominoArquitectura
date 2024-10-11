@@ -27,39 +27,57 @@ import javax.swing.JPanel;
 public class PozoView extends javax.swing.JDialog {
 
     private PozoModel pozoModel;
-    private PozoController pozoController; // Agregar controlador
+    private PozoController pozoController; 
 
     public PozoView(Frame parent, boolean modal, PozoModel pozoModel) {
         super(parent, modal);
-        this.pozoModel = pozoModel; // Inicializa el modelo
+        this.pozoModel = pozoModel; 
         setBackground(Color.GREEN);
         getContentPane().setBackground(Color.GREEN);
         setMinimumSize(new Dimension(800, 600));
         setLocationRelativeTo(parent);
         initComponents();
-        mostrarFichasEnPozo();
+        ocultarFichasEnPozo(); // Ocultar fichas inicialmente
     }
 
     public void setController(PozoController pozoController) {
-        this.pozoController = pozoController; // Asigna el controlador
+        this.pozoController = pozoController; 
     }
 
-    public void mostrarFichasEnPozo() {
+    public void ocultarFichasEnPozo() {
         this.getContentPane().removeAll(); // Limpiar el panel anterior
+        JLabel mensaje = new JLabel("Las fichas están ocultas en el pozo.");
+        this.getContentPane().add(mensaje);
+        this.revalidate();
+        this.repaint();
+    }
+
+    // Método para mostrar fichas en el pozo, si es necesario
+    public void mostrarFichasEnPozo() {
+        this.getContentPane().removeAll(); 
         List<Ficha> fichas = pozoModel.getFichasPozo();
+
+        // Título del pozo
+        JLabel titulo = new JLabel("Fichas en el Pozo: " + fichas.size());
+        titulo.setFont(titulo.getFont().deriveFont(18.0f));
+        this.getContentPane().add(titulo, BorderLayout.NORTH); // Añadir título
+
+        JPanel panelFichas = new JPanel();
+        panelFichas.setLayout(new FlowLayout()); 
 
         for (Ficha ficha : fichas) {
             JPanel panelFicha = crearPanelFicha(ficha);
-            this.getContentPane().add(panelFicha);// Añadir el panel de la ficha al contenedor
+            panelFichas.add(panelFicha);
         }
 
+        this.getContentPane().add(panelFichas, BorderLayout.CENTER); 
         this.revalidate();
         this.repaint();
     }
 
     private JPanel crearPanelFicha(Ficha ficha) {
         JPanel panelFicha = new JPanel();
-        panelFicha.setPreferredSize(new Dimension(120, 60)); // Establecer tamaño del panel
+        panelFicha.setPreferredSize(new Dimension(120, 60)); 
         ImageIcon ladoIzquierdo = cargarImagenPorValor(ficha.getEspacio1());
         ImageIcon ladoDerecho = cargarImagenPorValor(ficha.getEspacio2());
         panelFicha.add(new JLabel(ladoIzquierdo));
@@ -69,7 +87,8 @@ public class PozoView extends javax.swing.JDialog {
         panelFicha.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (pozoController != null) {
-                    pozoController.eliminarFicha(ficha); // Llama al controlador para eliminar la ficha
+                    pozoController.eliminarFicha(ficha); 
+                    mostrarFichasEnPozo(); // Actualiza la vista después de eliminar
                 } else {
                     System.err.println("Error: PozoController no ha sido inicializado.");
                 }
@@ -84,7 +103,7 @@ public class PozoView extends javax.swing.JDialog {
     }
 
     private ImageIcon cargarImagenPorValor(int valor) {
-        String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
+        String rutaBase = "C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\";
         String rutaImagen = rutaBase + valor + ".png";
         ImageIcon icon = new ImageIcon(rutaImagen);
         if (icon.getIconWidth() == -1) {
@@ -118,7 +137,7 @@ public class PozoView extends javax.swing.JDialog {
         java.awt.EventQueue.invokeLater(() -> {
             PozoModel model = new PozoModel(); // Se crea un modelo vacío para pruebas
             PozoView view = new PozoView(new Frame(), true, model);
-            view.setVisible(true);
+            view.setVisible(false); // Oculta la vista del pozo
         });
     }
 

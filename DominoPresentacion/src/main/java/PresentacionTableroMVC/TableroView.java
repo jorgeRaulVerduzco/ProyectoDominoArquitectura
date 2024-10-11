@@ -12,6 +12,7 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import javax.swing.ImageIcon;
@@ -27,6 +28,9 @@ public class TableroView extends javax.swing.JFrame {
     private TableroModel tableroModel;
     private TableroController tableroController;
 
+    private List<Ficha> fichasJugadores1;
+    private List<Ficha> fichasJugadores2;
+
     public TableroView() {
         initComponents();
         setBackground(Color.GREEN);
@@ -34,40 +38,100 @@ public class TableroView extends javax.swing.JFrame {
         tableroModel = new TableroModel(); // Inicializar el modelo
         tableroController = new TableroController(tableroModel, this); // Inicializar el controlador
         cargarFichas();
+        inicializarPozo();
+        repartirFichas(); // Llamada al método para repartir las fichas
         mostrarFichasEnTablero();
     }
 
     private void cargarFichas() {
         Random random = new Random();
-        for (int i = 0; i < 7; i++) {  // Genera 7 fichas
+
+        // Inicializa una lista para controlar las fichas generadas
+        List<Ficha> fichasGeneradas = new ArrayList<>();
+
+        for (int i = 0; i < 7; i++) { // Genera 7 fichas
             int ladoIzquierdo;
             int ladoDerecho;
 
             // Genera un par de lados válidos
             if (tableroModel.getFichasTablero().isEmpty()) {
                 ladoIzquierdo = random.nextInt(7); // Genera un número entre 0 y 6
-                ladoDerecho = random.nextInt(7);  // Genera un número entre 0 y 6
+                ladoDerecho = random.nextInt(7); // Genera un número entre 0 y 6
             } else {
                 // Obtiene el extremo derecho y asegura coincidencia
                 Ficha fichaDerecha = tableroModel.obtenerExtremoDerecho();
                 ladoIzquierdo = fichaDerecha.getEspacio2(); // Asegurando coincidencia
-                ladoDerecho = random.nextInt(7);  // Lado derecho puede ser cualquier número del 0 al 6
+                ladoDerecho = random.nextInt(7); // Lado derecho puede ser cualquier número del 0 al 6
             }
 
-            // Verifica que los lados estén dentro del rango permitido (0 a 6)
-            if (ladoIzquierdo >= 0 && ladoIzquierdo <= 6
-                    && ladoDerecho >= 0 && ladoDerecho <= 6) {
-                Ficha nuevaFicha = new Ficha(ladoIzquierdo, ladoDerecho);
+            // Crea una nueva ficha
+            Ficha nuevaFicha = new Ficha(ladoIzquierdo, ladoDerecho);
+
+            // Verifica que la ficha no se haya generado anteriormente
+            if (!fichasGeneradas.contains(nuevaFicha)) {
+                fichasGeneradas.add(nuevaFicha); // Agrega a la lista de fichas generadas
                 tableroModel.agregarFicha(nuevaFicha, "derecho"); // Siempre agregar al final
             } else {
-                i--; // Decrementa el contador para volver a intentar en caso de ficha inválida
+                i--; // Decrementa el contador para volver a intentar en caso de ficha duplicada
             }
         }
+    }
+
+    private void inicializarPozo() {
+        // Inicializar el pozo con 28 fichas
+        for (int i = 0; i <= 6; i++) {
+            for (int j = i; j <= 6; j++) {
+                Ficha ficha = new Ficha(i, j);
+                tableroModel.agregarFicha(ficha, "pozo"); // Añadir ficha al pozo
+            }
+        }
+    }
+
+    private void repartirFichas() {
+        Random random = new Random();
+        List<Ficha> fichas = new ArrayList<>(tableroModel.getFichasTablero());
+
+        // Verifica si hay suficientes fichas para repartir
+        if (fichas.size() < 14) { // Necesitas 14 fichas para repartir 7 a cada jugador
+            throw new IllegalArgumentException("No hay suficientes fichas para repartir a los jugadores.");
+        }
+
+        // Seleccionar 7 fichas aleatorias para el jugador 1
+        fichasJugadores1 = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            int index = random.nextInt(fichas.size());
+            fichasJugadores1.add(fichas.remove(index)); // Quita la ficha de la lista original
+        }
+
+        // Seleccionar 7 fichas aleatorias para el jugador 2
+        fichasJugadores2 = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            int index = random.nextInt(fichas.size());
+            fichasJugadores2.add(fichas.remove(index)); // Quita la ficha de la lista original
+        }
+
+        // Actualiza el pozo con las fichas restantes
+        tableroModel.setFichasPozo(fichas);
     }
 
     private void mostrarFichasEnTablero() {
         this.setLayout(null); // Usar layout nulo para controlar la posición manualmente
         this.getContentPane().removeAll(); // Limpiar el panel anterior
+
+        for (int i = 0; i < fichasJugadores1.size(); i++) {
+            Ficha ficha = fichasJugadores1.get(i);
+            JPanel panelFicha = crearPanelFicha(ficha);
+            panelFicha.setBounds(i * 130, 0, 100, 50); // Posición para el jugador 1
+            this.add(panelFicha); // Añadir el panel de la ficha al contenedor
+        }
+
+        // Mostrar fichas del jugador 2 en la fila inferior
+        for (int i = 0; i < fichasJugadores2.size(); i++) {
+            Ficha ficha = fichasJugadores2.get(i);
+            JPanel panelFicha = crearPanelFicha(ficha);
+            panelFicha.setBounds(i * 130, 70, 100, 50); // Posición para el jugador 2
+            this.add(panelFicha); // Añadir el panel de la ficha al contenedor
+        }
 
         for (int i = 0; i < tableroModel.getFichasTablero().size(); i++) {
             Ficha ficha = tableroModel.getFichasTablero().get(i);
