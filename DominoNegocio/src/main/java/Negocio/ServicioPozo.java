@@ -7,6 +7,7 @@ package Negocio;
 import Dominio.Ficha;
 import Dominio.Jugador;
 import Dominio.Pozo;
+import Singleton.PozoSingleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -21,7 +22,7 @@ public class ServicioPozo {
     private Random random = new Random();
 
     public ServicioPozo() {
-        pozo = new Pozo();
+        pozo = PozoSingleton.getInstancia(); // Usar la instancia Singleton
     }
 
     // Método que inicializa un nuevo juego

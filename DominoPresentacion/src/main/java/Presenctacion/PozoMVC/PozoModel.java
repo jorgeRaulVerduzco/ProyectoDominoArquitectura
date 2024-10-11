@@ -9,6 +9,7 @@ import Dominio.Jugador;
 import Dominio.Pozo;
 import Mediadores.PozoMediator;
 import Negocio.ServicioPozo;
+import Singleton.PozoSingleton;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,18 +23,18 @@ public class PozoModel {
     private Pozo pozo; // Instancia de Pozo para manejar las fichas
     private ServicioPozo servicioPozo; // Instancia del servicio para gestionar el pozo
 
-    public PozoModel() {
-        this.pozo = new Pozo(); // Inicializa el pozo
-        this.pozo.inicializarFichas(); // Inicializa las fichas en el pozo
-        this.servicioPozo = new ServicioPozo(); // Inicializa el servicio
-    }
+  public PozoModel() {
+    this.pozo = PozoSingleton.getInstancia(); // Usar la instancia Singleton
+    this.pozo.inicializarFichas(); // Inicializa las fichas en el pozo
+    this.servicioPozo = new ServicioPozo(); // Inicializa el servicio
+}
 
-    public PozoModel(PozoMediator pozoMediador) {
-        this.pozoMediador = pozoMediador;
-        this.pozo = new Pozo(); // Inicializa el pozo
-        this.pozo.inicializarFichas(); // Asegúrate de inicializar las fichas
-        this.servicioPozo = new ServicioPozo(); // Inicializa el servicio
-    }
+ public PozoModel(PozoMediator pozoMediador) {
+    this.pozoMediador = pozoMediador;
+    this.pozo = PozoSingleton.getInstancia(); // Usar la instancia Singleton
+    this.pozo.inicializarFichas(); // Asegúrate de inicializar las fichas
+    this.servicioPozo = new ServicioPozo(); // Inicializa el servicio
+}
 
     public void iniciarNuevoJuego(List<Jugador> jugadores) {
         this.pozo.inicializarFichas(); // Asegúrate de inicializar las fichas al iniciar un nuevo juego
