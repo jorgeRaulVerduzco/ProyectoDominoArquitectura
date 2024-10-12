@@ -45,6 +45,7 @@ public class TableroView extends javax.swing.JFrame {
     private List<Ficha> fichasJugadores2;
     private Ficha fichaSeleccionada;
     private int jugadorActual = 1; // 1 para jugador 1, 2 para jugador 2
+    private PozoView pozoView;
 
     public TableroView(Frame parent, boolean modal, TableroModel tableroModel, PozoModel pozoModel) {
         this.pozoModel = pozoModel;
@@ -53,6 +54,7 @@ public class TableroView extends javax.swing.JFrame {
         setBackground(Color.GREEN);
         getContentPane().setBackground(Color.GREEN);
         tableroController = new TableroController(tableroModel, this);
+        this.pozoView = new PozoView(this, true, pozoModel);
 
         repartirFichas();
         mostrarFichasEnTablero();
@@ -100,9 +102,9 @@ public class TableroView extends javax.swing.JFrame {
 
     }
 
-    private void abrirPozo() {
-        // Lógica para abrir el pozo
-        System.out.println("Pozo abierto");
+   private void abrirPozo() {
+        // Mostrar la vista del pozo
+        pozoView.setVisible(true);
     }
 
     private void pasarTurno() {
