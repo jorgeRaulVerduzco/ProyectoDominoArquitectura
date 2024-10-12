@@ -57,4 +57,7 @@ public class PozoModel {
     public Pozo getPozo() {
         return this.pozo; // Devuelve la instancia de Pozo
     }
+    public void removerFicha(Ficha ficha) {
+        pozo.getFichasPozo().remove(ficha);
+    }
 }

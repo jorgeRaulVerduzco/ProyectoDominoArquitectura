@@ -115,34 +115,49 @@ public class ServicioTablero {
         return resultado;
     }
 
-  public void agregarFichaAlTableroRenovado(Tablero tablero, Ficha ficha, String lado) {
+      public void agregarFichaAlTableroRenovado(Tablero tablero, Ficha ficha, String lado) {
         List<Ficha> fichasTablero = tablero.getFichasTablero();
+        
+        System.out.println("Intentando agregar ficha " + ficha + " al lado " + lado);
+        System.out.println("Estado actual del tablero: " + fichasTablero);
+
         if (fichasTablero.isEmpty()) {
             fichasTablero.add(ficha);
+            System.out.println("Tablero vacío, agregando primera ficha");
             return;
         }
 
         if (lado.equals("izquierdo")) {
             Ficha primeraFicha = fichasTablero.get(0);
+            System.out.println("Comparando con la primera ficha del tablero: " + primeraFicha);
             if (ficha.getEspacio2() == primeraFicha.getEspacio1()) {
                 fichasTablero.add(0, ficha);
+                System.out.println("Ficha agregada al lado izquierdo");
             } else if (ficha.getEspacio1() == primeraFicha.getEspacio1()) {
                 fichasTablero.add(0, new Ficha(ficha.getEspacio2(), ficha.getEspacio1()));
+                System.out.println("Ficha invertida y agregada al lado izquierdo");
             } else {
+                System.out.println("La ficha no coincide con el extremo izquierdo del tablero");
                 throw new IllegalArgumentException("La ficha no coincide con el extremo izquierdo del tablero.");
             }
         } else if (lado.equals("derecho")) {
             Ficha ultimaFicha = fichasTablero.get(fichasTablero.size() - 1);
+            System.out.println("Comparando con la última ficha del tablero: " + ultimaFicha);
             if (ficha.getEspacio1() == ultimaFicha.getEspacio2()) {
                 fichasTablero.add(ficha);
+                System.out.println("Ficha agregada al lado derecho");
             } else if (ficha.getEspacio2() == ultimaFicha.getEspacio2()) {
                 fichasTablero.add(new Ficha(ficha.getEspacio2(), ficha.getEspacio1()));
+                System.out.println("Ficha invertida y agregada al lado derecho");
             } else {
+                System.out.println("La ficha no coincide con el extremo derecho del tablero");
                 throw new IllegalArgumentException("La ficha no coincide con el extremo derecho del tablero.");
             }
         } else {
             throw new IllegalArgumentException("Lado inválido. Debe ser 'izquierdo' o 'derecho'.");
         }
+        
+        System.out.println("Estado final del tablero: " + fichasTablero);
     }
 
 

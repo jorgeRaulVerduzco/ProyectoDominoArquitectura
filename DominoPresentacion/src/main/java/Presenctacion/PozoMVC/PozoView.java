@@ -5,6 +5,7 @@
 package Presenctacion.PozoMVC;
 
 import Dominio.Ficha;
+import Negocio.ServicioPozo;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,6 +15,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -25,28 +27,32 @@ import javax.swing.JPanel;
  * @author INEGI
  */
 public class PozoView extends javax.swing.JDialog {
+//eso es aviso
+        private Consumer<Ficha> fichaSeleccionadaListener;
 
     private PozoModel pozoModel;
-    private PozoController pozoController; 
+    private PozoController pozoController;
 
     public PozoView(Frame parent, boolean modal, PozoModel pozoModel) {
         super(parent, modal);
-        this.pozoModel = pozoModel; 
+        this.pozoModel = pozoModel;
+            this.pozoController = new PozoController(pozoModel, this, new ServicioPozo()); // Inicializar con ServicioPozo
+
         setBackground(Color.GREEN);
         getContentPane().setBackground(Color.GREEN);
         setMinimumSize(new Dimension(800, 600));
         setLocationRelativeTo(parent);
         initComponents();
-         mostrarFichasEnPozo() ;
+        mostrarFichasEnPozo();
     }
 
     public void setController(PozoController pozoController) {
-        this.pozoController = pozoController; 
+        this.pozoController = pozoController;
     }
 
     // Método para mostrar fichas en el pozo, si es necesario
     public void mostrarFichasEnPozo() {
-        this.getContentPane().removeAll(); 
+        this.getContentPane().removeAll();
         List<Ficha> fichas = pozoModel.getFichasPozo();
 
         // Título del pozo
@@ -55,21 +61,23 @@ public class PozoView extends javax.swing.JDialog {
         this.getContentPane().add(titulo, BorderLayout.NORTH); // Añadir título
 
         JPanel panelFichas = new JPanel();
-        panelFichas.setLayout(new FlowLayout()); 
+        panelFichas.setLayout(new FlowLayout());
 
         for (Ficha ficha : fichas) {
             JPanel panelFicha = crearPanelFicha(ficha);
             panelFichas.add(panelFicha);
         }
 
-        this.getContentPane().add(panelFichas, BorderLayout.CENTER); 
+        this.getContentPane().add(panelFichas, BorderLayout.CENTER);
         this.revalidate();
         this.repaint();
     }
-
+  public void setFichaSeleccionadaListener(Consumer<Ficha> listener) {
+        this.fichaSeleccionadaListener = listener;
+    }
     private JPanel crearPanelFicha(Ficha ficha) {
         JPanel panelFicha = new JPanel();
-        panelFicha.setPreferredSize(new Dimension(120, 60)); 
+        panelFicha.setPreferredSize(new Dimension(120, 60));
         ImageIcon ladoIzquierdo = cargarImagenPorValor(ficha.getEspacio1());
         ImageIcon ladoDerecho = cargarImagenPorValor(ficha.getEspacio2());
         panelFicha.add(new JLabel(ladoIzquierdo));
@@ -79,7 +87,7 @@ public class PozoView extends javax.swing.JDialog {
         panelFicha.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (pozoController != null) {
-                    pozoController.eliminarFicha(ficha); 
+                    pozoController.eliminarFicha(ficha);
                     mostrarFichasEnPozo(); // Actualiza la vista después de eliminar
                 } else {
                     System.err.println("Error: PozoController no ha sido inicializado.");
@@ -87,7 +95,35 @@ public class PozoView extends javax.swing.JDialog {
             }
         });
 
+        panelFicha.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (fichaSeleccionadaListener != null) {
+                    fichaSeleccionadaListener.accept(ficha);
+                    setVisible(false); // Cierra la ventana del pozo después de seleccionar
+                }
+            }
+        });
         return panelFicha;
+    }
+
+    public void actualizarFichasPozo(List<Ficha> fichasPozo) {
+        this.getContentPane().removeAll();
+
+        JLabel titulo = new JLabel("Fichas en el Pozo: " + fichasPozo.size());
+        titulo.setFont(titulo.getFont().deriveFont(18.0f));
+        this.getContentPane().add(titulo, BorderLayout.NORTH);
+
+        JPanel panelFichas = new JPanel();
+        panelFichas.setLayout(new FlowLayout());
+
+        for (Ficha ficha : fichasPozo) {
+            JPanel panelFicha = crearPanelFicha(ficha);
+            panelFichas.add(panelFicha);
+        }
+
+        this.getContentPane().add(panelFichas, BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
     }
 
     void mostrarMensaje(String mensaje) {

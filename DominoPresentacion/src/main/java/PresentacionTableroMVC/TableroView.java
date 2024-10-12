@@ -101,10 +101,31 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void abrirPozo() {
-        // Mostrar la vista del pozo
-        pozoView.setVisible(true);
+         if (tableroModel.getFichasTablero().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Debes colocar una ficha en el tablero antes de tomar del pozo.");
+        return;
     }
-
+    
+ 
+    
+   pozoView.actualizarFichasPozo(pozoModel.getFichasPozo());
+        pozoView.setVisible(true);
+          pozoView.setFichaSeleccionadaListener(ficha -> {
+        if (ficha != null) {
+            agregarFichaAJugadorActual(ficha);
+            pozoModel.getFichasPozo().remove(ficha);
+            pozoView.actualizarFichasPozo(pozoModel.getFichasPozo());
+            mostrarFichasEnTablero();
+        }
+    });
+    }
+private void agregarFichaAJugadorActual(Ficha ficha) {
+    if (jugadorActual == 1) {
+        fichasJugadores1.add(ficha);
+    } else {
+        fichasJugadores2.add(ficha);
+    }
+}
     private void pasarTurno() {
         // Lógica para pasar el turno
         cambiarTurno();
@@ -127,7 +148,7 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void repartirFichas() {
-        Random random = new Random();
+Random random = new Random();
         List<Ficha> fichas = new ArrayList<>(pozoModel.getFichasPozo());
 
         fichasJugadores1 = new ArrayList<>();
@@ -138,6 +159,7 @@ public class TableroView extends javax.swing.JFrame {
             fichasJugadores2.add(fichas.remove(random.nextInt(fichas.size())));
         }
 
+        // Actualizar el pozo con las fichas restantes
         pozoModel.setFichasPozo(fichas);
     }
 

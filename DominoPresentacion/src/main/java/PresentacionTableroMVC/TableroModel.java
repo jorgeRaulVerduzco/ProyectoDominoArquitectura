@@ -27,8 +27,10 @@ public class TableroModel {
         this.tablero = new Tablero(); // Inicializamos el tablero
         tablero.setFichasTablero(fichasTablero); // Sincronizamos las fichas del modelo con el tablero
     }
-public void agregarFicha(Ficha ficha, String lado) {
+  public void agregarFicha(Ficha ficha, String lado) {
+        System.out.println("Intentando agregar ficha " + ficha + " al lado " + lado); // Agregar este mensaje para depuración
         servicioTablero.agregarFichaAlTableroRenovado(tablero, ficha, lado);
+        System.out.println("Ficha agregada exitosamente"); // Agregar este mensaje para depuración
     }
 
     public List<Ficha> getFichasTablero() {

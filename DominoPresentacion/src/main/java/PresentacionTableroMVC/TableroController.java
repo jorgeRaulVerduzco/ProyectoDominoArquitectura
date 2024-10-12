@@ -70,12 +70,12 @@ public class TableroController {
     }
 
     public boolean colocarFichaEnTablero(Ficha ficha, String lado) {
-        try {
-            tableroModel.agregarFicha(ficha, lado);
-            return true;
-        } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(tableroView, "Jugada no válida: " + e.getMessage());
-            return false;
-        }
-    }
+          try {
+        tableroModel.agregarFicha(ficha, lado);
+        tableroView.actualizarVista(); // Asegúrate de que esta línea esté presente
+        return true;
+    } catch (IllegalArgumentException e) {
+        JOptionPane.showMessageDialog(tableroView, "Jugada no válida: " + e.getMessage());
+        return false;
+    }    }
 }
