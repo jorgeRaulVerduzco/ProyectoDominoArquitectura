@@ -103,25 +103,6 @@ public class PozoView extends javax.swing.JDialog {
         }
         return icon;
     }
-public void actualizarFichasPozo(List<Ficha> fichasPozo) {
-        this.getContentPane().removeAll();
-        
-        JLabel titulo = new JLabel("Fichas en el Pozo: " + fichasPozo.size());
-        titulo.setFont(titulo.getFont().deriveFont(18.0f));
-        this.getContentPane().add(titulo, BorderLayout.NORTH);
-
-        JPanel panelFichas = new JPanel();
-        panelFichas.setLayout(new FlowLayout());
-
-        for (Ficha ficha : fichasPozo) {
-            JPanel panelFicha = crearPanelFicha(ficha);
-            panelFichas.add(panelFicha);
-        }
-
-        this.getContentPane().add(panelFichas, BorderLayout.CENTER);
-        this.revalidate();
-        this.repaint();
-    }
 
     /**
      * This method is called from within the constructor to initialize the form.

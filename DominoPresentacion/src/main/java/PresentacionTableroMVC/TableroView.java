@@ -101,7 +101,7 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void abrirPozo() {
-        pozoView.actualizarFichasPozo(pozoModel.getFichasPozo());
+        // Mostrar la vista del pozo
         pozoView.setVisible(true);
     }
 
@@ -127,7 +127,7 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void repartirFichas() {
-      Random random = new Random();
+        Random random = new Random();
         List<Ficha> fichas = new ArrayList<>(pozoModel.getFichasPozo());
 
         fichasJugadores1 = new ArrayList<>();
@@ -138,7 +138,6 @@ public class TableroView extends javax.swing.JFrame {
             fichasJugadores2.add(fichas.remove(random.nextInt(fichas.size())));
         }
 
-        // Actualizar el pozo con las fichas restantes
         pozoModel.setFichasPozo(fichas);
     }
 
