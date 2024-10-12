@@ -101,7 +101,7 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void abrirPozo() {
-        // Mostrar la vista del pozo
+        pozoView.actualizarFichasPozo(pozoModel.getFichasPozo());
         pozoView.setVisible(true);
     }
 
@@ -127,7 +127,7 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void repartirFichas() {
-        Random random = new Random();
+      Random random = new Random();
         List<Ficha> fichas = new ArrayList<>(pozoModel.getFichasPozo());
 
         fichasJugadores1 = new ArrayList<>();
@@ -138,6 +138,7 @@ public class TableroView extends javax.swing.JFrame {
             fichasJugadores2.add(fichas.remove(random.nextInt(fichas.size())));
         }
 
+        // Actualizar el pozo con las fichas restantes
         pozoModel.setFichasPozo(fichas);
     }
 
@@ -277,7 +278,7 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private ImageIcon cargarImagenPorValor(int valor) {
-        String rutaBase = "C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\";
+        String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
         String rutaImagen = rutaBase + valor + ".png";
         ImageIcon icon = new ImageIcon(rutaImagen);
         if (icon.getIconWidth() == -1) {

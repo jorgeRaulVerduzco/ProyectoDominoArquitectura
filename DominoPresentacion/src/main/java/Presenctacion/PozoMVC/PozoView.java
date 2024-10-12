@@ -95,13 +95,32 @@ public class PozoView extends javax.swing.JDialog {
     }
 
     private ImageIcon cargarImagenPorValor(int valor) {
-        String rutaBase = "C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\";
+        String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
         String rutaImagen = rutaBase + valor + ".png";
         ImageIcon icon = new ImageIcon(rutaImagen);
         if (icon.getIconWidth() == -1) {
             System.out.println("Imagen no encontrada para valor: " + valor + " en ruta: " + rutaImagen);
         }
         return icon;
+    }
+public void actualizarFichasPozo(List<Ficha> fichasPozo) {
+        this.getContentPane().removeAll();
+        
+        JLabel titulo = new JLabel("Fichas en el Pozo: " + fichasPozo.size());
+        titulo.setFont(titulo.getFont().deriveFont(18.0f));
+        this.getContentPane().add(titulo, BorderLayout.NORTH);
+
+        JPanel panelFichas = new JPanel();
+        panelFichas.setLayout(new FlowLayout());
+
+        for (Ficha ficha : fichasPozo) {
+            JPanel panelFicha = crearPanelFicha(ficha);
+            panelFichas.add(panelFicha);
+        }
+
+        this.getContentPane().add(panelFichas, BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
     }
 
     /**
