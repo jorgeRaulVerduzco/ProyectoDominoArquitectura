@@ -110,6 +110,7 @@ public class TableroView extends javax.swing.JFrame {
     
    pozoView.actualizarFichasPozo(pozoModel.getFichasPozo());
         pozoView.setVisible(true);
+        
           pozoView.setFichaSeleccionadaListener(ficha -> {
         if (ficha != null) {
             agregarFichaAJugadorActual(ficha);
