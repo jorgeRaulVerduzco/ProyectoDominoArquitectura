@@ -28,7 +28,7 @@ public class TableroModel {
         tablero.setFichasTablero(fichasTablero); // Sincronizamos las fichas del modelo con el tablero
     }
 public void agregarFicha(Ficha ficha, String lado) {
-        servicioTablero.agregarFichaAlTableroRenovado(this, ficha, lado);
+        servicioTablero.agregarFichaAlTableroRenovado(tablero, ficha, lado);
     }
 
     public List<Ficha> getFichasTablero() {

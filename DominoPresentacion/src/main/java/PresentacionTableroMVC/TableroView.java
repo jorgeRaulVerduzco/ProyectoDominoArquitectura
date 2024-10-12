@@ -75,10 +75,8 @@ public class TableroView extends javax.swing.JFrame {
         // Configurar colores
         btnAbrirPozo.setBackground(Color.BLUE);
         btnAbrirPozo.setForeground(Color.WHITE);
-
         btnPasarTurno.setBackground(Color.GRAY);  // Color neutral para "Pasar Turno"
         btnPasarTurno.setForeground(Color.WHITE);
-
         btnTerminarJuego.setBackground(Color.RED);
         btnTerminarJuego.setForeground(Color.WHITE);
 
@@ -90,7 +88,7 @@ public class TableroView extends javax.swing.JFrame {
         panelBotones.add(btnTerminarJuego);
 
         // Establecer ubicación del panel (más a la derecha)
-        panelBotones.setBounds(this.getWidth() - (-5), 50, 130, 200);  // Ajusta la coordenada X (más a la derecha)
+        panelBotones.setBounds(this.getWidth() - 150, 70, 130, 200);  // Ajusta la coordenada X (más a la derecha)
 
         // Añadir el panel a la ventana principal
         this.setLayout(null); // Usar layout nulo para posicionamiento absoluto
@@ -100,7 +98,6 @@ public class TableroView extends javax.swing.JFrame {
         btnAbrirPozo.addActionListener(e -> abrirPozo());
         btnPasarTurno.addActionListener(e -> pasarTurno());
         btnTerminarJuego.addActionListener(e -> terminarJuego());
-
     }
 
     private void abrirPozo() {
@@ -145,20 +142,34 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void mostrarFichasEnTablero() {
-       for (Component component : this.getContentPane().getComponents()) {
-        if (component instanceof JPanel && component.getName() != null && component.getName().equals("panelBotones")) {
-            continue; // No eliminar el panel de botones
+        // Mantener el panel de botones
+        Component[] components = this.getContentPane().getComponents();
+        boolean panelBotonesVisible = false;
+
+        // Eliminar solo componentes de fichas y del tablero
+        for (Component component : components) {
+            // Verificar si el componente es un JPanel y que no sea nulo
+            if (component instanceof JPanel) {
+                String componentName = component.getName();
+                // Eliminar componentes que no son el panel de botones
+                if (componentName == null || !componentName.equals("panelBotones")) {
+                    this.getContentPane().remove(component);
+                }
+            }
+            // Asegurarse de que el panel de botones siga estando visible
+            if (!panelBotonesVisible) {
+                agregarPanelBotones(); // Solo agregar si no está visible
+            }
         }
-        this.getContentPane().remove(component);
-    }
-    this.setLayout(null);
 
-    mostrarFichasJugador(fichasJugadores1, 1);
-    mostrarFichasJugador(fichasJugadores2, 2);
-    mostrarTablero();
+        // Mostrar fichas en el tablero
+        mostrarFichasJugador(fichasJugadores1, 1);
+        mostrarFichasJugador(fichasJugadores2, 2);
+        mostrarTablero();
 
-    this.revalidate();
-    this.repaint();
+        // Redibujar la interfaz
+        this.revalidate();
+        this.repaint();
     }
 
     private void mostrarFichasJugador(List<Ficha> fichasJugador, int numJugador) {
@@ -195,16 +206,30 @@ public class TableroView extends javax.swing.JFrame {
         });
         this.add(tableroPanel);
 
-        // Mostrar fichas ya colocadas en el tablero
+        // Aquí colocamos las fichas
         List<Ficha> fichasTablero = tableroModel.getFichasTablero();
-        int x = tableroPanel.getWidth() / 2;
-        int y = tableroPanel.getHeight() / 2;
+        int x = 10;  // Comenzamos en un margen
         for (Ficha ficha : fichasTablero) {
             JPanel panelFicha = crearPanelFicha(ficha);
-            panelFicha.setBounds(x, y - 25, 100, 50);
+            panelFicha.setBounds(x, 25, 100, 50);  // Centrado en el panel
             tableroPanel.add(panelFicha);
-            x += 110; // Ajustar según sea necesario
+            x += 110;  // Espaciado entre fichas
         }
+
+        // Establecer un límite para el tamaño del tablero
+        int maxPanelWidth = this.getWidth() - 20; // Ancho máximo permitido
+        if (x > maxPanelWidth) {
+            x = maxPanelWidth; // Limitar el ancho si es necesario
+        }
+
+        // Ajustar el tamaño del tablero
+        tableroPanel.setPreferredSize(new Dimension(x, 200)); // Ajustamos el tamaño a las fichas
+        tableroPanel.setSize(new Dimension(x, 200)); // Establecer el tamaño del panel basado en el ancho calculado
+
+        // Asegúrate de que el panel se ajuste a la ventana
+        this.add(tableroPanel);
+        this.revalidate();
+        this.repaint();
     }
 
     private JPanel crearPanelFicha(Ficha ficha) {
@@ -252,7 +277,7 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private ImageIcon cargarImagenPorValor(int valor) {
-        String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
+        String rutaBase = "C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\";
         String rutaImagen = rutaBase + valor + ".png";
         ImageIcon icon = new ImageIcon(rutaImagen);
         if (icon.getIconWidth() == -1) {
@@ -287,7 +312,7 @@ public class TableroView extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 437, Short.MAX_VALUE)
+            .addGap(0, 535, Short.MAX_VALUE)
         );
 
         pack();
