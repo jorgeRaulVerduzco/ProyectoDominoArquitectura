@@ -101,32 +101,32 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void abrirPozo() {
-         if (tableroModel.getFichasTablero().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Debes colocar una ficha en el tablero antes de tomar del pozo.");
-        return;
-    }
-    
- 
-    
-   pozoView.actualizarFichasPozo(pozoModel.getFichasPozo());
-        pozoView.setVisible(true);
-        
-          pozoView.setFichaSeleccionadaListener(ficha -> {
-        if (ficha != null) {
-            agregarFichaAJugadorActual(ficha);
-            pozoModel.getFichasPozo().remove(ficha);
-            pozoView.actualizarFichasPozo(pozoModel.getFichasPozo());
-            mostrarFichasEnTablero();
+        if (tableroModel.getFichasTablero().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Debes colocar una ficha en el tablero antes de tomar del pozo.");
+            return;
         }
-    });
+
+        pozoView.actualizarFichasPozo(pozoModel.getFichasPozo());
+        pozoView.setVisible(true);
+
+        pozoView.setFichaSeleccionadaListener(ficha -> {
+            if (ficha != null) {
+                agregarFichaAJugadorActual(ficha);
+                pozoModel.getFichasPozo().remove(ficha);
+                pozoView.actualizarFichasPozo(pozoModel.getFichasPozo());
+                mostrarFichasEnTablero();
+            }
+        });
     }
-private void agregarFichaAJugadorActual(Ficha ficha) {
-    if (jugadorActual == 1) {
-        fichasJugadores1.add(ficha);
-    } else {
-        fichasJugadores2.add(ficha);
+
+    private void agregarFichaAJugadorActual(Ficha ficha) {
+        if (jugadorActual == 1) {
+            fichasJugadores1.add(ficha);
+        } else {
+            fichasJugadores2.add(ficha);
+        }
     }
-}
+
     private void pasarTurno() {
         // Lógica para pasar el turno
         cambiarTurno();
@@ -149,7 +149,7 @@ private void agregarFichaAJugadorActual(Ficha ficha) {
     }
 
     private void repartirFichas() {
-Random random = new Random();
+        Random random = new Random();
         List<Ficha> fichas = new ArrayList<>(pozoModel.getFichasPozo());
 
         fichasJugadores1 = new ArrayList<>();
@@ -273,17 +273,37 @@ Random random = new Random();
 
     private void colocarFichaEnTablero(Point point) {
         if (fichaSeleccionada != null) {
-            String lado = point.x < this.getWidth() / 2 ? "izquierdo" : "derecho";
+            // Pedir al jugador que elija el lado donde quiere colocar la ficha
+            String[] opciones = {"Izquierdo", "Derecho"};
+            int eleccion = JOptionPane.showOptionDialog(
+                    this,
+                    "¿En qué lado deseas colocar la ficha?",
+                    "Elegir Lado",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    opciones,
+                    opciones[0]
+            );
+
+            String lado = (eleccion == 0) ? "izquierdo" : "derecho"; // Elección del jugador
+
+            // Colocar la ficha en el lado seleccionado
             if (tableroController.colocarFichaEnTablero(fichaSeleccionada, lado)) {
+                // Eliminar la ficha seleccionada de las fichas del jugador actual
                 if (jugadorActual == 1) {
                     fichasJugadores1.remove(fichaSeleccionada);
                 } else {
                     fichasJugadores2.remove(fichaSeleccionada);
                 }
-                fichaSeleccionada = null;
-                cambiarTurno();
-                mostrarFichasEnTablero();
-                verificarFinJuego();
+
+                fichaSeleccionada = null;  // Limpiar la selección de ficha
+                cambiarTurno();  // Cambiar el turno al otro jugador
+                mostrarFichasEnTablero();  // Actualizar el tablero con las nuevas fichas
+                verificarFinJuego();  // Verificar si el juego ha terminado
+            } else {
+                // Mensaje en caso de que no se pueda colocar la ficha
+                JOptionPane.showMessageDialog(this, "No se puede colocar la ficha en el lado seleccionado.");
             }
         }
     }
@@ -300,7 +320,7 @@ Random random = new Random();
     }
 
     private ImageIcon cargarImagenPorValor(int valor) {
-        String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
+        String rutaBase = "C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-main\\ProyectoDominoArquitectura-main\\DominoPresentacion\\src\\imagenes\\";
         String rutaImagen = rutaBase + valor + ".png";
         ImageIcon icon = new ImageIcon(rutaImagen);
         if (icon.getIconWidth() == -1) {
