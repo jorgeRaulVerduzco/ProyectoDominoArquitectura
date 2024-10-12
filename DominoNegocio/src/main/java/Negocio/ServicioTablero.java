@@ -115,7 +115,7 @@ public class ServicioTablero {
         return resultado;
     }
 
-  public void agregarFichaAlTableroRenovado(TableroModel tablero, Ficha ficha, String lado) {
+  public void agregarFichaAlTableroRenovado(Tablero tablero, Ficha ficha, String lado) {
         List<Ficha> fichasTablero = tablero.getFichasTablero();
         if (fichasTablero.isEmpty()) {
             fichasTablero.add(ficha);
