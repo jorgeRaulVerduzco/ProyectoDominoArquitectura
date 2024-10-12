@@ -8,6 +8,7 @@ import Dominio.Ficha;
 import Presenctacion.PozoMVC.PozoModel;
 import Presenctacion.PozoMVC.PozoView;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
@@ -62,47 +63,47 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void agregarPanelBotones() {
-           // Crear un JPanel para los botones
-    JPanel panelBotones = new JPanel();
-    panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.Y_AXIS)); // Organizar verticalmente
+        // Crear un JPanel para los botones
+        JPanel panelBotones = new JPanel();
+        panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.Y_AXIS)); // Organizar verticalmente
 
-    // Crear botones
-    btnAbrirPozo = new JButton("Abrir Pozo");
-    btnPasarTurno = new JButton("Pasar Turno");
-    btnTerminarJuego = new JButton("Terminar Juego");
+        // Crear botones
+        btnAbrirPozo = new JButton("Abrir Pozo");
+        btnPasarTurno = new JButton("Pasar Turno");
+        btnTerminarJuego = new JButton("Terminar Juego");
 
-    // Configurar colores
-    btnAbrirPozo.setBackground(Color.BLUE);
-    btnAbrirPozo.setForeground(Color.WHITE);
+        // Configurar colores
+        btnAbrirPozo.setBackground(Color.BLUE);
+        btnAbrirPozo.setForeground(Color.WHITE);
 
-    btnPasarTurno.setBackground(Color.GRAY);  // Color neutral para "Pasar Turno"
-    btnPasarTurno.setForeground(Color.WHITE);
+        btnPasarTurno.setBackground(Color.GRAY);  // Color neutral para "Pasar Turno"
+        btnPasarTurno.setForeground(Color.WHITE);
 
-    btnTerminarJuego.setBackground(Color.RED);
-    btnTerminarJuego.setForeground(Color.WHITE);
+        btnTerminarJuego.setBackground(Color.RED);
+        btnTerminarJuego.setForeground(Color.WHITE);
 
-    // Añadir botones al panel
-    panelBotones.add(btnAbrirPozo);
-    panelBotones.add(Box.createVerticalStrut(10)); // Espacio entre botones
-    panelBotones.add(btnPasarTurno);
-    panelBotones.add(Box.createVerticalStrut(10)); // Espacio entre botones
-    panelBotones.add(btnTerminarJuego);
+        // Añadir botones al panel
+        panelBotones.add(btnAbrirPozo);
+        panelBotones.add(Box.createVerticalStrut(10)); // Espacio entre botones
+        panelBotones.add(btnPasarTurno);
+        panelBotones.add(Box.createVerticalStrut(10)); // Espacio entre botones
+        panelBotones.add(btnTerminarJuego);
 
-    // Establecer ubicación del panel (más a la derecha)
-    panelBotones.setBounds(this.getWidth() - (-5), 50, 130, 200);  // Ajusta la coordenada X (más a la derecha)
+        // Establecer ubicación del panel (más a la derecha)
+        panelBotones.setBounds(this.getWidth() - (-5), 50, 130, 200);  // Ajusta la coordenada X (más a la derecha)
 
-    // Añadir el panel a la ventana principal
-    this.setLayout(null); // Usar layout nulo para posicionamiento absoluto
-    this.add(panelBotones);
+        // Añadir el panel a la ventana principal
+        this.setLayout(null); // Usar layout nulo para posicionamiento absoluto
+        this.add(panelBotones);
 
-    // Añadir listeners para las acciones de los botones
-    btnAbrirPozo.addActionListener(e -> abrirPozo());
-    btnPasarTurno.addActionListener(e -> pasarTurno());
-    btnTerminarJuego.addActionListener(e -> terminarJuego());
+        // Añadir listeners para las acciones de los botones
+        btnAbrirPozo.addActionListener(e -> abrirPozo());
+        btnPasarTurno.addActionListener(e -> pasarTurno());
+        btnTerminarJuego.addActionListener(e -> terminarJuego());
 
     }
 
-   private void abrirPozo() {
+    private void abrirPozo() {
         // Mostrar la vista del pozo
         pozoView.setVisible(true);
     }
@@ -144,15 +145,20 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void mostrarFichasEnTablero() {
-        this.getContentPane().removeAll();
-        this.setLayout(null);
+       for (Component component : this.getContentPane().getComponents()) {
+        if (component instanceof JPanel && component.getName() != null && component.getName().equals("panelBotones")) {
+            continue; // No eliminar el panel de botones
+        }
+        this.getContentPane().remove(component);
+    }
+    this.setLayout(null);
 
-        mostrarFichasJugador(fichasJugadores1, 1);
-        mostrarFichasJugador(fichasJugadores2, 2);
-        mostrarTablero();
+    mostrarFichasJugador(fichasJugadores1, 1);
+    mostrarFichasJugador(fichasJugadores2, 2);
+    mostrarTablero();
 
-        this.revalidate();
-        this.repaint();
+    this.revalidate();
+    this.repaint();
     }
 
     private void mostrarFichasJugador(List<Ficha> fichasJugador, int numJugador) {
@@ -253,7 +259,9 @@ public class TableroView extends javax.swing.JFrame {
             System.out.println("Imagen no encontrada: " + rutaImagen);
             return null;
         }
-        return new ImageIcon(icon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+        int width = 50;  // Ancho constante
+        int height = 50;  // Alto constante
+        return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH));
     }
 
     public void actualizarVista() {
