@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -34,8 +36,8 @@ import javax.swing.JPanel;
 public class TableroView extends javax.swing.JFrame {
 
     private JButton btnAbrirPozo;
-    private JButton btnTerminarJuego;
     private JButton btnPasarTurno;
+    private JButton btnTerminarJuego;
     private TableroModel tableroModel;
     private TableroController tableroController;
     private PozoModel pozoModel;
@@ -54,31 +56,65 @@ public class TableroView extends javax.swing.JFrame {
 
         repartirFichas();
         mostrarFichasEnTablero();
-        agregarBotones();
+        agregarPanelBotones();
     }
 
-    private void agregarBotones() {
-        // Crear el botón "Abrir Pozo"
-        btnAbrirPozo = new JButton("Abrir Pozo");
-        btnAbrirPozo.setBackground(Color.BLUE);
-        btnAbrirPozo.setForeground(Color.WHITE);
-        btnAbrirPozo.setBounds(650, 50, 120, 30);
-        btnAbrirPozo.addActionListener(e -> abrirPozo());
-        this.add(btnAbrirPozo);
+    private void agregarPanelBotones() {
+           // Crear un JPanel para los botones
+    JPanel panelBotones = new JPanel();
+    panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.Y_AXIS)); // Organizar verticalmente
 
-        // Crear el botón "Terminar Juego"
-        btnTerminarJuego = new JButton("Terminar Juego");
-        btnTerminarJuego.setBackground(Color.RED);
-        btnTerminarJuego.setForeground(Color.WHITE);
-        btnTerminarJuego.setBounds(650, 100, 120, 30);
-        btnTerminarJuego.addActionListener(e -> terminarJuego());
-        this.add(btnTerminarJuego);
+    // Crear botones
+    btnAbrirPozo = new JButton("Abrir Pozo");
+    btnPasarTurno = new JButton("Pasar Turno");
+    btnTerminarJuego = new JButton("Terminar Juego");
 
-        // Crear el botón "Pasar Turno"
-        btnPasarTurno = new JButton("Pasar Turno");
-        btnPasarTurno.setBounds(650, 150, 120, 30);
-        btnPasarTurno.addActionListener(e -> pasarTurno());
-        this.add(btnPasarTurno);
+    // Configurar colores
+    btnAbrirPozo.setBackground(Color.BLUE);
+    btnAbrirPozo.setForeground(Color.WHITE);
+
+    btnPasarTurno.setBackground(Color.GRAY);  // Color neutral para "Pasar Turno"
+    btnPasarTurno.setForeground(Color.WHITE);
+
+    btnTerminarJuego.setBackground(Color.RED);
+    btnTerminarJuego.setForeground(Color.WHITE);
+
+    // Añadir botones al panel
+    panelBotones.add(btnAbrirPozo);
+    panelBotones.add(Box.createVerticalStrut(10)); // Espacio entre botones
+    panelBotones.add(btnPasarTurno);
+    panelBotones.add(Box.createVerticalStrut(10)); // Espacio entre botones
+    panelBotones.add(btnTerminarJuego);
+
+    // Establecer ubicación del panel (más a la derecha)
+    panelBotones.setBounds(this.getWidth() - (-5), 50, 130, 200);  // Ajusta la coordenada X (más a la derecha)
+
+    // Añadir el panel a la ventana principal
+    this.setLayout(null); // Usar layout nulo para posicionamiento absoluto
+    this.add(panelBotones);
+
+    // Añadir listeners para las acciones de los botones
+    btnAbrirPozo.addActionListener(e -> abrirPozo());
+    btnPasarTurno.addActionListener(e -> pasarTurno());
+    btnTerminarJuego.addActionListener(e -> terminarJuego());
+
+    }
+
+    private void abrirPozo() {
+        // Lógica para abrir el pozo
+        System.out.println("Pozo abierto");
+    }
+
+    private void pasarTurno() {
+        // Lógica para pasar el turno
+        cambiarTurno();
+        mostrarFichasEnTablero();
+    }
+
+    private void terminarJuego() {
+        // Lógica para terminar el juego
+        JOptionPane.showMessageDialog(this, "El juego ha terminado.");
+        System.exit(0);  // Terminar el juego y cerrar la aplicación
     }
 
     private void inicializarPozo() {
@@ -88,24 +124,6 @@ public class TableroView extends javax.swing.JFrame {
                 pozoModel.getFichasPozo().add(ficha);
             }
         }
-    }
-// Métodos para las acciones de los botones
-
-    private void abrirPozo() {
-        // Lógica para abrir el pozo
-        JOptionPane.showMessageDialog(this, "Abriendo pozo...");
-    }
-
-    private void terminarJuego() {
-        // Lógica para terminar el juego
-        JOptionPane.showMessageDialog(this, "El juego ha terminado.");
-        System.exit(0);  // Finaliza el programa
-    }
-
-    private void pasarTurno() {
-        // Lógica para pasar el turno
-        cambiarTurno();
-        JOptionPane.showMessageDialog(this, "Turno pasado al siguiente jugador.");
     }
 
     private void repartirFichas() {
