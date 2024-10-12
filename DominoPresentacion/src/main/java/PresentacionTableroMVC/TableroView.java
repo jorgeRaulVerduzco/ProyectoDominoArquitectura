@@ -33,7 +33,10 @@ import javax.swing.JPanel;
  */
 public class TableroView extends javax.swing.JFrame {
 
-       private TableroModel tableroModel;
+    private JButton btnAbrirPozo;
+    private JButton btnTerminarJuego;
+    private JButton btnPasarTurno;
+    private TableroModel tableroModel;
     private TableroController tableroController;
     private PozoModel pozoModel;
     private List<Ficha> fichasJugadores1;
@@ -51,6 +54,31 @@ public class TableroView extends javax.swing.JFrame {
 
         repartirFichas();
         mostrarFichasEnTablero();
+        agregarBotones();
+    }
+
+    private void agregarBotones() {
+        // Crear el botón "Abrir Pozo"
+        btnAbrirPozo = new JButton("Abrir Pozo");
+        btnAbrirPozo.setBackground(Color.BLUE);
+        btnAbrirPozo.setForeground(Color.WHITE);
+        btnAbrirPozo.setBounds(650, 50, 120, 30);
+        btnAbrirPozo.addActionListener(e -> abrirPozo());
+        this.add(btnAbrirPozo);
+
+        // Crear el botón "Terminar Juego"
+        btnTerminarJuego = new JButton("Terminar Juego");
+        btnTerminarJuego.setBackground(Color.RED);
+        btnTerminarJuego.setForeground(Color.WHITE);
+        btnTerminarJuego.setBounds(650, 100, 120, 30);
+        btnTerminarJuego.addActionListener(e -> terminarJuego());
+        this.add(btnTerminarJuego);
+
+        // Crear el botón "Pasar Turno"
+        btnPasarTurno = new JButton("Pasar Turno");
+        btnPasarTurno.setBounds(650, 150, 120, 30);
+        btnPasarTurno.addActionListener(e -> pasarTurno());
+        this.add(btnPasarTurno);
     }
 
     private void inicializarPozo() {
@@ -60,6 +88,24 @@ public class TableroView extends javax.swing.JFrame {
                 pozoModel.getFichasPozo().add(ficha);
             }
         }
+    }
+// Métodos para las acciones de los botones
+
+    private void abrirPozo() {
+        // Lógica para abrir el pozo
+        JOptionPane.showMessageDialog(this, "Abriendo pozo...");
+    }
+
+    private void terminarJuego() {
+        // Lógica para terminar el juego
+        JOptionPane.showMessageDialog(this, "El juego ha terminado.");
+        System.exit(0);  // Finaliza el programa
+    }
+
+    private void pasarTurno() {
+        // Lógica para pasar el turno
+        cambiarTurno();
+        JOptionPane.showMessageDialog(this, "Turno pasado al siguiente jugador.");
     }
 
     private void repartirFichas() {
@@ -135,17 +181,17 @@ public class TableroView extends javax.swing.JFrame {
         }
     }
 
-  private JPanel crearPanelFicha(Ficha ficha) {
-    JPanel panelFicha = new JPanel(new GridLayout(1, 2));
-    JLabel label1 = new JLabel(cargarImagenPorValor(ficha.getEspacio1()));
-    JLabel label2 = new JLabel(cargarImagenPorValor(ficha.getEspacio2()));
-    panelFicha.add(label1);
-    panelFicha.add(label2);
-    panelFicha.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+    private JPanel crearPanelFicha(Ficha ficha) {
+        JPanel panelFicha = new JPanel(new GridLayout(1, 2));
+        JLabel label1 = new JLabel(cargarImagenPorValor(ficha.getEspacio1()));
+        JLabel label2 = new JLabel(cargarImagenPorValor(ficha.getEspacio2()));
+        panelFicha.add(label1);
+        panelFicha.add(label2);
+        panelFicha.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-    return panelFicha;
-}
-  
+        return panelFicha;
+    }
+
     private void seleccionarFicha(Ficha ficha, int index, int numJugador) {
         fichaSeleccionada = ficha;
         // Añadir efecto visual para la ficha seleccionada
@@ -179,16 +225,17 @@ public class TableroView extends javax.swing.JFrame {
         }
     }
 
-  private ImageIcon cargarImagenPorValor(int valor) {
-    String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
-    String rutaImagen = rutaBase + valor + ".png";
-    ImageIcon icon = new ImageIcon(rutaImagen);
-    if (icon.getIconWidth() == -1) {
-        System.out.println("Imagen no encontrada: " + rutaImagen);
-        return null;
+    private ImageIcon cargarImagenPorValor(int valor) {
+        String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
+        String rutaImagen = rutaBase + valor + ".png";
+        ImageIcon icon = new ImageIcon(rutaImagen);
+        if (icon.getIconWidth() == -1) {
+            System.out.println("Imagen no encontrada: " + rutaImagen);
+            return null;
+        }
+        return new ImageIcon(icon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
     }
-    return new ImageIcon(icon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
-}
+
     public void actualizarVista() {
         mostrarFichasEnTablero();
     }
