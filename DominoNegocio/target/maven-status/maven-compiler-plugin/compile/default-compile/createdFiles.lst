@@ -1,7 +1,6 @@
 Main\Juego$1.class
 Negocio\ServicioFicha.class
 Negocio\ServicioTablero.class
-DTOs\FichaDTO.class
 Negocio\ServicioPartida.class
 Negocio\ServicioJugador.class
 Singleton\PozoSingleton.class
@@ -10,11 +9,6 @@ Observers\PozoObserver.class
 Singleton\TableroSingleton.class
 Mediadores\PozoMediator.class
 Mediadores\MediadorTablero.class
-DTOs\JugadorDTO.class
 Main\Juego.class
 Mediadores\IPozoMediador.class
-DTOs\PartidaDTO.class
-DTOs\PozoDTO.class
 Negocio\ServicioPozo.class
-DTOs\AvatarDTO.class
-DTOs\TableroDTO.class

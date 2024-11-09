@@ -47,10 +47,21 @@ public class ServicioControlJuego {
         return "ninguno"; // No se puede determinar
     }
 
+    /**
+     * Obtiene el jugador actual del turno.
+     *
+     * @param partida
+     * @return
+     */
     public Jugador obtenerJugadorActual(Partida partida) {
         return partida.getJugadores().get(jugadorActual);
     }
 
+    /**
+     * Verifica si un jugador ha ganado el juego o si el juego está bloqueado.
+     *
+     * @param partida
+     */
     public void verificarGanador(Partida partida) {
         // Verifica si un jugador ha ganado
         for (Jugador jugador : partida.getJugadores()) {
@@ -75,6 +86,10 @@ public class ServicioControlJuego {
         }
     }
 
+    /**
+     * Verifica si el juego está bloqueado. Un juego está bloqueado si el pozo
+     * está vacío y ningún jugador puede colocar una ficha.
+     */
     private boolean isJuegoBloqueado(Partida partida) {
         // Verifica si el pozo está vacío
         if (!partida.getPozo().getFichasPozo().isEmpty()) {
@@ -92,6 +107,13 @@ public class ServicioControlJuego {
         return true; // Ningún jugador puede jugar
     }
 
+    /**
+     * Establece el orden de turnos de los jugadores, moviendo al jugador
+     * inicial al principio y barajando al resto de los jugadores al azar.
+     *
+     * @param jugadorInicial El jugador que comenzará el juego.
+     * @param jugadores Lista de todos los jugadores en la partida.
+     */
     public void establecerOrdenDeTurnos(Jugador jugadorInicial, List<Jugador> jugadores) {
         ordenDeTurnos = new ArrayList<>(jugadores);
 
@@ -101,10 +123,24 @@ public class ServicioControlJuego {
         ordenDeTurnos.add(0, jugadorInicial);  // Colocar al jugador inicial al inicio
     }
 
+    /**
+     * Devuelve el orden de turnos de los jugadores.
+     *
+     * @return Lista de jugadores en el orden en el que deben jugar.
+     */
     public List<Jugador> getOrdenDeTurnos() {
         return ordenDeTurnos;
     }
 
+    /**
+     * Determina cuál jugador comenzará el juego en base a la mula más alta. Si
+     * ningún jugador tiene una mula, se asignan fichas adicionales desde el
+     * pozo hasta que se encuentre una mula.
+     *
+     * @param jugadores Lista de jugadores que participan en la partida.
+     * @param pozo Pozo de fichas disponibles para repartir.
+     * @return El jugador que tiene la mula más alta y comenzará la partida.
+     */
     public Jugador determinarJugadorInicial(List<Jugador> jugadores, Pozo pozo) {
         Ficha mulaMayor = null;
         Jugador jugadorInicial = null;
@@ -135,11 +171,23 @@ public class ServicioControlJuego {
         return jugadorInicial;
     }
 
+    /**
+     * Finaliza la partida cambiando su estado a "finalizada".
+     *
+     * @param partida La partida que debe finalizar.
+     */
     public void terminarPartida(Partida partida) {
         partida.setEstado("finalizada");
         System.out.println("La partida ha finalizado.");
     }
 
+    /**
+     * Inicia el juego, repartiendo las fichas a los jugadores, determinando el
+     * jugador inicial y estableciendo el orden de los turnos. Coloca la primera
+     * ficha en el tablero.
+     *
+     * @param partida La partida que se va a iniciar.
+     */
     public void iniciarJuego(Partida partida) {
         // Repartir fichas
         servicioTablero.repartirFichas(partida.getPozo(), partida.getJugadores());
@@ -158,6 +206,14 @@ public class ServicioControlJuego {
         partida.setEstado("en curso");
     }
 
+    /**
+     * Busca y devuelve la mula más alta del jugador inicial.
+     *
+     * @param jugador El jugador inicial del que se va a encontrar la mula
+     * mayor.
+     * @return La ficha mula más alta del jugador.
+     * @throws IllegalStateException Si el jugador no tiene mulas.
+     */
     private Ficha encontrarMulaMayor(Jugador jugador) {
         return jugador.getFichasJugador().stream()
                 .filter(Ficha::esMula)
@@ -165,6 +221,13 @@ public class ServicioControlJuego {
                 .orElseThrow(() -> new IllegalStateException("El jugador inicial no tiene mulas"));
     }
 
+    /**
+     * Realiza el turno actual del jugador. El jugador intenta colocar una ficha
+     * en el tablero. Si no puede, toma fichas del pozo hasta que pueda jugar o
+     * hasta que no queden más fichas.
+     *
+     * @param partida La partida en curso.
+     */
     public void realizarTurno(Partida partida) {
         Jugador jugadorActual = obtenerJugadorActual(partida);
         Tablero tablero = partida.getTablero();
@@ -203,10 +266,20 @@ public class ServicioControlJuego {
         pasarTurno();
     }
 
+    /**
+     * Avanza el turno al siguiente jugador en el orden de turnos.
+     */
     private void pasarTurno() {
         jugadorActual = (jugadorActual + 1) % ordenDeTurnos.size();
     }
 
+    /**
+     * Calcula los puntajes de cada jugador sumando los valores de las fichas
+     * que les quedan en la mano. Determina y muestra el jugador ganador con la
+     * menor cantidad de puntos.
+     *
+     * @param partida La partida en la que se van a calcular los puntajes.
+     */
     public void calcularPuntajes(Partida partida) {
         for (Jugador jugador : partida.getJugadores()) {
             int puntaje = jugador.getFichasJugador().stream()
