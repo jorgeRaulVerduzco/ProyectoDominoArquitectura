@@ -4,7 +4,6 @@
  */
 package DTOs;
 
-import Dominio.Ficha;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,13 +16,13 @@ public class JugadorDTO {
     private AvatarDTO avatar;
     private String estado; //para cuando dicida abandonar partida osea si esta sale activo sino inactivo
     private int puntuacion;
-    private List<Ficha> fichasJugador = new ArrayList<>();
+    private List<FichaDTO> fichasJugador = new ArrayList<>();
 
     public JugadorDTO() {
         fichasJugador = new ArrayList<>();
     }
 
-    public JugadorDTO(String nombre, AvatarDTO avatar, String estado, int puntuacion, List<Ficha> fichasJugador) {
+    public JugadorDTO(String nombre, AvatarDTO avatar, String estado, int puntuacion, List<FichaDTO> fichasJugador) {
         this.nombre = nombre;
         this.avatar = avatar;
         this.estado = estado;
@@ -63,11 +62,11 @@ public class JugadorDTO {
         this.puntuacion = puntuacion;
     }
 
-    public List<Ficha> getFichasJugador() {
+    public List<FichaDTO> getFichasJugador() {
         return fichasJugador;
     }
 
-    public void setFichasJugador(List<Ficha> fichasJugador) {
+    public void setFichasJugador(List<FichaDTO> fichasJugador) {
         this.fichasJugador = fichasJugador;
     }
 
