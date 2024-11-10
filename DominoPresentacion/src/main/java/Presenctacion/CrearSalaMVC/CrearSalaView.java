@@ -4,21 +4,57 @@
  */
 package Presenctacion.CrearSalaMVC;
 
+import Presenctacion.Observer;
 import java.awt.event.ActionListener;
-import java.util.Observable;
-import java.util.Observer;
 
 /**
  *
  * @author INEGI
  */
-public class CrearSalaView extends javax.swing.JFrame {
-   private CrearSalaModel model;
+public class CrearSalaView extends javax.swing.JFrame implements Observer {
+
+    private CrearSalaModel model;
+
     /**
      * Creates new form CrearSalaView
      */
     public CrearSalaView() {
         initComponents();
+    }
+
+    public void setModel(CrearSalaModel model) {
+        this.model = model;
+    }
+
+    public void addCrearSalaListener(ActionListener listener) {
+        btnCrearSala.addActionListener(listener);
+    }
+
+    public void addRegresarListener(ActionListener listener) {
+        btnRegresar.addActionListener(listener);
+    }
+
+    public void addNumeroJugadoresListener(ActionListener listener) {
+        cbxNumveroJugadores.addActionListener(listener);
+    }
+
+    public void addNumeroFichasListener(ActionListener listener) {
+        txtNumFichas.addActionListener(listener);
+    }
+
+    public String getNumeroJugadores() {
+        return cbxNumveroJugadores.getSelectedItem().toString();
+    }
+
+    public String getNumeroFichas() {
+        return txtNumFichas.getText();
+    }
+
+    @Override
+    public void update() {
+        // Actualizar la vista con los datos del modelo
+        cbxNumveroJugadores.setSelectedItem(String.valueOf(model.getNumeroJugadores()));
+        txtNumFichas.setText(String.valueOf(model.getNumeroFichas()));
     }
 
     /**
