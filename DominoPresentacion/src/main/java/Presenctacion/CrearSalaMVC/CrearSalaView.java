@@ -4,12 +4,16 @@
  */
 package Presenctacion.CrearSalaMVC;
 
+import java.awt.event.ActionListener;
+import java.util.Observable;
+import java.util.Observer;
+
 /**
  *
  * @author INEGI
  */
 public class CrearSalaView extends javax.swing.JFrame {
-
+   private CrearSalaModel model;
     /**
      * Creates new form CrearSalaView
      */
