@@ -23,7 +23,8 @@ public class ServicioPozo {
 
     /**
      * Constructor de la clase ServicioPozo. Inicializa el pozo utilizando la
-     * instancia única de PozoSingleton.
+     * instancia única de PozoSingleton. porque el pozo es lo primero que se
+     * crea ya que de aqui se reparten las fichas
      */
     public ServicioPozo() {
         pozo = PozoSingleton.getInstancia(); // es  Singleton
@@ -99,13 +100,13 @@ public class ServicioPozo {
         return pozo.getFichasPozo().remove(ficha); // Elimina la ficha del pozo y devuelve true si se eliminó
     }
 
-
     /**
-     * Devuelve la instancia del pozo actual.
-     * Permite acceder al pozo para consultar su estado o modificarlo.
+     * Devuelve la instancia del pozo actual. Permite acceder al pozo para
+     * consultar su estado o modificarlo.
      *
      * @return El pozo de fichas actual.
-     */    public Pozo getPozo() {
+     */
+    public Pozo getPozo() {
         return pozo;
     }
 }

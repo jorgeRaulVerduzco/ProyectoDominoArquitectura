@@ -8,12 +8,14 @@ import Dominio.Ficha;
 import Dominio.Jugador;
 import Dominio.Partida;
 import Dominio.Pozo;
+import Dominio.Sala;
 import Dominio.Tablero;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -29,6 +31,60 @@ public class ServicioControlJuego {
     private ServicioTablero servicioTablero = new ServicioTablero();
     private ServicioPozo servicioPozo = new ServicioPozo();
     private ServicioFicha servicioFicha = new ServicioFicha();
+    private List<Sala> salas;
+
+    public ServicioControlJuego() {
+        this.salas = new ArrayList<>();
+        this.servicioPozo = new ServicioPozo();
+    }
+
+    public boolean agregarJugador(Sala sala, Jugador jugador) {
+        if (sala.getJugador().size() < sala.getCantJugadores()) {
+            sala.getJugador().add(jugador);
+            jugador.setEstado("ACTIVO");
+
+            if (sala.getJugador().size() == sala.getCantJugadores()) {
+                iniciarPartida(sala);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void iniciarPartida(Sala sala) {
+        Partida partida = new Partida();
+        partida.setCantJugadores(sala.getCantJugadores());
+        partida.setCantFichas(sala.getNumeroFichas());
+        partida.setEstado("EN_CURSO");
+        partida.setJugadores(sala.getJugador());
+        partida.setTablero(new Tablero());
+
+        servicioPozo.iniciarNuevoJuego(sala.getJugador());
+        partida.setPozo(servicioPozo.getPozo());
+
+        sala.setPartida(partida);
+        sala.setEstado("EN_JUEGO");
+    }
+
+    public List<Sala> getSalasDisponibles() {
+        return salas.stream()
+                .filter(sala -> "ESPERANDO".equals(sala.getEstado()))
+                .collect(Collectors.toList());
+    }
+
+    public boolean abandonarSala(Sala sala, Jugador jugador) {
+        if (sala.getJugador().contains(jugador)) {
+            jugador.setEstado("INACTIVO");
+            sala.getJugador().remove(jugador);
+
+            // Si la sala queda vacía, la eliminamos
+            if (sala.getJugador().isEmpty()) {
+                salas.remove(sala);
+            }
+            return true;
+        }
+        return false;
+    }
 
     public String determinarLado(Ficha ficha, Tablero tablero) {
         if (tablero.getFichasTablero().isEmpty()) {
