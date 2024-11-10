@@ -15,11 +15,20 @@ public class Pozo {
 
     private List<Ficha> fichasPozo;
 
+    /**
+     * Constructor por defecto de la clase Pozo. Inicializa el pozo con una
+     * lista vacía de fichas.
+     */
     public Pozo() {
         fichasPozo = new ArrayList<>();
     }
 
-    // Método para inicializar las fichas del dominó en el pozo
+    /**
+     * mucho texto pero este método es para inicializar las fichas del dominó en
+     * el pozo. Este método limpia cualquier ficha existente en el pozo y lo
+     * rellena con todas las combinaciones posibles de fichas de dominó estándar
+     * (con valores entre 0 y 6 en ambos lados de la ficha).
+     */
     public void inicializarFichas() {
         fichasPozo.clear(); // Limpia las fichas existentes
         for (int i = 0; i <= 6; i++) { // Cambia según las reglas de tu dominó
@@ -29,18 +38,40 @@ public class Pozo {
         }
     }
 
+    /**
+     * Constructor sobrecargado de la clase Pozo. Permite crear un pozo con una
+     * lista de fichas ya definida.
+     *
+     * @param fichasPozo La lista de fichas con la que se inicializará el pozo.
+     */
     public Pozo(List<Ficha> fichasPozo) {
         this.fichasPozo = fichasPozo;
     }
 
+    /**
+     * Método getter para obtener la lista de fichas del pozo.
+     *
+     * @return La lista de fichas actualmente en el pozo.
+     */
     public List<Ficha> getFichasPozo() {
         return fichasPozo;
     }
 
+    /**
+     * Método setter para modificar la lista de fichas del pozo.
+     *
+     * @param fichasPozo La nueva lista de fichas que se establecerá en el pozo.
+     */
     public void setFichasPozo(List<Ficha> fichasPozo) {
         this.fichasPozo = fichasPozo;
     }
 
+    /**
+     * Método sobreescrito para generar una representación en formato String del
+     * pozo, que incluye la lista de fichas que contiene.
+     *
+     * @return Una cadena con el formato "Pozo{fichasPozo=lista_de_fichas}".
+     */
     @Override
     public String toString() {
         return "Pozo{" + "fichasPozo=" + fichasPozo + '}';

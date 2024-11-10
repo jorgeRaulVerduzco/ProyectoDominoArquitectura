@@ -1,6 +1,7 @@
-Dominio\Avatar.class
 Dominio\Pozo.class
 Dominio\Jugador.class
+Dominio\Avatar.class
+Dominio\Sala.class
 Dominio\Tablero.class
 Dominio\Partida.class
 Dominio\Ficha.class

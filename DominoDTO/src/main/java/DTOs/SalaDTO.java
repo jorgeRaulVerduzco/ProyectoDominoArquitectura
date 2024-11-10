@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Dominio;
+package DTOs;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,19 +11,19 @@ import java.util.List;
  *
  * @author INEGI
  */
-public class Sala {
+public class SalaDTO {
 
     int cantJugadores;
     int numeroFichas;
-    List<Jugador> jugador = new ArrayList<>();
+    List<JugadorDTO> jugador = new ArrayList<>();
     String estado;
-    Partida partida;
+    PartidaDTO partida;
 
     /**
      * Constructor por defecto de la clase Sala. Inicializa los atributos de la
      * sala sin parámetros adicionales.
      */
-    public Sala() {
+    public SalaDTO() {
     }
 
     /**
@@ -68,7 +68,7 @@ public class Sala {
      *
      * @return Una lista de jugadores en la sala.
      */
-    public List<Jugador> getJugador() {
+    public List<JugadorDTO> getJugador() {
         return jugador;
     }
 
@@ -77,7 +77,7 @@ public class Sala {
      *
      * @param jugador La lista de jugadores que participarán en la sala.
      */
-    public void setJugador(List<Jugador> jugador) {
+    public void setJugador(List<JugadorDTO> jugador) {
         this.jugador = jugador;
     }
 
@@ -104,7 +104,7 @@ public class Sala {
      *
      * @return La partida actual asociada a la sala.
      */
-    public Partida getPartida() {
+    public PartidaDTO getPartida() {
         return partida;
     }
 
@@ -113,7 +113,7 @@ public class Sala {
      *
      * @param partida La partida que se jugará en la sala.
      */
-    public void setPartida(Partida partida) {
+    public void setPartida(PartidaDTO partida) {
         this.partida = partida;
     }
 
@@ -128,5 +128,4 @@ public class Sala {
     public String toString() {
         return "Sala{" + "cantJugadores=" + cantJugadores + ", numeroFichas=" + numeroFichas + ", jugador=" + jugador + ", estado=" + estado + ", partida=" + partida + '}';
     }
-
 }

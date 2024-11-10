@@ -1,1 +1,8 @@
-DTO\FichaDTO.class
+DTOs\JugadorDTO.class
+DTOs\FichaDTO.class
+DTOs\PartidaDTO.class
+DTOs\PozoDTO.class
+DTOs\AvatarDTO.class
+DTOs\SalaDTO.class
+DTOs\JugadaDTO.class
+DTOs\TableroDTO.class
