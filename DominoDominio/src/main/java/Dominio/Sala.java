@@ -13,6 +13,7 @@ import java.util.List;
  */
 public class Sala {
 
+    String id;
     int cantJugadores;
     int numeroFichas;
     List<Jugador> jugador = new ArrayList<>();
@@ -115,6 +116,14 @@ public class Sala {
      */
     public void setPartida(Partida partida) {
         this.partida = partida;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     /**

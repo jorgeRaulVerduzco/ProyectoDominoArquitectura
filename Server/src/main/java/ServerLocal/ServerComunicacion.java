@@ -85,7 +85,7 @@ public class ServerComunicacion {
         // Notificar al creador
         Evento respuesta = new Evento("SALA_CREADA");
         respuesta.agregarDato("sala", nuevaSala);
-        server.enviarMensajeAClientes(cliente, respuesta);
+        server.enviarMensajeACliente(cliente, respuesta);
     }
 
     /**
@@ -108,7 +108,7 @@ public class ServerComunicacion {
             for (Jugador j : sala.getJugador()) {
                 Socket socketJugador = server.getSocketJugador(j);
                 if (socketJugador != null) {
-                    server.enviarMensajeAClientes(socketJugador, respuesta);
+                    server.enviarMensajeACliente(socketJugador, respuesta);
                 }
             }
 
@@ -134,7 +134,7 @@ public class ServerComunicacion {
         for (Jugador jugador : sala.getJugador()) {
             Socket socketJugador = server.getSocketJugador(jugador);
             if (socketJugador != null) {
-                server.enviarMensajeAClientes(socketJugador, eventoInicio);
+                server.enviarMensajeACliente(socketJugador, eventoInicio);
             }
         }
     }
