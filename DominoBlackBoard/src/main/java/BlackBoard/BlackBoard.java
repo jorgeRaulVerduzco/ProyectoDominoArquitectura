@@ -55,6 +55,11 @@ public class BlackBoard {
         salas.put(salaId, sala);
         controller.notificarCambio("SALA_ACTUALIZADA", sala);
     }
+    
+    public void agregarJugador(Jugador jugador) {
+    jugadores.put(jugador.getNombre(), jugador); // Usando el nombre como clave o también podría ser el ID
+    controller.notificarCambio("JUGADOR_REGISTRADO", jugador); // Notificación al controlador
+}
 
     /**
      * Actualiza el estado de un jugador. Guarda la nueva información del
