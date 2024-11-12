@@ -4,9 +4,11 @@
  */
 package Presenctacion;
 
+import Presenctacion.CrearSalaMVC.CrearSalaView;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioController;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioModel;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioView;
+import Presenctacion.CrearSalaMVC.CrearSalaController;
 import PresentacionTableroMVC.TableroController;
 import PresentacionTableroMVC.TableroView;
 
@@ -15,12 +17,21 @@ import PresentacionTableroMVC.TableroView;
  * @author INEGI
  */
 public class Mediador {
-     private CrearUsuarioController crearUsuarioController;
+    private CrearUsuarioController crearUsuarioController;
+    private CrearSalaController crearSalaController;
+    private CrearSalaView crearSalaView;
     private TableroController tableroController;
     private TableroView tableroView;
 
-    public Mediador(CrearUsuarioController crearUsuarioController, TableroController tableroController, TableroView tableroView) {
+    public Mediador(
+            CrearUsuarioController crearUsuarioController,
+            CrearSalaController crearSalaController,
+            CrearSalaView crearSalaView,
+            TableroController tableroController,
+            TableroView tableroView) {
         this.crearUsuarioController = crearUsuarioController;
+        this.crearSalaController = crearSalaController;
+        this.crearSalaView = crearSalaView;
         this.tableroController = tableroController;
         this.tableroView = tableroView;
     }
@@ -30,18 +41,20 @@ public class Mediador {
     }
 
     public void usuarioCreado(CrearUsuarioModel usuario) {
-        // Ocultar la vista de creación de usuario
         crearUsuarioController.ocultarVista();
-        
-        // Iniciar el juego
-        iniciarJuego(usuario);
+        mostrarCrearSala(usuario);
     }
 
-    private void iniciarJuego(CrearUsuarioModel usuario) {
-        // Aquí puedes inicializar el juego con el usuario creado
-        // Por ejemplo, configurar el tablero con el nombre del jugador
-        
-        // Mostrar la vista del tablero
+    private void mostrarCrearSala(CrearUsuarioModel usuario) {
+        crearSalaView.setVisible(true);
+    }
+
+    public void salaCreada() {
+        crearSalaView.setVisible(false);
+        iniciarJuego();
+    }
+
+    private void iniciarJuego() {
         tableroView.setVisible(true);
     }
 

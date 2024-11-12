@@ -4,6 +4,7 @@
  */
 package Presenctacion.MenuPrincipalMVC;
 
+import Mediadores.CrearUsuarioMediador;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.event.ActionListener;
@@ -19,6 +20,7 @@ import javax.swing.JOptionPane;
 public class CrearUsuarioView extends javax.swing.JFrame {
 
     private javax.swing.JComboBox<String> comboBoxAvatares;
+    private CrearUsuarioMediador mediadorCrearUsuario;
 
     /**
      * Creates new form CrearUsuarioView
@@ -149,7 +151,8 @@ public class CrearUsuarioView extends javax.swing.JFrame {
 
         // Crear el modelo de usuario
         CrearUsuarioModel usuario = new CrearUsuarioModel(nombre, avatar);
-
+        
+        mediadorCrearUsuario.crearJugador(usuario);
 
     }//GEN-LAST:event_BtnJugarActionPerformed
 

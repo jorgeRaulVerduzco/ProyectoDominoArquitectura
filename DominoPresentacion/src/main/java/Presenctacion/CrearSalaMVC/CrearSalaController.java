@@ -4,6 +4,7 @@
  */
 package Presenctacion.CrearSalaMVC;
 
+import Presenctacion.Mediador;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
@@ -13,21 +14,28 @@ import javax.swing.JOptionPane;
  * @author INEGI
  */
 public class CrearSalaController {
-     private CrearSalaModel model;
+
+    private CrearSalaModel model;
     private CrearSalaView view;
-    
+    private Mediador mediador;
+
     public CrearSalaController(CrearSalaModel model, CrearSalaView view) {
         this.model = model;
         this.view = view;
-        
+
         // Inicializar listeners
         this.view.addCrearSalaListener(new CrearSalaListener());
         this.view.addRegresarListener(new RegresarListener());
         this.view.addNumeroJugadoresListener(new NumeroJugadoresListener());
         this.view.addNumeroFichasListener(new NumeroFichasListener());
     }
-    
+
+    public void setMediator(Mediador mediador) {
+        this.mediador = mediador;
+    }
+
     class CrearSalaListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
@@ -40,22 +48,25 @@ public class CrearSalaController {
                 model.setNumeroJugadores(Integer.parseInt(view.getNumeroJugadores()));
                 model.crearSala();
                 JOptionPane.showMessageDialog(view, "Sala creada exitosamente");
-                view.dispose(); // Cerrar ventana actual
+
+                mediador.salaCreada();
                 // Aquí puedes abrir la siguiente ventana del flujo
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(view, "Por favor ingrese números válidos");
             }
         }
     }
-    
+
     class RegresarListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             view.dispose();
         }
     }
-    
+
     class NumeroJugadoresListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
@@ -65,8 +76,9 @@ public class CrearSalaController {
             }
         }
     }
-    
+
     class NumeroFichasListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
