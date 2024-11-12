@@ -4,6 +4,9 @@
  */
 package Main;
 
+import Presenctacion.CrearSalaMVC.CrearSalaController;
+import Presenctacion.CrearSalaMVC.CrearSalaModel;
+import Presenctacion.CrearSalaMVC.CrearSalaView;
 import Presenctacion.Mediador;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioController;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioView;
@@ -45,26 +48,43 @@ public class Juego {
     }
 
     private static void initializeApplication() {
-        PozoModel pozoModel = new PozoModel(); // Crear un modelo de pozo
+        // Crear modelo y vista del pozo
+        PozoModel pozoModel = new PozoModel();
         pozoModel.getPozo().inicializarFichas();
         PozoView pozoView = new PozoView(new Frame(), true, pozoModel);
-            pozoView.setVisible(false); // Mantener el pozo invisible
-        CrearUsuarioView crearUsuarioView = new CrearUsuarioView();
-           TableroModel tableroModel = new TableroModel(); // Crear un modelo de tablero
-            TableroView tableroView = new TableroView(new Frame(), true, tableroModel, pozoModel);
+        pozoView.setVisible(false); // Mantener el pozo invisible inicialmente
 
-        // Crear los controladores
+        // Crear vista de usuario
+        CrearUsuarioView crearUsuarioView = new CrearUsuarioView();
+
+        // Crear modelo y vista de la sala
+        CrearSalaModel crearSalaModel = new CrearSalaModel();
+        CrearSalaView crearSalaView = new CrearSalaView();
+
+        // Crear modelo y vista del tablero
+        TableroModel tableroModel = new TableroModel();
+        TableroView tableroView = new TableroView(new Frame(), true, tableroModel, pozoModel);
+
+        // Crear controladores
         CrearUsuarioController crearUsuarioController = new CrearUsuarioController(crearUsuarioView);
+        CrearSalaController crearSalaController = new CrearSalaController(crearSalaModel, crearSalaView);
         TableroController tableroController = new TableroController(tableroModel, tableroView);
 
-        // Crear el mediador y pasarle los controladores y la vista del tablero
-        Mediador mediador = new Mediador(crearUsuarioController, tableroController, tableroView);
+        // Crear el mediador y pasarle los controladores y vistas
+        Mediador mediador = new Mediador(
+                crearUsuarioController, 
+                crearSalaController, 
+                crearSalaView, 
+                tableroController, 
+                tableroView
+        );
 
         // Configurar los controladores para que usen el mediador
         crearUsuarioController.setMediator(mediador);
+        crearSalaController.setMediator(mediador);
         tableroController.setMediator(mediador);
 
-        // Mostrar la vista inicial (en este caso, CrearUsuarioView)
+        // Iniciar la aplicación mostrando la vista de creación de usuario
         mediador.iniciarAplicacion();
     }
 }

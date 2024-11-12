@@ -11,4 +11,5 @@ Mediadores\PozoMediator.class
 Mediadores\MediadorTablero.class
 Main\Juego.class
 Mediadores\IPozoMediador.class
+Mediadores\CrearUsuarioMediador.class
 Negocio\ServicioPozo.class
