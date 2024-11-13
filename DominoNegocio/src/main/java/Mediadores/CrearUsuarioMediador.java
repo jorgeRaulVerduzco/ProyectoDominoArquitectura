@@ -21,6 +21,9 @@ public class CrearUsuarioMediador {
         this.server = server;
     }
 
+    public CrearUsuarioMediador() {
+    }
+
     public void crearJugador(CrearUsuarioModel usuario) {
         // Crear el evento de registro
         Evento evento = new Evento("REGISTRO_USUARIO");

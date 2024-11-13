@@ -26,8 +26,11 @@ public class CrearUsuarioView extends javax.swing.JFrame {
      * Creates new form CrearUsuarioView
      */
     public CrearUsuarioView() {
+            this.mediadorCrearUsuario = new CrearUsuarioMediador();
+
         initComponents();
-        initComboBox();
+               initComboBox();
+        
     }
 
     private void initComboBox() {

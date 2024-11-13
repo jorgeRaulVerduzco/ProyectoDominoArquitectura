@@ -11,7 +11,9 @@ import Dominio.Sala;
 import Dominio.Tablero;
 import EventoJuego.Evento;
 import Server.Server;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -100,7 +102,12 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
 
         Evento respuesta = new Evento("SALA_CREADA");
         respuesta.agregarDato("sala", nuevaSala);
-       server.enviarMensajeACliente(cliente, respuesta);
+        server.enviarMensajeACliente(cliente, respuesta);
+
+        // Notificar a todos los clientes sobre la nueva sala
+        Evento eventoNuevaSala = new Evento("NUEVA_SALA");
+        eventoNuevaSala.agregarDato("sala", nuevaSala);
+        server.enviarEvento(eventoNuevaSala);
     }
 
     /**
@@ -113,23 +120,23 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
      * sala.
      */
     private void unirseASala(Socket cliente, Evento evento) {
-        String salaId = (String) evento.obtenerDato("salaId");
-        Jugador jugador = (Jugador) evento.obtenerDato("jugador");
-        Sala sala = blackboard.getSala(salaId);
+       String salaId = (String) evento.obtenerDato("salaId");
+    Jugador jugador = (Jugador) evento.obtenerDato("jugador");
+    Sala sala = blackboard.getSala(salaId);
 
-        if (sala != null && sala.getJugador().size() < sala.getCantJugadores()) {
-            sala.getJugador().add(jugador);
-            blackboard.actualizarEstadoSala(salaId, sala);
+    if (sala != null && sala.getJugador().size() < sala.getCantJugadores()) {
+        sala.getJugador().add(jugador);
+        blackboard.actualizarEstadoSala(salaId, sala);
 
-            if (sala.getJugador().size() == sala.getCantJugadores()) {
-                iniciarPartida(sala);
-            }
-
-            Evento respuesta = new Evento("JUGADOR_UNIDO");
-            respuesta.agregarDato("jugador", jugador);
-            respuesta.agregarDato("sala", sala);
-            server.enviarEvento(respuesta);
+        if (sala.getJugador().size() == sala.getCantJugadores()) {
+            iniciarPartida(sala);
         }
+
+        Evento respuesta = new Evento("JUGADOR_UNIDO");
+        respuesta.agregarDato("jugador", jugador);
+        respuesta.agregarDato("sala", sala);
+        server.enviarEventoATodos(respuesta);
+    }
     }
 
     /**

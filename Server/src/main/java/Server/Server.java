@@ -4,7 +4,6 @@
  */
 package Server;
 
-
 import Controller.Controller;
 import Dominio.Jugador;
 import EventoJuego.Evento;
@@ -14,6 +13,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -56,15 +56,19 @@ public class Server {
      * @throws IOException Si ocurre un error al crear el ServerSocket.
      */
     public void iniciarServidor(int puerto) throws IOException {
-        servidor = new ServerSocket(puerto);
-        System.out.println("Servidor iniciado en puerto: " + puerto);
+        servidor = new ServerSocket(puerto, 0, InetAddress.getByName("127.0.0.1"));
+        System.out.println("Servidor iniciado en dirección IP: 127.0.0.1, puerto: " + puerto);
 
         while (true) {
             Socket clienteSocket = servidor.accept();
             manejarNuevaConexion(clienteSocket);
         }
     }
-
+public void enviarEventoATodos(Evento evento) {
+    for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
+        enviarMensajeACliente(entry.getKey(), evento);
+    }
+}
     /**
      * Maneja una nueva conexión de cliente. Agrega el socket del cliente a la
      * lista de clientes conectados, y lanza un nuevo hilo para manejar la
@@ -205,4 +209,5 @@ public class Server {
             System.err.println("Error al cerrar la conexión: " + e.getMessage());
         }
     }
+
 }

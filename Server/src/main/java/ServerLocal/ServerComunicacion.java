@@ -81,6 +81,7 @@ public class ServerComunicacion {
         nuevaSala.setEstado("ESPERANDO");
 
         servicioControlJuego.agregarJugador(nuevaSala, creador);
+        notificarNuevaSala(nuevaSala);
 
         // Notificar al creador
         Evento respuesta = new Evento("SALA_CREADA");
@@ -120,9 +121,9 @@ public class ServerComunicacion {
     }
 
     /**
-     * Inicia una nueva partida cuando se cumplen las condiciones necesarias (por ejemplo, cuando
-     * la sala tiene el número requerido de jugadores).
-     * 
+     * Inicia una nueva partida cuando se cumplen las condiciones necesarias
+     * (por ejemplo, cuando la sala tiene el número requerido de jugadores).
+     *
      * @param sala La sala en la que se iniciará la partida.
      */
     private void iniciarPartida(Sala sala) {
@@ -138,12 +139,24 @@ public class ServerComunicacion {
             }
         }
     }
-/**
-     * Maneja los errores de comunicación, mostrando un mensaje de error en la consola 
-     * y delegando el manejo del error al servidor.
+
+    /**
+     * Maneja los errores de comunicación, mostrando un mensaje de error en la
+     * consola y delegando el manejo del error al servidor.
      */
     public void manejarErrorComunicacion() {
         System.out.println("Error en la comunicación");
         server.manejarErrorComunicacion();
+    }
+
+    /**
+     * Notifica a todos los clientes conectados que se ha creado una nueva sala.
+     *
+     * @param sala La sala que ha sido creada.
+     */
+    private void notificarNuevaSala(Sala sala) {
+        Evento evento = new Evento("NUEVA_SALA");
+        evento.agregarDato("sala", sala);
+        server.enviarEvento(evento);
     }
 }
