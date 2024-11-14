@@ -15,6 +15,7 @@ import Presenctacion.PozoMVC.PozoView;
 import PresentacionTableroMVC.TableroController;
 import PresentacionTableroMVC.TableroModel;
 import PresentacionTableroMVC.TableroView;
+import Server.Server;
 import java.awt.Frame;
 
 /**
@@ -23,9 +24,6 @@ import java.awt.Frame;
  */
 public class Juego {
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
         // Configurar el look and feel de la aplicación
         try {
@@ -48,13 +46,17 @@ public class Juego {
     }
 
     private static void initializeApplication() {
-        // Crear modelo y vista del pozo
+        // Crear el servidor
+        Server server = new Server();
+        System.out.println("Servidor creado: " + (server != null));
+
+        // Crear el modelo y la vista del pozo
         PozoModel pozoModel = new PozoModel();
-        pozoModel.getPozo().inicializarFichas();
+        pozoModel.getPozo().inicializarFichas(); // Inicializar las fichas en el pozo
         PozoView pozoView = new PozoView(new Frame(), true, pozoModel);
         pozoView.setVisible(false); // Mantener el pozo invisible inicialmente
 
-        // Crear vista de usuario
+        // Crear la vista de creación de usuario
         CrearUsuarioView crearUsuarioView = new CrearUsuarioView();
 
         // Crear modelo y vista de la sala
@@ -65,19 +67,32 @@ public class Juego {
         TableroModel tableroModel = new TableroModel();
         TableroView tableroView = new TableroView(new Frame(), true, tableroModel, pozoModel);
 
-        // Crear controladores
+        // Crear los controladores
         CrearUsuarioController crearUsuarioController = new CrearUsuarioController(crearUsuarioView);
         CrearSalaController crearSalaController = new CrearSalaController(crearSalaModel, crearSalaView);
         TableroController tableroController = new TableroController(tableroModel, tableroView);
 
         // Crear el mediador y pasarle los controladores y vistas
         Mediador mediador = new Mediador(
-                crearUsuarioController, 
-                crearSalaController, 
-                crearSalaView, 
-                tableroController, 
+                crearUsuarioController,
+                crearSalaController,
+                crearSalaView,
+                tableroController,
                 tableroView
         );
+
+        // Depuración: Verificar si el servidor está configurado antes de pasar al mediador
+        System.out.println("Servidor asignado al mediador: " + (server != null));
+
+        // Configurar el servidor antes de que el mediador interactúe con él
+        mediador.setServer(server);
+
+        // Verificación adicional
+        if (server == null) {
+            System.out.println("¡Advertencia! El servidor aún es null antes de iniciar la aplicación.");
+        } else {
+            System.out.println("El servidor ha sido configurado correctamente.");
+        }
 
         // Configurar los controladores para que usen el mediador
         crearUsuarioController.setMediator(mediador);
