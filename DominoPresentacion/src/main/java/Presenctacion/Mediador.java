@@ -11,17 +11,20 @@ import Presenctacion.MenuPrincipalMVC.CrearUsuarioView;
 import Presenctacion.CrearSalaMVC.CrearSalaController;
 import PresentacionTableroMVC.TableroController;
 import PresentacionTableroMVC.TableroView;
+import Server.Server;
 
 /**
  *
  * @author INEGI
  */
 public class Mediador {
+
     private CrearUsuarioController crearUsuarioController;
     private CrearSalaController crearSalaController;
     private CrearSalaView crearSalaView;
     private TableroController tableroController;
     private TableroView tableroView;
+    private Server server;
 
     public Mediador(
             CrearUsuarioController crearUsuarioController,
@@ -36,6 +39,20 @@ public class Mediador {
         this.tableroView = tableroView;
     }
 
+    public void setServer(Server server) {
+        if (server == null) {
+            System.out.println("Error: El servidor no puede ser nulo.");
+            throw new IllegalArgumentException("El servidor no puede ser nulo.");
+        }
+        this.server = server;
+        System.out.println("Servidor configurado correctamente.");
+        // Pasar el servidor a los controladores que lo necesiten
+        crearUsuarioController.setServer(server);
+        // Si otros controladores necesitan el servidor, puedes pasarlo aquí
+        crearSalaController.setServer(server);  // Si es necesario en este controlador
+        tableroController.setServer(server);    // Si es necesario en este controlador
+    }
+
     public void iniciarAplicacion() {
         crearUsuarioController.mostrarVista();
     }
@@ -46,7 +63,12 @@ public class Mediador {
     }
 
     private void mostrarCrearSala(CrearUsuarioModel usuario) {
-        crearSalaView.setVisible(true);
+        System.out.println("Mostrando vista de Crear Sala...");
+        if (crearSalaView != null) {
+            crearSalaView.setVisible(true);
+        } else {
+            System.out.println("Error: crearSalaView es null.");
+        }
     }
 
     public void salaCreada() {

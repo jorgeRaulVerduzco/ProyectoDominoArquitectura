@@ -13,6 +13,7 @@ import javax.swing.JPanel;
  * @author Serva
  */
 import Presenctacion.Mediador;
+import Server.Server;
 import javax.swing.JOptionPane;
 
 public class TableroController {
@@ -25,6 +26,7 @@ public class TableroController {
     private Ficha fichaSeleccionada; // Para guardar la ficha seleccionada
     private int indiceSeleccionado = -1; // Para guardar el índice de la ficha seleccionada
     private boolean fichaColocada = false;
+    private Server server;
 
     public TableroController(TableroModel model, TableroView view) {
         this.tableroModel = model;
@@ -34,7 +36,10 @@ public class TableroController {
     public boolean isFichaColocada() {
         return fichaColocada;
     }
-
+    
+    public void setServer(Server server) {
+        this.server = server;
+    }
     public void moverFichaArrastrada(MouseEvent e) {
         if (isDragging && fichaSeleccionada != null && !fichaColocada) { // Solo mover si no está colocada
             JPanel panel = (JPanel) e.getSource();

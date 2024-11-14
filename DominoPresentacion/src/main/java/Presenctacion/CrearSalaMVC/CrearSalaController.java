@@ -5,6 +5,7 @@
 package Presenctacion.CrearSalaMVC;
 
 import Presenctacion.Mediador;
+import Server.Server;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
@@ -18,6 +19,7 @@ public class CrearSalaController {
     private CrearSalaModel model;
     private CrearSalaView view;
     private Mediador mediador;
+    private Server server;
 
     public CrearSalaController(CrearSalaModel model, CrearSalaView view) {
         this.model = model;
@@ -33,7 +35,10 @@ public class CrearSalaController {
     public void setMediator(Mediador mediador) {
         this.mediador = mediador;
     }
-
+    public void setServer(Server server) {
+        this.server = server;
+    }
+    
     class CrearSalaListener implements ActionListener {
 
         @Override

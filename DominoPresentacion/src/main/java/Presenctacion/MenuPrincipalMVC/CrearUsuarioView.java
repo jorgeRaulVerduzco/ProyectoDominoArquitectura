@@ -5,9 +5,13 @@
 package Presenctacion.MenuPrincipalMVC;
 
 import Mediadores.CrearUsuarioMediador;
+import Presenctacion.CrearSalaMVC.CrearSalaView;
+import Presenctacion.Mediador;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -20,17 +24,20 @@ import javax.swing.JOptionPane;
 public class CrearUsuarioView extends javax.swing.JFrame {
 
     private javax.swing.JComboBox<String> comboBoxAvatares;
-    private CrearUsuarioMediador mediadorCrearUsuario;
+    private CrearUsuarioMediador mediadorCrearUsuario;  // Mediador para la lógica de usuario
+    private Mediador mediador; // Mediador general, si es necesario
+
+    private CrearSalaView crearSalaView; // Asegúrate de tener esta vista para la creación de sala
 
     /**
      * Creates new form CrearUsuarioView
      */
     public CrearUsuarioView() {
-            this.mediadorCrearUsuario = new CrearUsuarioMediador();
+        this.mediadorCrearUsuario = new CrearUsuarioMediador();
 
         initComponents();
-               initComboBox();
-        
+        initComboBox();
+
     }
 
     private void initComboBox() {
@@ -154,10 +161,24 @@ public class CrearUsuarioView extends javax.swing.JFrame {
 
         // Crear el modelo de usuario
         CrearUsuarioModel usuario = new CrearUsuarioModel(nombre, avatar);
-        
-        mediadorCrearUsuario.crearJugador(usuario);
 
+        try {
+            // Tu código que no lanza InterruptedException
+            mediadorCrearUsuario.crearJugador(usuario);
+        } catch (Exception ex) {
+            // Captura una excepción más genérica o una específica
+            Logger.getLogger(CrearUsuarioView.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_BtnJugarActionPerformed
+    // Mostrar vista de Crear Sala
+    private void mostrarCrearSala(CrearUsuarioModel usuario) {
+        if (crearSalaView != null) {
+            System.out.println("Mostrando vista de Crear Sala...");
+            crearSalaView.setVisible(true);
+        } else {
+            System.out.println("crearSalaView is null.");
+        }
+    }
 
     public String getNombre() {
         return txtNombre.getText(); // Obtener el texto del campo de nombre
@@ -170,9 +191,11 @@ public class CrearUsuarioView extends javax.swing.JFrame {
     public void addCreateUserListener(ActionListener listener) {
         BtnJugar.addActionListener(listener);
     }
-   public void setCreateUserListener(ActionListener actionListener) {
+
+    public void setCreateUserListener(ActionListener actionListener) {
         BtnJugar.addActionListener(actionListener);
     }
+
     /**
      * @param args the command line arguments
      */
@@ -208,7 +231,7 @@ public class CrearUsuarioView extends javax.swing.JFrame {
         });
     }
 
- 
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtnJugar;
     private javax.swing.JCheckBox CheckBoxMembresia;
@@ -220,5 +243,4 @@ public class CrearUsuarioView extends javax.swing.JFrame {
     private javax.swing.JTextField txtNombre;
     // End of variables declaration//GEN-END:variables
 
-    
 }

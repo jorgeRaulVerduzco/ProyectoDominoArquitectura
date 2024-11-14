@@ -1,4 +1,5 @@
 Presenctacion\CrearSalaMVC\CrearSalaController$CrearSalaListener.class
+Presenctacion\UnirseAsala\UnirseAsalaModel.class
 Presenctacion\SeleccionJuego\OpcionesDeJuegoView$1.class
 Presenctacion\MenuPrincipalMVC\CrearUsuarioView$1.class
 Presenctacion\MenuPrincipalMVC\CrearUsuarioView$3.class
@@ -10,8 +11,10 @@ Presenctacion\PozoMVC\PozoController.class
 Presenctacion\Observer.class
 PresentacionTableroMVC\TableroView$1.class
 Presenctacion\CrearSalaMVC\CrearSalaController$RegresarListener.class
+Presenctacion\UnirseAsala\UnirseAsalaView$1.class
 Presenctacion\CrearSalaMVC\CrearSalaController$NumeroJugadoresListener.class
 Presenctacion\PozoMVC\PozoView.class
+Presenctacion\UnirseAsala\UnirseAsalaView.class
 Presenctacion\MenuPrincipalMVC\CrearUsuarioView.class
 Presenctacion\MenuPrincipalMVC\CrearUsuarioModel.class
 Presenctacion\PozoMVC\PozoView$2.class
@@ -24,6 +27,7 @@ Presenctacion\MenuPrincipalMVC\CrearUsuarioView$2.class
 Presenctacion\Mediador.class
 Presenctacion\CrearSalaMVC\CrearSalaView$1.class
 PresentacionTableroMVC\TableroController.class
+Presenctacion\UnirseAsala\UnirseAsalaController.class
 PresentacionTableroMVC\TableroView.class
 Presenctacion\SeleccionJuego\OpcionesDeJuegoView.class
 Presenctacion\CrearSalaMVC\CrearSalaModel.class
