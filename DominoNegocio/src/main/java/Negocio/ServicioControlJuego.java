@@ -51,7 +51,7 @@ public class ServicioControlJuego {
         return false;
     }
 
-    private void iniciarPartida(Sala sala) {
+    public void iniciarPartida(Sala sala) {
         Partida partida = new Partida();
         partida.setCantJugadores(sala.getCantJugadores());
         partida.setCantFichas(sala.getNumeroFichas());

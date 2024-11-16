@@ -1,4 +1,8 @@
 C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoFachada\src\main\java\DTOaEntidad\ConversorDTOaEntidad.java
-C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoFachada\src\main\java\NegocioFachada\ServicioControlJuego.java
-C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoFachada\src\main\java\NegocioFachada\ServicioPozo.java
-C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoFachada\src\main\java\NegocioFachada\ServicioTablero.java
+C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoFachada\src\main\java\DTOaEntidad\ConversorEntidadADTO.java
+C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoFachada\src\main\java\NegocioFachada\FachadaServicioControlJuego.java
+C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoFachada\src\main\java\NegocioFachada\FachadaServicioFicha.java
+C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoFachada\src\main\java\NegocioFachada\FachadaServicioJugador.java
+C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoFachada\src\main\java\NegocioFachada\FachadaServicioPartida.java
+C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoFachada\src\main\java\NegocioFachada\FachadaServicioPozo.java
+C:\Users\INEGI\Documents\NetBeansProjects\ProyectoDominoArquitectura\DominoFachada\src\main\java\NegocioFachada\FachadaServicioTablero.java

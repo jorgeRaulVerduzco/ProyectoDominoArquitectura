@@ -1,4 +1,8 @@
+NegocioFachada\FachadaServicioPartida.class
+NegocioFachada\FachadaServicioTablero.class
 DTOaEntidad\ConversorDTOaEntidad.class
-NegocioFachada\ServicioTablero.class
-NegocioFachada\ServicioPozo.class
-NegocioFachada\ServicioControlJuego.class
+DTOaEntidad\ConversorEntidadADTO.class
+NegocioFachada\FachadaServicioJugador.class
+NegocioFachada\FachadaServicioFicha.class
+NegocioFachada\FachadaServicioPozo.class
+NegocioFachada\FachadaServicioControlJuego.class
