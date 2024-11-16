@@ -1,8 +1,14 @@
-NegocioFachada\FachadaServicioPartida.class
+FachadaProvicional\FachadaServicioPartida.class
 NegocioFachada\FachadaServicioTablero.class
-DTOaEntidad\ConversorDTOaEntidad.class
+FachadaProvicional\FachadaServicioFicha.class
+FachadaProvicional\FachadaServicioTablero.class
 DTOaEntidad\ConversorEntidadADTO.class
 NegocioFachada\FachadaServicioJugador.class
+FachadaProvicional\FachadaServicioPozo.class
+NegocioFachada\FachadaServicioPartida.class
+FachadaProvicional\FachadaServicioControlJuego.class
+DTOaEntidad\ConversorDTOaEntidad.class
+FachadaProvicional\FachadaServicioJugador.class
 NegocioFachada\FachadaServicioFicha.class
 NegocioFachada\FachadaServicioPozo.class
 NegocioFachada\FachadaServicioControlJuego.class
