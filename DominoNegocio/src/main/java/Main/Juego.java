@@ -100,6 +100,7 @@ public class Juego {
                 tableroController,
                 tableroView
         );
+    crearUsuarioView.setMediator(mediador);
 
         // Configurar el servidor en el mediador y controladores
         mediador.setServer(server);

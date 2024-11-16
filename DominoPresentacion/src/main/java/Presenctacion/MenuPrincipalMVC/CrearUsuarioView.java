@@ -85,7 +85,9 @@ public class CrearUsuarioView extends javax.swing.JFrame {
 
         getContentPane().add(comboBoxAvatares, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 290, 160, -1));
     }
-
+ public void setMediator(Mediador mediador) {
+        this.mediador = mediador;
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -146,29 +148,33 @@ public class CrearUsuarioView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnJugarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnJugarActionPerformed
-        String nombre = txtNombre.getText();
-        String avatar = (String) comboBoxAvatares.getSelectedItem();
+     String nombre = txtNombre.getText();
+    String avatar = (String) comboBoxAvatares.getSelectedItem();
 
-        if (nombre.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor, ingresa un nombre.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
+    if (nombre.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Por favor, ingresa un nombre.", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    if (avatar == null || avatar.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Por favor, selecciona un avatar.", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    // Crear el modelo de usuario
+    CrearUsuarioModel usuario = new CrearUsuarioModel(nombre, avatar);
+
+    // MODIFICAR ESTA PARTE
+    try {
+        // En lugar de usar mediadorCrearUsuario, usa el mediador principal
+        if (mediador != null) {
+            mediador.usuarioCreado(usuario);
+        } else {
+            System.out.println("Error: mediador es null");
         }
-
-        if (avatar == null || avatar.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor, selecciona un avatar.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // Crear el modelo de usuario
-        CrearUsuarioModel usuario = new CrearUsuarioModel(nombre, avatar);
-
-        try {
-            // Tu código que no lanza InterruptedException
-            mediadorCrearUsuario.crearJugador(usuario);
-        } catch (Exception ex) {
-            // Captura una excepción más genérica o una específica
-            Logger.getLogger(CrearUsuarioView.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    } catch (Exception ex) {
+        Logger.getLogger(CrearUsuarioView.class.getName()).log(Level.SEVERE, null, ex);
+    }
     }//GEN-LAST:event_BtnJugarActionPerformed
     // Mostrar vista de Crear Sala
     private void mostrarCrearSala(CrearUsuarioModel usuario) {
