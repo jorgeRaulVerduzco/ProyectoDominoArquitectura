@@ -4,6 +4,7 @@
  */
 package Presenctacion.CrearSalaMVC;
 
+import EventoJuego.Evento;
 import Presenctacion.Mediador;
 import Server.Server;
 import java.awt.event.ActionEvent;
@@ -24,7 +25,7 @@ public class CrearSalaController {
     public CrearSalaController(CrearSalaModel model, CrearSalaView view) {
         this.model = model;
         this.view = view;
-
+model.setServer(server);
         // Inicializar listeners
         this.view.addCrearSalaListener(new CrearSalaListener());
         this.view.addRegresarListener(new RegresarListener());
@@ -35,13 +36,13 @@ public class CrearSalaController {
     public void setMediator(Mediador mediador) {
         this.mediador = mediador;
     }
+
     public void setServer(Server server) {
         this.server = server;
     }
-    
-    class CrearSalaListener implements ActionListener {
 
-        @Override
+    class CrearSalaListener implements ActionListener {
+   @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 int numFichas = Integer.parseInt(view.getNumeroFichas());
@@ -52,10 +53,10 @@ public class CrearSalaController {
                 model.setNumeroFichas(numFichas);
                 model.setNumeroJugadores(Integer.parseInt(view.getNumeroJugadores()));
                 model.crearSala();
-                JOptionPane.showMessageDialog(view, "Sala creada exitosamente");
-
+                
+                // Verificar la creación de la sala
+                System.out.println("Sala enviada al servidor");
                 mediador.salaCreada();
-                // Aquí puedes abrir la siguiente ventana del flujo
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(view, "Por favor ingrese números válidos");
             }

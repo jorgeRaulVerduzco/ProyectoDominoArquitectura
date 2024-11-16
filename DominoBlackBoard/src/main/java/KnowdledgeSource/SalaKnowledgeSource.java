@@ -99,7 +99,9 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
         nuevaSala.getJugador().add(creador);
 
         blackboard.actualizarEstadoSala(nuevaSala.getId(), nuevaSala);
-
+        System.out.println("Sala creada en el servidor con ID: " + nuevaSala.getId());
+        System.out.println("Cantidad de jugadores: " + nuevaSala.getCantJugadores());
+        System.out.println("Número de fichas: " + nuevaSala.getNumeroFichas());
         Evento respuesta = new Evento("SALA_CREADA");
         respuesta.agregarDato("sala", nuevaSala);
         server.enviarMensajeACliente(cliente, respuesta);
@@ -108,6 +110,7 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
         Evento eventoNuevaSala = new Evento("NUEVA_SALA");
         eventoNuevaSala.agregarDato("sala", nuevaSala);
         server.enviarEvento(eventoNuevaSala);
+
     }
 
     /**
@@ -120,23 +123,23 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
      * sala.
      */
     private void unirseASala(Socket cliente, Evento evento) {
-       String salaId = (String) evento.obtenerDato("salaId");
-    Jugador jugador = (Jugador) evento.obtenerDato("jugador");
-    Sala sala = blackboard.getSala(salaId);
+        String salaId = (String) evento.obtenerDato("salaId");
+        Jugador jugador = (Jugador) evento.obtenerDato("jugador");
+        Sala sala = blackboard.getSala(salaId);
 
-    if (sala != null && sala.getJugador().size() < sala.getCantJugadores()) {
-        sala.getJugador().add(jugador);
-        blackboard.actualizarEstadoSala(salaId, sala);
+        if (sala != null && sala.getJugador().size() < sala.getCantJugadores()) {
+            sala.getJugador().add(jugador);
+            blackboard.actualizarEstadoSala(salaId, sala);
 
-        if (sala.getJugador().size() == sala.getCantJugadores()) {
-            iniciarPartida(sala);
+            if (sala.getJugador().size() == sala.getCantJugadores()) {
+                iniciarPartida(sala);
+            }
+
+            Evento respuesta = new Evento("JUGADOR_UNIDO");
+            respuesta.agregarDato("jugador", jugador);
+            respuesta.agregarDato("sala", sala);
+            server.enviarEventoATodos(respuesta);
         }
-
-        Evento respuesta = new Evento("JUGADOR_UNIDO");
-        respuesta.agregarDato("jugador", jugador);
-        respuesta.agregarDato("sala", sala);
-        server.enviarEventoATodos(respuesta);
-    }
     }
 
     /**

@@ -87,6 +87,7 @@ public class ServerComunicacion {
         Evento respuesta = new Evento("SALA_CREADA");
         respuesta.agregarDato("sala", nuevaSala);
         server.enviarMensajeACliente(cliente, respuesta);
+        System.out.println("se creo correctamente");
     }
 
     /**

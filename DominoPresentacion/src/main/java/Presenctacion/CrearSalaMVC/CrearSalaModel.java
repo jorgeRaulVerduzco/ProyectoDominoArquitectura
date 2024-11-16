@@ -5,8 +5,10 @@
 package Presenctacion.CrearSalaMVC;
 
 import Dominio.Sala;
+import EventoJuego.Evento;
 import Negocio.ServicioControlJuego;
 import Presenctacion.Observer;
+import Server.Server;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,12 +22,15 @@ public class CrearSalaModel {
     private int numeroFichas;
     private ServicioControlJuego servicioControlJuego;
     private List<Observer> observers;
+    private Server server;
 
     public CrearSalaModel() {
         this.servicioControlJuego = new ServicioControlJuego();
         this.observers = new ArrayList<>();
     }
-
+    public void setServer(Server server) {
+        this.server = server;
+    }
     public void addObserver(Observer observer) {
         observers.add(observer);
     }
@@ -46,6 +51,12 @@ public class CrearSalaModel {
         nuevaSala.setNumeroFichas(numeroFichas);
         nuevaSala.setEstado("ESPERANDO");
         servicioControlJuego.getSalasDisponibles().add(nuevaSala);
+        Evento evento = new Evento("CREAR_SALA");
+        evento.agregarDato("numJugadores", numeroJugadores);
+        evento.agregarDato("numFichas", numeroFichas);
+
+        // Enviar evento al servidor
+        server.enviarEvento(evento);
         notifyObservers();
     }
 

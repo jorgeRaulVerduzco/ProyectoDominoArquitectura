@@ -105,7 +105,7 @@ public class Juego {
         // Configurar el servidor en el mediador y controladores
         mediador.setServer(server);
         crearSalaController.setServer(server);
-
+       crearSalaModel.setServer(server);
         // Configurar el mediador en los controladores
         crearUsuarioController.setMediator(mediador);
         crearSalaController.setMediator(mediador);
@@ -115,5 +115,6 @@ public class Juego {
         mediador.iniciarAplicacion();
 
         System.out.println("Aplicación iniciada correctamente");
+       
     }
 }
