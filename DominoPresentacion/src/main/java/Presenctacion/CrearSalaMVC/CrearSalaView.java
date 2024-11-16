@@ -20,6 +20,7 @@ public class CrearSalaView extends javax.swing.JFrame implements Observer {
      */
     public CrearSalaView() {
         initComponents();
+        
     }
 
     public void setModel(CrearSalaModel model) {

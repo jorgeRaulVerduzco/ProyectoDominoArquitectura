@@ -17,6 +17,7 @@ import PresentacionTableroMVC.TableroModel;
 import PresentacionTableroMVC.TableroView;
 import Server.Server;
 import java.awt.Frame;
+import java.io.IOException;
 
 /**
  *
@@ -24,8 +25,29 @@ import java.awt.Frame;
  */
 public class Juego {
 
+    private static final int PUERTO_SERVIDOR = 5000;
+    private static Server server;
+
     public static void main(String[] args) {
-        // Configurar el look and feel de la aplicación
+        // Iniciar el servidor en un hilo separado
+        new Thread(() -> {
+            try {
+                server = new Server();
+                server.iniciarServidor(PUERTO_SERVIDOR);
+            } catch (IOException e) {
+                System.err.println("Error al iniciar el servidor: " + e.getMessage());
+                System.exit(1);
+            }
+        }).start();
+
+        // Esperar un momento para asegurar que el servidor esté iniciado
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Configurar el look and feel
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -38,41 +60,39 @@ public class Juego {
         }
 
         // Lanzar la aplicación en el Event Dispatch Thread
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                initializeApplication();
-            }
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            initializeApplication();
         });
     }
 
     private static void initializeApplication() {
-        // Crear el servidor
-        Server server = new Server();
-        System.out.println("Servidor creado: " + (server != null));
+        // Verificar que el servidor esté iniciado
+        if (server == null) {
+            System.err.println("Error: El servidor no se inició correctamente");
+            System.exit(1);
+        }
 
-        // Crear el modelo y la vista del pozo
+        // Inicializar los componentes del juego
         PozoModel pozoModel = new PozoModel();
-        pozoModel.getPozo().inicializarFichas(); // Inicializar las fichas en el pozo
+        pozoModel.getPozo().inicializarFichas();
+
         PozoView pozoView = new PozoView(new Frame(), true, pozoModel);
-        pozoView.setVisible(false); // Mantener el pozo invisible inicialmente
+        pozoView.setVisible(false);
 
-        // Crear la vista de creación de usuario
         CrearUsuarioView crearUsuarioView = new CrearUsuarioView();
-
-        // Crear modelo y vista de la sala
         CrearSalaModel crearSalaModel = new CrearSalaModel();
         CrearSalaView crearSalaView = new CrearSalaView();
-
-        // Crear modelo y vista del tablero
+        crearSalaView.setModel(crearSalaModel); // Conectar modelo y vista
+        crearSalaModel.addObserver(crearSalaView);
         TableroModel tableroModel = new TableroModel();
         TableroView tableroView = new TableroView(new Frame(), true, tableroModel, pozoModel);
 
-        // Crear los controladores
+        // Inicializar controladores
         CrearUsuarioController crearUsuarioController = new CrearUsuarioController(crearUsuarioView);
         CrearSalaController crearSalaController = new CrearSalaController(crearSalaModel, crearSalaView);
         TableroController tableroController = new TableroController(tableroModel, tableroView);
 
-        // Crear el mediador y pasarle los controladores y vistas
+        // Crear el mediador
         Mediador mediador = new Mediador(
                 crearUsuarioController,
                 crearSalaController,
@@ -81,25 +101,18 @@ public class Juego {
                 tableroView
         );
 
-        // Depuración: Verificar si el servidor está configurado antes de pasar al mediador
-        System.out.println("Servidor asignado al mediador: " + (server != null));
-
-        // Configurar el servidor antes de que el mediador interactúe con él
+        // Configurar el servidor en el mediador y controladores
         mediador.setServer(server);
+        crearSalaController.setServer(server);
 
-        // Verificación adicional
-        if (server == null) {
-            System.out.println("¡Advertencia! El servidor aún es null antes de iniciar la aplicación.");
-        } else {
-            System.out.println("El servidor ha sido configurado correctamente.");
-        }
-
-        // Configurar los controladores para que usen el mediador
+        // Configurar el mediador en los controladores
         crearUsuarioController.setMediator(mediador);
         crearSalaController.setMediator(mediador);
         tableroController.setMediator(mediador);
 
-        // Iniciar la aplicación mostrando la vista de creación de usuario
+        // Iniciar la aplicación
         mediador.iniciarAplicacion();
+
+        System.out.println("Aplicación iniciada correctamente");
     }
 }

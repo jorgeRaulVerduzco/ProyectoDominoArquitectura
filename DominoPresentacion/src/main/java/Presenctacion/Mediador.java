@@ -62,13 +62,15 @@ public class Mediador {
         mostrarCrearSala(usuario);
     }
 
-    private void mostrarCrearSala(CrearUsuarioModel usuario) {
-        System.out.println("Mostrando vista de Crear Sala...");
-        if (crearSalaView != null) {
-            crearSalaView.setVisible(true);
-        } else {
-            System.out.println("Error: crearSalaView es null.");
-        }
+    public void mostrarCrearSala(CrearUsuarioModel usuario) {
+   System.out.println("Mostrando vista de Crear Sala...");
+    if (crearSalaView != null) {
+        crearSalaView.pack();
+        crearSalaView.setLocationRelativeTo(null);
+        crearSalaView.setVisible(true);
+    } else {
+        System.out.println("Error: crearSalaView es null.");
+    }
     }
 
     public void salaCreada() {
