@@ -25,7 +25,7 @@ import java.io.IOException;
  */
 public class Juego {
 
-    private static final int PUERTO_SERVIDOR = 5000;
+    private static final int PUERTO_SERVIDOR = 49674;
     private static Server server;
 
     public static void main(String[] args) {
@@ -105,7 +105,6 @@ public class Juego {
         // Configurar el servidor en el mediador y controladores
         mediador.setServer(server);
         crearSalaController.setServer(server);
-       crearSalaModel.setServer(server);
         // Configurar el mediador en los controladores
         crearUsuarioController.setMediator(mediador);
         crearSalaController.setMediator(mediador);

@@ -12,6 +12,7 @@ import Server.Server;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,29 +21,29 @@ import java.util.logging.Logger;
  * @author INEGI
  */
 public class CrearSalaModel {
-
+    private volatile boolean conexionConfirmada;
     private CountDownLatch latch;
-
     private int numeroJugadores;
     private int numeroFichas;
     private ServicioControlJuego servicioControlJuego;
     private List<Observer> observers;
     private Server server;
+    private volatile boolean conexionExitosa;
+    private final Object lockConexion = new Object();
 
     public CrearSalaModel() {
         this.servicioControlJuego = new ServicioControlJuego();
         this.observers = new ArrayList<>();
         this.latch = new CountDownLatch(1);
-
+        this.conexionExitosa = false;
     }
 
     public void setServer(Server server) {
-        this.server = server;
-        if (server != null) {
-            latch.countDown();  // Llama a countDown cuando el servidor esté listo
-            System.out.println("Servidor asignado correctamente.");
+       this.server = server;
+        if (server != null && server.isConnected()) {
+            confirmarConexion();
         } else {
-            System.out.println("Advertencia: El servidor no se ha asignado.");
+            System.err.println("No se pudo establecer conexión con el servidor");
         }
     }
 
@@ -59,11 +60,20 @@ public class CrearSalaModel {
             observer.update();
         }
     }
-
+  
+    public void confirmarConexion() {
+        synchronized (lockConexion) {
+            conexionExitosa = true;
+            lockConexion.notifyAll();
+        }
+    }
     public void crearSala() {
-       try {
-            esperarServidor();
-            
+      if (server == null || !server.isConnected()) {
+            System.err.println("No hay conexión establecida con el servidor");
+            return;
+        }
+
+        try {
             Sala nuevaSala = new Sala();
             nuevaSala.setCantJugadores(numeroJugadores);
             nuevaSala.setNumeroFichas(numeroFichas);
@@ -73,14 +83,14 @@ public class CrearSalaModel {
             evento.agregarDato("numJugadores", numeroJugadores);
             evento.agregarDato("numFichas", numeroFichas);
             
-            System.out.println("Enviando evento CREAR_SALA al servidor");
+            System.out.println("Enviando evento de creación de sala al servidor...");
             server.enviarEvento(evento);
             
-            notifyObservers();
-        } catch (InterruptedException ex) {
-            System.err.println("Error al esperar al servidor: " + ex.getMessage());
-            Logger.getLogger(CrearSalaModel.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+            System.err.println("Error al crear sala: " + e.getMessage());
+            e.printStackTrace();
         }
+    
     }
 
     public void esperarServidor() throws InterruptedException {

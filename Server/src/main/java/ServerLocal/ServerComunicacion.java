@@ -45,20 +45,29 @@ public class ServerComunicacion {
      * @param evento El evento enviado por el cliente, que contiene información
      * sobre la acción a procesar.
      */
-    public void procesarEvento(Socket cliente, Evento evento) {
-        switch (evento.getTipo()) {
-            case "CREAR_SALA":
-                crearNuevaSala(cliente, evento);
-                break;
-            case "UNIR_SALA":
-                unirseASala(cliente, evento);
-                break;
-            case "ABANDONAR_SALA":
-                // abandonarSala(cliente, evento);
-                break;
-            case "JUGADA":
-                //procesarJugada(cliente, evento);
-                break;
+     public void procesarEvento(Socket cliente, Evento evento) {
+        System.out.println("Procesando evento: " + evento.getTipo());
+        try {
+            switch (evento.getTipo()) {
+                case "CREAR_SALA":
+                    System.out.println("Procesando creación de sala...");
+                    crearNuevaSala(cliente, evento);
+                    break;
+                case "UNIR_SALA":
+                    unirseASala(cliente, evento);
+                    break;
+                case "ABANDONAR_SALA":
+                    // abandonarSala(cliente, evento);
+                    break;
+                case "JUGADA":
+                    // procesarJugada(cliente, evento);
+                    break;
+                default:
+                    System.out.println("Evento no reconocido: " + evento.getTipo());
+            }
+        } catch (Exception e) {
+            System.err.println("Error procesando evento: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
