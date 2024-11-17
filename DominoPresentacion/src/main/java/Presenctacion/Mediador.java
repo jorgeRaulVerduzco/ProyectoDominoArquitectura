@@ -4,11 +4,13 @@
  */
 package Presenctacion;
 
+import EventoJuego.Evento;
 import Presenctacion.CrearSalaMVC.CrearSalaView;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioController;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioModel;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioView;
 import Presenctacion.CrearSalaMVC.CrearSalaController;
+import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaController;
 import PresentacionTableroMVC.TableroController;
 import PresentacionTableroMVC.TableroView;
 import Server.Server;
@@ -18,6 +20,8 @@ import Server.Server;
  * @author INEGI
  */
 public class Mediador {
+
+    private UnirseAlaSalaController unirseAlaSalaController;
 
     private CrearUsuarioController crearUsuarioController;
     private CrearSalaController crearSalaController;
@@ -31,12 +35,15 @@ public class Mediador {
             CrearSalaController crearSalaController,
             CrearSalaView crearSalaView,
             TableroController tableroController,
-            TableroView tableroView) {
+            TableroView tableroView,
+            UnirseAlaSalaController unirseAlaSalaController) {
         this.crearUsuarioController = crearUsuarioController;
         this.crearSalaController = crearSalaController;
         this.crearSalaView = crearSalaView;
         this.tableroController = tableroController;
         this.tableroView = tableroView;
+        this.unirseAlaSalaController = unirseAlaSalaController;
+
     }
 
     public void setServer(Server server) {
@@ -51,6 +58,8 @@ public class Mediador {
         // Si otros controladores necesitan el servidor, puedes pasarlo aquí
         crearSalaController.setServer(server);  // Si es necesario en este controlador
         tableroController.setServer(server);    // Si es necesario en este controlador
+            unirseAlaSalaController.setServer(server); // Añade esta línea
+
     }
 
     public void iniciarAplicacion() {
@@ -63,19 +72,20 @@ public class Mediador {
     }
 
     public void mostrarCrearSala(CrearUsuarioModel usuario) {
-   System.out.println("Mostrando vista de Crear Sala...");
-    if (crearSalaView != null) {
-        crearSalaView.pack();
-        crearSalaView.setLocationRelativeTo(null);
-        crearSalaView.setVisible(true);
-    } else {
-        System.out.println("Error: crearSalaView es null.");
+        System.out.println("Mostrando vista de Crear Sala...");
+        if (crearSalaView != null) {
+            crearSalaView.pack();
+            crearSalaView.setLocationRelativeTo(null);
+            crearSalaView.setVisible(true);
+        } else {
+            System.out.println("Error: crearSalaView es null.");
+        }
     }
-    }
-
-    public void salaCreada() {
+  
+       public void salaCreada() {
         crearSalaView.setVisible(false);
-        iniciarJuego();
+        // En lugar de iniciar el juego directamente, mostramos la vista de unirse a sala
+        mostrarUnirseASala();
     }
 
     private void iniciarJuego() {
@@ -86,4 +96,11 @@ public class Mediador {
         tableroView.setVisible(false);
         crearUsuarioController.mostrarVista();
     }
+    
+      
+     public void mostrarUnirseASala() {
+        unirseAlaSalaController.mostrarVista();
+    
+    }
+     
 }

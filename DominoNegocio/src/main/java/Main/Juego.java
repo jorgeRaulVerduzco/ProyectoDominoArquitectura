@@ -12,6 +12,9 @@ import Presenctacion.MenuPrincipalMVC.CrearUsuarioController;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioView;
 import Presenctacion.PozoMVC.PozoModel;
 import Presenctacion.PozoMVC.PozoView;
+import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaController;
+import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaModel;
+import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaView;
 import PresentacionTableroMVC.TableroController;
 import PresentacionTableroMVC.TableroModel;
 import PresentacionTableroMVC.TableroView;
@@ -91,16 +94,22 @@ public class Juego {
         CrearUsuarioController crearUsuarioController = new CrearUsuarioController(crearUsuarioView);
         CrearSalaController crearSalaController = new CrearSalaController(crearSalaModel, crearSalaView);
         TableroController tableroController = new TableroController(tableroModel, tableroView);
-
+        UnirseAlaSalaModel unirseAlaSalaModel = new UnirseAlaSalaModel();
+        UnirseAlaSalaView unirseAlaSalaView = new UnirseAlaSalaView();
+        UnirseAlaSalaController unirseAlaSalaController = new UnirseAlaSalaController(
+                unirseAlaSalaModel,
+                unirseAlaSalaView
+        );
         // Crear el mediador
         Mediador mediador = new Mediador(
                 crearUsuarioController,
                 crearSalaController,
                 crearSalaView,
                 tableroController,
-                tableroView
+                tableroView,
+                unirseAlaSalaController
         );
-    crearUsuarioView.setMediator(mediador);
+        crearUsuarioView.setMediator(mediador);
 
         // Configurar el servidor en el mediador y controladores
         mediador.setServer(server);
@@ -108,12 +117,15 @@ public class Juego {
         // Configurar el mediador en los controladores
         crearUsuarioController.setMediator(mediador);
         crearSalaController.setMediator(mediador);
+        // ... resto del código ...
+        unirseAlaSalaController.setMediator(mediador);
+        unirseAlaSalaController.setServer(server);
         tableroController.setMediator(mediador);
 
         // Iniciar la aplicación
         mediador.iniciarAplicacion();
 
         System.out.println("Aplicación iniciada correctamente");
-       
+
     }
 }

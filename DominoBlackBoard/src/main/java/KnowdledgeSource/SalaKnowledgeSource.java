@@ -13,6 +13,8 @@ import EventoJuego.Evento;
 import Server.Server;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,11 +49,12 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
      * @param evento Evento a ser evaluado.
      * @return true si el evento puede ser procesado, false en caso contrario.
      */
-    @Override
+     @Override
     public boolean puedeProcesar(Evento evento) {
         return evento.getTipo().equals("CREAR_SALA")
                 || evento.getTipo().equals("UNIR_SALA")
-                || evento.getTipo().equals("ABANDONAR_SALA");
+                || evento.getTipo().equals("ABANDONAR_SALA")
+                || evento.getTipo().equals("SOLICITAR_SALAS");  // Añadir este caso
     }
 
     /**
@@ -62,6 +65,7 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
      * @param cliente Socket del cliente que envía el evento.
      * @param evento Evento a ser procesado.
      */
+  
     @Override
     public void procesarEvento(Socket cliente, Evento evento) {
         switch (evento.getTipo()) {
@@ -74,8 +78,12 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
             case "ABANDONAR_SALA":
                 abandonarSala(cliente, evento);
                 break;
+            case "SOLICITAR_SALAS":
+                enviarSalasDisponibles(cliente);
+                break;
         }
     }
+
 
     /**
      * Crea una nueva sala de juego basada en la información proporcionada en el
@@ -169,7 +177,21 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
             server.enviarEvento(respuesta);
         }
     }
-
+ private void enviarSalasDisponibles(Socket cliente) {
+        List<Sala> salasDisponibles = blackboard.getSalasDisponibles();
+        System.out.println("Enviando salas disponibles. Cantidad: " + salasDisponibles.size());
+        
+        // Imprimir información detallada de cada sala
+        for (Sala sala : salasDisponibles) {
+            System.out.println("Sala ID: " + sala.getId() + 
+                             ", Estado: " + sala.getEstado() + 
+                             ", Jugadores: " + sala.getJugador().size() + "/" + sala.getCantJugadores());
+        }
+        
+        Evento respuesta = new Evento("SOLICITAR_SALAS");
+        respuesta.agregarDato("salas", new ArrayList<>(salasDisponibles));
+        server.enviarMensajeACliente(cliente, respuesta);
+    }
     /**
      * Inicia una partida cuando una sala se ha llenado. Configura el estado de
      * la partida y actualiza el estado de la sala. Notifica a los clientes que

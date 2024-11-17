@@ -85,7 +85,6 @@ public class CrearSalaModel {
             
             System.out.println("Enviando evento de creación de sala al servidor...");
             server.enviarEvento(evento);
-            
         } catch (Exception e) {
             System.err.println("Error al crear sala: " + e.getMessage());
             e.printStackTrace();

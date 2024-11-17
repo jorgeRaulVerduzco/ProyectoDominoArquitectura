@@ -191,26 +191,29 @@ public class Server {
      *
      * @param evento El evento a enviar.
      */
+    
     public void enviarEvento(Evento evento) {
-        System.out.println("Enviando evento: " + evento.getTipo());
+        System.out.println("Enviando evento a todos los clientes: " + evento.getTipo());
         List<Socket> clientesDesconectados = new ArrayList<>();
-
-        synchronized (outputStreams) {
+        
+        synchronized(outputStreams) {
             for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
                 try {
                     ObjectOutputStream out = entry.getValue();
                     out.writeObject(evento);
+                    out.reset(); // Importante para evitar problemas de caché
                     out.flush();
-                    System.out.println("Evento enviado a cliente: " + entry.getKey().getInetAddress());
+                    System.out.println("Evento enviado exitosamente a: " + entry.getKey().getInetAddress());
                 } catch (IOException e) {
                     System.err.println("Error enviando evento a cliente: " + e.getMessage());
                     clientesDesconectados.add(entry.getKey());
                 }
             }
         }
-
-        // Remover clientes desconectados
-        clientesDesconectados.forEach(this::cerrarConexion);
+        
+        for (Socket socket : clientesDesconectados) {
+            cerrarConexion(socket);
+        }
     }
 
     /**
@@ -282,6 +285,9 @@ public class Server {
         System.out.println("Procesando evento: " + evento.getTipo());
         switch (evento.getTipo()) {
             case "CREAR_SALA":
+                serverComunicacion.procesarEvento(cliente, evento);
+                break;
+                 case "SOLICITAR_SALAS":
                 serverComunicacion.procesarEvento(cliente, evento);
                 break;
             case "UNIRSE_SALA":

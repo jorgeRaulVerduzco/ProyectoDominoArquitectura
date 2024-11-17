@@ -14,6 +14,8 @@ import java.io.DataOutputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -45,7 +47,7 @@ public class ServerComunicacion {
      * @param evento El evento enviado por el cliente, que contiene información
      * sobre la acción a procesar.
      */
-     public void procesarEvento(Socket cliente, Evento evento) {
+    public void procesarEvento(Socket cliente, Evento evento) {
         System.out.println("Procesando evento: " + evento.getTipo());
         try {
             switch (evento.getTipo()) {
@@ -61,6 +63,9 @@ public class ServerComunicacion {
                     break;
                 case "JUGADA":
                     // procesarJugada(cliente, evento);
+                    break;
+                case "SOLICITAR_SALAS":
+                    enviarSalasDisponibles(cliente);
                     break;
                 default:
                     System.out.println("Evento no reconocido: " + evento.getTipo());
@@ -98,6 +103,19 @@ public class ServerComunicacion {
         server.enviarMensajeACliente(cliente, respuesta);
         System.out.println("se creo correctamente");
     }
+
+  private void enviarSalasDisponibles(Socket cliente) {
+    try {
+        List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
+        System.out.println("Enviando " + salasDisponibles.size() + " salas disponibles");
+        Evento respuesta = new Evento("SOLICITAR_SALAS");
+        respuesta.agregarDato("salas", new ArrayList<>(salasDisponibles));
+        server.enviarMensajeACliente(cliente, respuesta);
+    } catch (Exception e) {
+        System.err.println("Error al enviar salas disponibles: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
 
     /**
      * Permite que un cliente se una a una sala de juego existente, notificando
@@ -169,4 +187,5 @@ public class ServerComunicacion {
         evento.agregarDato("sala", sala);
         server.enviarEvento(evento);
     }
+    
 }
