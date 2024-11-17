@@ -25,8 +25,6 @@ public class CrearSalaController {
     public CrearSalaController(CrearSalaModel model, CrearSalaView view) {
         this.model = model;
         this.view = view;
-model.setServer(server);
-        // Inicializar listeners
         this.view.addCrearSalaListener(new CrearSalaListener());
         this.view.addRegresarListener(new RegresarListener());
         this.view.addNumeroJugadoresListener(new NumeroJugadoresListener());
@@ -37,12 +35,14 @@ model.setServer(server);
         this.mediador = mediador;
     }
 
-    public void setServer(Server server) {
+  public void setServer(Server server) {
         this.server = server;
+        model.setServer(server); // Importante: configurar el servidor en el modelo
     }
 
     class CrearSalaListener implements ActionListener {
-   @Override
+
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 int numFichas = Integer.parseInt(view.getNumeroFichas());
@@ -53,7 +53,7 @@ model.setServer(server);
                 model.setNumeroFichas(numFichas);
                 model.setNumeroJugadores(Integer.parseInt(view.getNumeroJugadores()));
                 model.crearSala();
-                
+
                 // Verificar la creación de la sala
                 System.out.println("Sala enviada al servidor");
                 mediador.salaCreada();

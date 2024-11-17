@@ -11,12 +11,17 @@ import Presenctacion.Observer;
 import Server.Server;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author INEGI
  */
 public class CrearSalaModel {
+
+    private CountDownLatch latch;
 
     private int numeroJugadores;
     private int numeroFichas;
@@ -27,10 +32,20 @@ public class CrearSalaModel {
     public CrearSalaModel() {
         this.servicioControlJuego = new ServicioControlJuego();
         this.observers = new ArrayList<>();
+        this.latch = new CountDownLatch(1);
+
     }
+
     public void setServer(Server server) {
         this.server = server;
+        if (server != null) {
+            latch.countDown();  // Llama a countDown cuando el servidor esté listo
+            System.out.println("Servidor asignado correctamente.");
+        } else {
+            System.out.println("Advertencia: El servidor no se ha asignado.");
+        }
     }
+
     public void addObserver(Observer observer) {
         observers.add(observer);
     }
@@ -46,18 +61,30 @@ public class CrearSalaModel {
     }
 
     public void crearSala() {
-        Sala nuevaSala = new Sala();
-        nuevaSala.setCantJugadores(numeroJugadores);
-        nuevaSala.setNumeroFichas(numeroFichas);
-        nuevaSala.setEstado("ESPERANDO");
-        servicioControlJuego.getSalasDisponibles().add(nuevaSala);
-        Evento evento = new Evento("CREAR_SALA");
-        evento.agregarDato("numJugadores", numeroJugadores);
-        evento.agregarDato("numFichas", numeroFichas);
+       try {
+            esperarServidor();
+            
+            Sala nuevaSala = new Sala();
+            nuevaSala.setCantJugadores(numeroJugadores);
+            nuevaSala.setNumeroFichas(numeroFichas);
+            nuevaSala.setEstado("ESPERANDO");
+            
+            Evento evento = new Evento("CREAR_SALA");
+            evento.agregarDato("numJugadores", numeroJugadores);
+            evento.agregarDato("numFichas", numeroFichas);
+            
+            System.out.println("Enviando evento CREAR_SALA al servidor");
+            server.enviarEvento(evento);
+            
+            notifyObservers();
+        } catch (InterruptedException ex) {
+            System.err.println("Error al esperar al servidor: " + ex.getMessage());
+            Logger.getLogger(CrearSalaModel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
-        // Enviar evento al servidor
-        server.enviarEvento(evento);
-        notifyObservers();
+    public void esperarServidor() throws InterruptedException {
+        latch.await();  // Espera hasta que el servidor esté inicializado
     }
 
     // Getters y Setters

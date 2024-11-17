@@ -57,11 +57,19 @@ public class Controller {
      * @param evento El evento que se debe procesar.
      */
     public void procesarEvento(Socket cliente, Evento evento) {
+       System.out.println("Procesando evento: " + evento.getTipo());
+        boolean procesado = false;
+        
         for (KnowdledgeSource ks : knowledgeSources) {
             if (ks.puedeProcesar(evento)) {
                 ks.procesarEvento(cliente, evento);
+                procesado = true;
                 break;
             }
+        }
+        
+        if (!procesado) {
+            System.out.println("Advertencia: Ningún KnowledgeSource pudo procesar el evento: " + evento.getTipo());
         }
     }
 

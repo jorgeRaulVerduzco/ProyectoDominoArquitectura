@@ -145,8 +145,21 @@ public void enviarEventoATodos(Evento evento) {
      * @param evento El evento a enviar.
      */
     public void enviarEvento(Evento evento) {
+        System.out.println("Enviando evento: " + evento.getTipo());
+        boolean enviado = false;
+        
         for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
-            enviarMensajeACliente(entry.getKey(), evento);
+            try {
+                enviarMensajeACliente(entry.getKey(), evento);
+                enviado = true;
+            } catch (Exception e) {
+                System.err.println("Error al enviar evento a cliente: " + e.getMessage());
+                // Considera remover el cliente si hay error persistente
+            }
+        }
+        
+        if (!enviado) {
+            System.err.println("Advertencia: El evento no se pudo enviar a ningún cliente");
         }
     }
 
@@ -170,15 +183,20 @@ public void enviarEventoATodos(Evento evento) {
      * @param mensaje El mensaje a enviar.
      */
     public void enviarMensajeACliente(Socket cliente, Evento mensaje) {
-        try {
+    try {
             ObjectOutputStream out = outputStreams.get(cliente);
             if (out != null) {
                 out.writeObject(mensaje);
                 out.flush();
+                System.out.println("Mensaje enviado exitosamente al cliente");
+            } else {
+                System.err.println("Error: No se encontró el stream de salida para el cliente");
             }
         } catch (IOException e) {
+            System.err.println("Error al enviar mensaje al cliente: " + e.getMessage());
             manejarErrorComunicacion();
         }
+    
     }
 
     /**
