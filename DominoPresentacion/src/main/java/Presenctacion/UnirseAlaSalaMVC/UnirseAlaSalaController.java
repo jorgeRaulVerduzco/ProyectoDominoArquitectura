@@ -54,22 +54,24 @@ public class UnirseAlaSalaController {
         }
     }
 
-   public void procesarRespuestaServer(Evento evento) {
-  if ("SOLICITAR_SALAS".equals(evento.getTipo())) {
-        try {
-            List<Sala> salas = (List<Sala>) evento.obtenerDato("salas");
-            if (salas != null) {
-                System.out.println("Salas recibidas: " + salas.size());
-                model.actualizarSalasDisponibles(salas);
-            } else {
-                System.out.println("Salas recibidas son nulas");
-                model.actualizarSalasDisponibles(Collections.emptyList());
+    public void procesarRespuestaServer(Evento evento) {
+        evento = new Evento("SOLICITAR_SALAS");
+
+        if ("SOLICITAR_SALAS".equals(evento.getTipo())) {
+            try {
+                List<Sala> salas = (List<Sala>) evento.obtenerDato("salas");
+                if (salas != null) {
+                    System.out.println("Salas recibidas: " + salas.size());
+                    model.actualizarSalasDisponibles(salas);
+                } else {
+                    System.out.println("Salas recibidas son nulas");
+                    model.actualizarSalasDisponibles(Collections.emptyList());
+                }
+            } catch (Exception e) {
+                System.err.println("Error procesando salas: " + e.getMessage());
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            System.err.println("Error procesando salas: " + e.getMessage());
-            e.printStackTrace();
         }
     }
-}
 
 }

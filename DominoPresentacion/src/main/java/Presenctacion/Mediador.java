@@ -99,6 +99,7 @@ public class Mediador {
     
       
      public void mostrarUnirseASala() {
+         
         unirseAlaSalaController.mostrarVista();
     
     }
