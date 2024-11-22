@@ -9,6 +9,7 @@ import Dominio.Sala;
 import EventoJuego.Evento;
 import Presenctacion.Mediador;
 import Server.Server;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -53,18 +54,22 @@ public class UnirseAlaSalaController {
         }
     }
 
-    public void procesarRespuestaServer(Evento evento) {
-        System.out.println("Procesando respuesta del servidor: " + evento.getTipo());
-        if ("SOLICITAR_SALAS".equals(evento.getTipo())) {
-            try {
-                List<Sala> salas = (List<Sala>) evento.obtenerDato("salas");
-                System.out.println("Salas recibidas: " + (salas != null ? salas.size() : "null"));
+   public void procesarRespuestaServer(Evento evento) {
+  if ("SOLICITAR_SALAS".equals(evento.getTipo())) {
+        try {
+            List<Sala> salas = (List<Sala>) evento.obtenerDato("salas");
+            if (salas != null) {
+                System.out.println("Salas recibidas: " + salas.size());
                 model.actualizarSalasDisponibles(salas);
-            } catch (Exception e) {
-                System.err.println("Error procesando salas: " + e.getMessage());
-                e.printStackTrace();
+            } else {
+                System.out.println("Salas recibidas son nulas");
+                model.actualizarSalasDisponibles(Collections.emptyList());
             }
+        } catch (Exception e) {
+            System.err.println("Error procesando salas: " + e.getMessage());
+            e.printStackTrace();
         }
     }
+}
 
 }

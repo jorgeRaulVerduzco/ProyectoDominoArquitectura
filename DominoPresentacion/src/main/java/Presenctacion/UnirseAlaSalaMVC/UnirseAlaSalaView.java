@@ -12,6 +12,7 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.List;
 import java.awt.event.ActionEvent;
+import java.util.Collections;
 
 /**
  *
@@ -28,16 +29,17 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
     public UnirseAlaSalaView() {
         initComponents();
         configurarTabla(); // Configuramos la tabla después de inicializar los componentes
-
+actualizarTablaSalas() ;
     }
 
     public void setModel(UnirseAlaSalaModel model) {
         this.model = model;
         model.addObserver(this);
+        actualizarTablaSalas();
     }
 
     private void configurarTabla() {
-           tableModel = new DefaultTableModel() {
+        tableModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return column == 3; // Solo la columna del botón es editable
@@ -57,20 +59,13 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
     private void actualizarTablaSalas() {
         SwingUtilities.invokeLater(() -> {
             try {
-                if (model == null) {
-                    System.err.println("Error: modelo es null");
-                    return;
-                }
-                
-                List<Sala> salas = model.getSalasDisponibles();
-                System.out.println("Actualizando tabla con " + (salas != null ? salas.size() : 0) + " salas");
-                
+                List<Sala> salas = model != null ? model.getSalasDisponibles() : Collections.emptyList();
+                System.out.println(salas);//lo puse para que se imprimiera de prueba
                 DefaultTableModel tableModel = (DefaultTableModel) tblUnirseSala.getModel();
                 tableModel.setRowCount(0);
-                
-                if (salas != null) {
-                    for (Sala sala : salas) {
-                        System.out.println("Agregando sala: " + sala.getId());
+
+                for (Sala sala : salas) {
+                    if ("ESPERANDO".equals(sala.getEstado())) {
                         tableModel.addRow(new Object[]{
                             sala.getId(),
                             sala.getJugador().size() + "/" + sala.getCantJugadores(),
@@ -79,15 +74,14 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
                         });
                     }
                 }
-                
+
                 tblUnirseSala.repaint();
             } catch (Exception e) {
-                System.err.println("Error actualizando tabla: " + e.getMessage());
+                System.err.println("Error actualizando tabla de salas: " + e.getMessage());
                 e.printStackTrace();
             }
         });
     }
-
     @Override
     public void update() {
         actualizarTablaSalas();
@@ -108,7 +102,8 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
     }
 
     // Editor para capturar las interacciones con el botón
-   class BotonEditor extends DefaultCellEditor {
+    class BotonEditor extends DefaultCellEditor {
+
         private JButton button;
         private String label;
         private boolean isPushed;
@@ -146,7 +141,6 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
             isPushed = false;
             return super.stopCellEditing();
         }
-    
 
         @Override
         protected void fireEditingStopped() {

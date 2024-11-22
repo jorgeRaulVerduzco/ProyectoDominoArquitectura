@@ -104,18 +104,13 @@ public class ServerComunicacion {
         System.out.println("se creo correctamente");
     }
 
-  private void enviarSalasDisponibles(Socket cliente) {
-    try {
+    private void enviarSalasDisponibles(Socket cliente) {
         List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
-        System.out.println("Enviando " + salasDisponibles.size() + " salas disponibles");
+        System.out.println("Enviando salas disponibles: " + salasDisponibles.size());
         Evento respuesta = new Evento("SOLICITAR_SALAS");
-        respuesta.agregarDato("salas", new ArrayList<>(salasDisponibles));
+        respuesta.agregarDato("salas", salasDisponibles);
         server.enviarMensajeACliente(cliente, respuesta);
-    } catch (Exception e) {
-        System.err.println("Error al enviar salas disponibles: " + e.getMessage());
-        e.printStackTrace();
     }
-}
 
     /**
      * Permite que un cliente se una a una sala de juego existente, notificando
@@ -187,5 +182,5 @@ public class ServerComunicacion {
         evento.agregarDato("sala", sala);
         server.enviarEvento(evento);
     }
-    
+
 }

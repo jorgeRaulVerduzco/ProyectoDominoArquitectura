@@ -4,16 +4,20 @@
  */
 package Dominio;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  *
  * @author INEGI
  */
-public class Sala {
+public class Sala implements Serializable {
 
-    String id;
+    private static final long serialVersionUID = 1L;
+
+    String id = UUID.randomUUID().toString();
     int cantJugadores;
     int numeroFichas;
     List<Jugador> jugador = new ArrayList<>();

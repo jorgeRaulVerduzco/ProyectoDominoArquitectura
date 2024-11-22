@@ -11,6 +11,7 @@ import Presenctacion.Observer;
 import Server.Server;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -50,9 +51,12 @@ public class UnirseAlaSalaModel {
     }
 
     public void actualizarSalasDisponibles(List<Sala> salas) {
-        System.out.println("Actualizando salas disponibles: " + (salas != null ? salas.size() : "null"));
-        this.salasDisponibles = salas != null ? new ArrayList<>(salas) : new ArrayList<>();
+   System.out.println("Actualizando salas disponibles: " + (salas != null ? salas.size() : "null"));
+    this.salasDisponibles = salas != null ? new ArrayList<>(salas) : new ArrayList<>();
+    SwingUtilities.invokeLater(() -> {
+        System.out.println("Notificando observadores. Salas: " + salasDisponibles.size());
         notifyObservers();
+    });
     }
 
     public void solicitarSalasDisponibles() {
