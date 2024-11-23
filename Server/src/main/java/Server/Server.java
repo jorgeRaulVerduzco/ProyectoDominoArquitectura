@@ -43,7 +43,7 @@ public class Server {
      * comunicación.
      */
     public Server() {
-   this.clientes = new ArrayList<>();
+        this.clientes = new ArrayList<>();
         this.outputStreams = new HashMap<>();
         this.jugadoresPorSocket = new HashMap<>();
         this.blackboardController = new Controller(this);
@@ -61,7 +61,7 @@ public class Server {
      * @throws IOException Si ocurre un error al crear el ServerSocket.
      */
     public void iniciarServidor(int puerto) throws IOException {
-      servidor = new ServerSocket(puerto, 0, InetAddress.getByName("192.168.1.81"));
+        servidor = new ServerSocket(puerto, 0, InetAddress.getByName("192.168.1.81"));
         running = true;
         isConnected = true;
         System.out.println("Servidor iniciado en dirección IP: 127.0.0.1, puerto: " + puerto);
@@ -82,9 +82,22 @@ public class Server {
             }
         }).start();
     }
-  public boolean isConnected() {
+
+    /**
+     * Verifica si el servidor está conectado y operativo.
+     *
+     * @return true si el servidor está conectado, false en caso contrario.
+     */
+    public boolean isConnected() {
         return isConnected;
     }
+
+    /**
+     * Envía un evento a todos los clientes actualmente conectados al servidor.
+     *
+     * @param evento el objeto de tipo `Evento` que se enviará a todos los
+     * clientes.
+     */
     public void enviarEventoATodos(Evento evento) {
         for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
             enviarMensajeACliente(entry.getKey(), evento);
@@ -99,30 +112,40 @@ public class Server {
      * @param clienteSocket El socket del cliente que se conectó.
      */
     private void manejarNuevaConexion(Socket clienteSocket) {
-       try {
+        try {
             ObjectOutputStream out = new ObjectOutputStream(clienteSocket.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(clienteSocket.getInputStream());
-            
+
             synchronized (outputStreams) {
                 outputStreams.put(clienteSocket, out);
                 clientes.add(clienteSocket);
             }
-            
+
             // Enviar confirmación de conexión
             Evento confirmacion = new Evento("CONEXION_EXITOSA");
             enviarMensajeACliente(clienteSocket, confirmacion);
-            
+
             // Iniciar thread para escuchar mensajes
             new Thread(() -> escucharCliente(clienteSocket, in)).start();
-            
+
         } catch (IOException e) {
             System.err.println("Error estableciendo conexión con cliente: " + e.getMessage());
             cerrarConexion(clienteSocket);
             isConnected = false;
         }
-    
+
     }
 
+    /**
+     * Escucha continuamente los mensajes enviados por un cliente a través de su
+     * conexión socket. Los mensajes son leídos como objetos `Evento` y
+     * procesados según su tipo. Si ocurre un error durante la lectura o el
+     * cliente se desconecta, la conexión se cierra.
+     *
+     * @param cliente el socket que representa la conexión con el cliente.
+     * @param in el flujo de entrada asociado al cliente, desde el cual se
+     * leerán los objetos.
+     */
     private void escucharCliente(Socket cliente, ObjectInputStream in) {
         try {
             while (isRunning) {
@@ -191,12 +214,11 @@ public class Server {
      *
      * @param evento El evento a enviar.
      */
-    
     public void enviarEvento(Evento evento) {
         System.out.println("Enviando evento a todos los clientes: " + evento.getTipo());
         List<Socket> clientesDesconectados = new ArrayList<>();
-        
-        synchronized(outputStreams) {
+
+        synchronized (outputStreams) {
             for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
                 try {
                     ObjectOutputStream out = entry.getValue();
@@ -210,7 +232,7 @@ public class Server {
                 }
             }
         }
-        
+
         for (Socket socket : clientesDesconectados) {
             cerrarConexion(socket);
         }
@@ -281,13 +303,24 @@ public class Server {
         }
     }
 
+    /**
+     * Procesa un evento recibido desde un cliente y lo delega al componente
+     * correspondiente según el tipo de evento. Este método actúa como un
+     * controlador central para manejar distintos tipos de eventos que pueden
+     * generarse en el sistema.
+     *
+     * @param cliente el socket del cliente que envió el evento. Este parámetro
+     * identifica la conexión desde la cual se originó el evento.
+     * @param evento el objeto `Evento` que contiene el tipo y los datos
+     * asociados al evento que debe ser procesado.
+     */
     private void procesarEvento(Socket cliente, Evento evento) {
         System.out.println("Procesando evento: " + evento.getTipo());
         switch (evento.getTipo()) {
             case "CREAR_SALA":
                 serverComunicacion.procesarEvento(cliente, evento);
                 break;
-                 case "SOLICITAR_SALAS":
+            case "SOLICITAR_SALAS":
                 serverComunicacion.procesarEvento(cliente, evento);
                 break;
             case "UNIRSE_SALA":

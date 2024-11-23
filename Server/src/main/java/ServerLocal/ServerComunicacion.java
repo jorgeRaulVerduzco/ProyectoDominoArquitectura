@@ -94,22 +94,39 @@ public class ServerComunicacion {
         nuevaSala.setNumeroFichas(numFichas);
         nuevaSala.setEstado("ESPERANDO");
 
+        // Agregar la sala al servicio
+        servicioControlJuego.iniciarPartida(nuevaSala); // cambien ese capaz y no va ahi
         servicioControlJuego.agregarJugador(nuevaSala, creador);
+
         notificarNuevaSala(nuevaSala);
 
-        // Notificar al creador
         Evento respuesta = new Evento("SALA_CREADA");
         respuesta.agregarDato("sala", nuevaSala);
         server.enviarMensajeACliente(cliente, respuesta);
-        System.out.println("se creo correctamente");
+
+        // Notificar a todos los clientes sobre las salas actualizadas
+        enviarSalasDisponibles(null);
     }
 
-    private void enviarSalasDisponibles(Socket cliente) {
+    /**
+     * mucho texto pero ese envia la lista de salas disponibles a un cliente
+     * específico o a todos los clientes conectados. Este método consulta las
+     * salas disponibles a través del servicio de control de juego y crea un
+     * evento con esta información para enviarlo al cliente(s).
+     *
+     * @param cliente el socket del cliente al que se debe enviar la respuesta.
+     * Si es `null`, el evento se enviará a todos los clientes conectados.
+     */
+    public void enviarSalasDisponibles(Socket cliente) {
         List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
-        System.out.println("Enviando salas disponibles: " + salasDisponibles.size());
         Evento respuesta = new Evento("SOLICITAR_SALAS");
         respuesta.agregarDato("salas", salasDisponibles);
-        server.enviarMensajeACliente(cliente, respuesta);
+
+        if (cliente != null) {
+            server.enviarMensajeACliente(cliente, respuesta);
+        } else {
+            server.enviarEventoATodos(respuesta);
+        }
     }
 
     /**

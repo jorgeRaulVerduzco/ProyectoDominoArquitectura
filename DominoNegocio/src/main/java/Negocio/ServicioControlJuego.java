@@ -51,6 +51,12 @@ public class ServicioControlJuego {
         return false;
     }
 
+    public void agregarSala(Sala sala) {
+        if (!salas.contains(sala)) {
+            salas.add(sala);
+        }
+    }
+
     public void iniciarPartida(Sala sala) {
         Partida partida = new Partida();
         partida.setCantJugadores(sala.getCantJugadores());

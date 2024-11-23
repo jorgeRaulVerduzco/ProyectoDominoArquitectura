@@ -24,20 +24,31 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
     private DefaultTableModel tableModel;
 
     /**
-     * Creates new form UnirseAsalaView
+     * Constructor de la clase que inicializa los componentes y configura la
+     * tabla.
      */
     public UnirseAlaSalaView() {
         initComponents();
         configurarTabla(); // Configuramos la tabla después de inicializar los componentes
-actualizarTablaSalas() ;
+        actualizarTablaSalas();
     }
 
+    /**
+     * Asigna el modelo a la vista y registra la vista como observador del
+     * modelo.
+     *
+     * @param model El modelo asociado a la vista.
+     */
     public void setModel(UnirseAlaSalaModel model) {
         this.model = model;
         model.addObserver(this);
         actualizarTablaSalas();
     }
 
+    /**
+     * Configura el modelo y las propiedades de la tabla de salas. Define las
+     * columnas y asigna renderizadores y editores personalizados.
+     */
     private void configurarTabla() {
         tableModel = new DefaultTableModel() {
             @Override
@@ -56,38 +67,57 @@ actualizarTablaSalas() ;
         tblUnirseSala.getColumn("Acción").setCellEditor(new BotonEditor(new JCheckBox()));
     }
 
-    private void actualizarTablaSalas() {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                List<Sala> salas = model != null ? model.getSalasDisponibles() : Collections.emptyList();
-                System.out.println(salas);//lo puse para que se imprimiera de prueba
-                DefaultTableModel tableModel = (DefaultTableModel) tblUnirseSala.getModel();
-                tableModel.setRowCount(0);
-
-                for (Sala sala : salas) {
-                    if ("ESPERANDO".equals(sala.getEstado())) {
-                        tableModel.addRow(new Object[]{
-                            sala.getId(),
-                            sala.getJugador().size() + "/" + sala.getCantJugadores(),
-                            sala.getNumeroFichas(),
-                            "Unirse"
-                        });
-                    }
-                }
-
-                tblUnirseSala.repaint();
-            } catch (Exception e) {
-                System.err.println("Error actualizando tabla de salas: " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
-    }
+    /**
+     * Método que se ejecuta cuando el modelo notifica un cambio. Actualiza la
+     * tabla de salas disponibles.
+     */
     @Override
     public void update() {
+        System.out.println("Update llamado en la vista");
         actualizarTablaSalas();
     }
 
-    // Renderer para mostrar el botón en la tabla
+    /**
+     * Actualiza los datos de la tabla de salas con la información más reciente
+     * proporcionada por el modelo.
+     */
+    private void actualizarTablaSalas() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(this::actualizarTablaSalas);
+            return;
+        }
+
+        try {
+            List<Sala> salas = model != null ? model.getSalasDisponibles() : Collections.emptyList();
+            System.out.println("Actualizando tabla con " + salas.size() + " salas");
+
+            DefaultTableModel tableModel = (DefaultTableModel) tblUnirseSala.getModel();
+            tableModel.setRowCount(0);
+
+            for (Sala sala : salas) {
+                if ("ESPERANDO".equals(sala.getEstado())) {
+                    Object[] rowData = new Object[]{
+                        sala.getId(),
+                        sala.getJugador().size() + "/" + sala.getCantJugadores(),
+                        sala.getNumeroFichas(),
+                        "Unirse"
+                    };
+                    tableModel.addRow(rowData);
+                    System.out.println("Agregada sala a la tabla: " + sala.getId());
+                }
+            }
+
+            tblUnirseSala.repaint();
+        } catch (Exception e) {
+            System.err.println("Error actualizando tabla de salas: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Clase interna que define un renderizador de celdas para mostrar un botón
+     * en la tabla.
+     */
     class BotonRenderer extends JButton implements TableCellRenderer {
 
         public BotonRenderer() {
@@ -101,7 +131,10 @@ actualizarTablaSalas() ;
         }
     }
 
-    // Editor para capturar las interacciones con el botón
+    /**
+     * Clase interna que define un editor de celdas para manejar las
+     * interacciones con el botón en la tabla.
+     */
     class BotonEditor extends DefaultCellEditor {
 
         private JButton button;
