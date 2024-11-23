@@ -61,7 +61,7 @@ public class Server {
      * @throws IOException Si ocurre un error al crear el ServerSocket.
      */
     public void iniciarServidor(int puerto) throws IOException {
-        servidor = new ServerSocket(puerto, 0, InetAddress.getByName("192.168.1.81"));
+        servidor = new ServerSocket(puerto, 0, InetAddress.getByName("192.168.100.3"));
         running = true;
         isConnected = true;
         System.out.println("Servidor iniciado en dirección IP: 127.0.0.1, puerto: " + puerto);

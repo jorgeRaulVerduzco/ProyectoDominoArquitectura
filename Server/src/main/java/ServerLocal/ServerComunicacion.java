@@ -95,6 +95,7 @@ public class ServerComunicacion {
         nuevaSala.setEstado("ESPERANDO");
 
         // Agregar la sala al servicio
+        servicioControlJuego.agregarSala(nuevaSala);
         servicioControlJuego.iniciarPartida(nuevaSala); // cambien ese capaz y no va ahi
         servicioControlJuego.agregarJugador(nuevaSala, creador);
 
@@ -117,15 +118,16 @@ public class ServerComunicacion {
      * @param cliente el socket del cliente al que se debe enviar la respuesta.
      * Si es `null`, el evento se enviará a todos los clientes conectados.
      */
-    public void enviarSalasDisponibles(Socket cliente) {
+    private void enviarSalasDisponibles(Socket cliente) {
         List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
+        System.out.println("Salas disponibles: " + salasDisponibles.size());  // Verificar si las salas están siendo devueltas correctamente
         Evento respuesta = new Evento("SOLICITAR_SALAS");
-        respuesta.agregarDato("salas", salasDisponibles);
+        respuesta.agregarDato("salas", salasDisponibles);  // Asegúrate de que las salas se agreguen correctamente
 
         if (cliente != null) {
             server.enviarMensajeACliente(cliente, respuesta);
         } else {
-            server.enviarEventoATodos(respuesta);
+            server.enviarEventoATodos(respuesta);  // Enviar a todos los clientes
         }
     }
 

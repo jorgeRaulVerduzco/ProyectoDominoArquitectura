@@ -54,6 +54,9 @@ public class ServicioControlJuego {
     public void agregarSala(Sala sala) {
         if (!salas.contains(sala)) {
             salas.add(sala);
+            System.out.println("Sala añadida: " + sala.getId());
+        } else {
+            System.out.println("La sala ya existe: " + sala.getId());
         }
     }
 
@@ -73,9 +76,11 @@ public class ServicioControlJuego {
     }
 
     public List<Sala> getSalasDisponibles() {
-        return salas.stream()
+        List<Sala> salasDisponibles = salas.stream()
                 .filter(sala -> "ESPERANDO".equals(sala.getEstado()))
                 .collect(Collectors.toList());
+        System.out.println("Salas disponibles: " + salasDisponibles.size());
+        return salasDisponibles;
     }
 
     public boolean abandonarSala(Sala sala, Jugador jugador) {
