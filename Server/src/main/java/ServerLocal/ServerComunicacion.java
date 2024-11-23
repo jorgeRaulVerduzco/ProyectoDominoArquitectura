@@ -85,28 +85,35 @@ public class ServerComunicacion {
      * sala (número de jugadores, fichas, etc.).
      */
     private void crearNuevaSala(Socket cliente, Evento evento) {
+        try {
         int numJugadores = (int) evento.obtenerDato("numJugadores");
         int numFichas = (int) evento.obtenerDato("numFichas");
         Jugador creador = (Jugador) evento.obtenerDato("jugador");
-
+        
         Sala nuevaSala = new Sala();
         nuevaSala.setCantJugadores(numJugadores);
         nuevaSala.setNumeroFichas(numFichas);
         nuevaSala.setEstado("ESPERANDO");
-
-        // Agregar la sala al servicio
-        servicioControlJuego.agregarSala(nuevaSala);
-        servicioControlJuego.iniciarPartida(nuevaSala); // cambien ese capaz y no va ahi
+        
+        servicioControlJuego.agregarSala(nuevaSala);  // Añade esta línea
         servicioControlJuego.agregarJugador(nuevaSala, creador);
-
+        
+        System.out.println("Nueva sala creada: " + nuevaSala.getId());
+        
+        // Notificar a todos los clientes
         notificarNuevaSala(nuevaSala);
-
+        
+        // Enviar respuesta al creador
         Evento respuesta = new Evento("SALA_CREADA");
         respuesta.agregarDato("sala", nuevaSala);
         server.enviarMensajeACliente(cliente, respuesta);
-
-        // Notificar a todos los clientes sobre las salas actualizadas
-        enviarSalasDisponibles(null);
+        
+        // Actualizar la lista de salas para todos
+        enviarSalasDisponibles(null);  // null para enviar a todos
+    } catch (Exception e) {
+        System.err.println("Error creando sala: " + e.getMessage());
+        e.printStackTrace();
+    }
     }
 
     /**
@@ -119,17 +126,23 @@ public class ServerComunicacion {
      * Si es `null`, el evento se enviará a todos los clientes conectados.
      */
     private void enviarSalasDisponibles(Socket cliente) {
-        List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
-        System.out.println("Salas disponibles: " + salasDisponibles.size());  // Verificar si las salas están siendo devueltas correctamente
-        Evento respuesta = new Evento("SOLICITAR_SALAS");
-        respuesta.agregarDato("salas", salasDisponibles);  // Asegúrate de que las salas se agreguen correctamente
 
-        if (cliente != null) {
+
+
+
+           try {
+            List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
+            System.out.println("Enviando " + salasDisponibles.size() + " salas disponibles");
+            
+            Evento respuesta = new Evento("SOLICITAR_SALAS");
+            respuesta.agregarDato("salas", new ArrayList<>(salasDisponibles));
             server.enviarMensajeACliente(cliente, respuesta);
-        } else {
-            server.enviarEventoATodos(respuesta);  // Enviar a todos los clientes
+        } catch (Exception e) {
+            System.err.println("Error al enviar salas disponibles: " + e.getMessage());
+            e.printStackTrace();
         }
     }
+    
 
     /**
      * Permite que un cliente se una a una sala de juego existente, notificando

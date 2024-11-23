@@ -96,26 +96,19 @@ public class UnirseAlaSalaModel {
      * @param salas nueva lista de salas disponibles.
      */
     public void actualizarSalasDisponibles(List<Sala> salas) {
-        System.out.println("Actualizando salas disponibles: " + (salas != null ? salas.size() : "null"));
-        if (salas == null || salas.isEmpty()) {
-            System.out.println("No hay salas disponibles.");
-            return;
-        }
+        if (salas == null) {
+        this.salasDisponibles = new ArrayList<>();
+    } else {
         this.salasDisponibles = new ArrayList<>(salas);
-
-        // Llenar la tabla con las salas disponibles
-        for (Sala sala : salasDisponibles) {
-            System.out.println("Sala ID: " + sala.getId()
-                    + ", Estado: " + sala.getEstado()
-                    + ", Jugadores: " + sala.getJugador().size() + "/" + sala.getCantJugadores()
-                    + ", Fichas: " + sala.getNumeroFichas());
-        }
-
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(this::notifyObservers);
-        } else {
-            notifyObservers();
-        }
+    }
+    
+    System.out.println("Actualizando salas disponibles. Total: " + 
+        (this.salasDisponibles != null ? this.salasDisponibles.size() : 0));
+    
+    // Asegúrate de que la notificación se haga en el EDT
+    SwingUtilities.invokeLater(() -> {
+        notifyObservers();
+    });
     }
 
     /**

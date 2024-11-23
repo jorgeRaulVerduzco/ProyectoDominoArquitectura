@@ -61,7 +61,7 @@ public class Server {
      * @throws IOException Si ocurre un error al crear el ServerSocket.
      */
     public void iniciarServidor(int puerto) throws IOException {
-        servidor = new ServerSocket(puerto, 0, InetAddress.getByName("192.168.100.3"));
+        servidor = new ServerSocket(puerto, 0, InetAddress.getByName("192.168.1.81"));
         running = true;
         isConnected = true;
         System.out.println("Servidor iniciado en dirección IP: 127.0.0.1, puerto: " + puerto);
@@ -261,17 +261,19 @@ public class Server {
         try {
             ObjectOutputStream out = outputStreams.get(cliente);
             if (out != null) {
-                out.writeObject(mensaje);
-                out.flush();
-                System.out.println("Mensaje enviado exitosamente al cliente");
+                synchronized(out) {
+                    out.writeObject(mensaje);
+                    out.reset();  // Importante para evitar problemas de caché
+                    out.flush();
+                }
+                System.out.println("Mensaje enviado exitosamente: " + mensaje.getTipo());
             } else {
-                System.err.println("Error: No se encontró el stream de salida para el cliente");
+                System.err.println("No se encontró stream de salida para el cliente");
             }
         } catch (IOException e) {
-            System.err.println("Error al enviar mensaje al cliente: " + e.getMessage());
-            manejarErrorComunicacion();
+            System.err.println("Error enviando mensaje: " + e.getMessage());
+            cerrarConexion(cliente);
         }
-
     }
 
     /**
