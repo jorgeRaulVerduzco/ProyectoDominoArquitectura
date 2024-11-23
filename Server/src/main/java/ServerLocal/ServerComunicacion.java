@@ -4,10 +4,8 @@
  */
 package ServerLocal;
 
-import Dominio.Jugador;
-import Dominio.Sala;
 import EventoJuego.Evento;
-import Negocio.ServicioControlJuego;
+
 import Server.Server;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -25,7 +23,7 @@ public class ServerComunicacion {
 
     private Server server;
     private ObjectInputStream in;
-    private ServicioControlJuego servicioControlJuego;
+//    private ServicioControlJuego servicioControlJuego;
 
     /**
      * Constructor que inicializa la comunicación del servidor con los clientes
@@ -36,7 +34,7 @@ public class ServerComunicacion {
      */
     public ServerComunicacion(Server server) {
         this.server = server;
-        this.servicioControlJuego = new ServicioControlJuego();
+//        this.servicioControlJuego = new ServicioControlJuego();
     }
 
     /**
@@ -88,24 +86,24 @@ public class ServerComunicacion {
         try {
         int numJugadores = (int) evento.obtenerDato("numJugadores");
         int numFichas = (int) evento.obtenerDato("numFichas");
-        Jugador creador = (Jugador) evento.obtenerDato("jugador");
-        
-        Sala nuevaSala = new Sala();
-        nuevaSala.setCantJugadores(numJugadores);
-        nuevaSala.setNumeroFichas(numFichas);
-        nuevaSala.setEstado("ESPERANDO");
-        
-        servicioControlJuego.agregarSala(nuevaSala);  // Añade esta línea
-        servicioControlJuego.agregarJugador(nuevaSala, creador);
-        
-        System.out.println("Nueva sala creada: " + nuevaSala.getId());
-        
-        // Notificar a todos los clientes
-        notificarNuevaSala(nuevaSala);
+//        Jugador creador = (Jugador) evento.obtenerDato("jugador");
+//        
+//        Sala nuevaSala = new Sala();
+//        nuevaSala.setCantJugadores(numJugadores);
+//        nuevaSala.setNumeroFichas(numFichas);
+//        nuevaSala.setEstado("ESPERANDO");
+//        
+//        servicioControlJuego.agregarSala(nuevaSala);  // Añade esta línea
+//        servicioControlJuego.agregarJugador(nuevaSala, creador);
+//        
+//        System.out.println("Nueva sala creada: " + nuevaSala.getId());
+//        
+//        // Notificar a todos los clientes
+//        notificarNuevaSala(nuevaSala);
         
         // Enviar respuesta al creador
         Evento respuesta = new Evento("SALA_CREADA");
-        respuesta.agregarDato("sala", nuevaSala);
+//        respuesta.agregarDato("sala", nuevaSala);
         server.enviarMensajeACliente(cliente, respuesta);
         
         // Actualizar la lista de salas para todos
@@ -130,17 +128,17 @@ public class ServerComunicacion {
 
 
 
-           try {
-            List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
-            System.out.println("Enviando " + salasDisponibles.size() + " salas disponibles");
-            
-            Evento respuesta = new Evento("SOLICITAR_SALAS");
-            respuesta.agregarDato("salas", new ArrayList<>(salasDisponibles));
-            server.enviarMensajeACliente(cliente, respuesta);
-        } catch (Exception e) {
-            System.err.println("Error al enviar salas disponibles: " + e.getMessage());
-            e.printStackTrace();
-        }
+//           try {
+////            List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
+//            System.out.println("Enviando " + salasDisponibles.size() + " salas disponibles");
+//            
+//            Evento respuesta = new Evento("SOLICITAR_SALAS");
+//            respuesta.agregarDato("salas", new ArrayList<>(salasDisponibles));
+//            server.enviarMensajeACliente(cliente, respuesta);
+//        } catch (Exception e) {
+//            System.err.println("Error al enviar salas disponibles: " + e.getMessage());
+//            e.printStackTrace();
+//        }
     }
     
 
@@ -153,26 +151,26 @@ public class ServerComunicacion {
      * que se va a unir.
      */
     private void unirseASala(Socket cliente, Evento evento) {
-        Sala sala = (Sala) evento.obtenerDato("sala");
-        Jugador jugador = (Jugador) evento.obtenerDato("jugador");
+//        Sala sala = (Sala) evento.obtenerDato("sala");
+//        Jugador jugador = (Jugador) evento.obtenerDato("jugador");
 
-        if (servicioControlJuego.agregarJugador(sala, jugador)) {
-            Evento respuesta = new Evento("JUGADOR_UNIDO");
-            respuesta.agregarDato("jugador", jugador);
-            respuesta.agregarDato("sala", sala);
-
-            for (Jugador j : sala.getJugador()) {
-                Socket socketJugador = server.getSocketJugador(j);
-                if (socketJugador != null) {
-                    server.enviarMensajeACliente(socketJugador, respuesta);
-                }
-            }
+//        if (servicioControlJuego.agregarJugador(sala, jugador)) {
+//            Evento respuesta = new Evento("JUGADOR_UNIDO");
+//            respuesta.agregarDato("jugador", jugador);
+//            respuesta.agregarDato("sala", sala);
+//
+//            for (Jugador j : sala.getJugador()) {
+//                Socket socketJugador = server.getSocketJugador(j);
+//                if (socketJugador != null) {
+//                    server.enviarMensajeACliente(socketJugador, respuesta);
+//                }
+//            }
 
             // Si la sala está llena, iniciar la partida
-            if (sala.getJugador().size() == sala.getCantJugadores()) {
-                iniciarPartida(sala);
-            }
-        }
+//            if (sala.getJugador().size() == sala.getCantJugadores()) {
+//                iniciarPartida(sala);
+//            }
+//        }
     }
 
     /**
@@ -181,19 +179,19 @@ public class ServerComunicacion {
      *
      * @param sala La sala en la que se iniciará la partida.
      */
-    private void iniciarPartida(Sala sala) {
-        Evento eventoInicio = new Evento("INICIAR_PARTIDA");
-        eventoInicio.agregarDato("sala", sala);
-        eventoInicio.agregarDato("partida", sala.getPartida());
-
-        // Notificar a todos los jugadores
-        for (Jugador jugador : sala.getJugador()) {
-            Socket socketJugador = server.getSocketJugador(jugador);
-            if (socketJugador != null) {
-                server.enviarMensajeACliente(socketJugador, eventoInicio);
-            }
-        }
-    }
+//    private void iniciarPartida(Sala sala) {
+//        Evento eventoInicio = new Evento("INICIAR_PARTIDA");
+//        eventoInicio.agregarDato("sala", sala);
+//        eventoInicio.agregarDato("partida", sala.getPartida());
+//
+//        // Notificar a todos los jugadores
+//        for (Jugador jugador : sala.getJugador()) {
+//            Socket socketJugador = server.getSocketJugador(jugador);
+//            if (socketJugador != null) {
+//                server.enviarMensajeACliente(socketJugador, eventoInicio);
+//            }
+//        }
+//    }
 
     /**
      * Maneja los errores de comunicación, mostrando un mensaje de error en la
@@ -209,10 +207,10 @@ public class ServerComunicacion {
      *
      * @param sala La sala que ha sido creada.
      */
-    private void notificarNuevaSala(Sala sala) {
-        Evento evento = new Evento("NUEVA_SALA");
-        evento.agregarDato("sala", sala);
-        server.enviarEvento(evento);
-    }
+//    private void notificarNuevaSala(Sala sala) {
+//        Evento evento = new Evento("NUEVA_SALA");
+//        evento.agregarDato("sala", sala);
+//        server.enviarEvento(evento);
+//    }
 
 }

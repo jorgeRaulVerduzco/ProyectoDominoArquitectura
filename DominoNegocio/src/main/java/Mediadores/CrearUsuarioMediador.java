@@ -6,7 +6,7 @@ package Mediadores;
 
 import Server.Server;
 import EventoJuego.Evento;
-import Presenctacion.MenuPrincipalMVC.CrearUsuarioModel;
+
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -38,18 +38,18 @@ public class CrearUsuarioMediador {
         latch.await();  // Espera hasta que el servidor esté inicializado
     }
 
-    public void crearJugador(CrearUsuarioModel usuario) throws InterruptedException {
-        esperarServidor();  // Asegura que el servidor esté listo antes de continuar
-        if (server == null) {
-            System.out.println("Error: El servidor no está inicializado.");
-            throw new IllegalStateException("Server no está inicializado.");
-        }
-        System.out.println("Servidor está inicializado. Creando el jugador...");
-
-        Evento evento = new Evento("REGISTRO_USUARIO");
-        evento.agregarDato("nombre", usuario.getNombre());
-        evento.agregarDato("avatar", usuario.getAvatar());
-
-        server.enviarEvento(evento);
-    }
+//    public void crearJugador(Usuario usuario) throws InterruptedException {
+//        esperarServidor();  // Asegura que el servidor esté listo antes de continuar
+//        if (server == null) {
+//            System.out.println("Error: El servidor no está inicializado.");
+//            throw new IllegalStateException("Server no está inicializado.");
+//        }
+//        System.out.println("Servidor está inicializado. Creando el jugador...");
+//
+//        Evento evento = new Evento("REGISTRO_USUARIO");
+//        evento.agregarDato("nombre", usuario.getNombre());
+//        evento.agregarDato("avatar", usuario.getAvatar());
+//
+//        server.enviarEvento(evento);
+//    }
 }

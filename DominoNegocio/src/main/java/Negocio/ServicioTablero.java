@@ -8,7 +8,7 @@ import Dominio.Ficha;
 import Dominio.Jugador;
 import Dominio.Pozo;
 import Dominio.Tablero;
-import PresentacionTableroMVC.TableroModel;
+
 import java.util.ArrayList;
 import java.util.List;
 

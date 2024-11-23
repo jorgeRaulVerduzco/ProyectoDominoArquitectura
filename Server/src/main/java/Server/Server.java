@@ -4,8 +4,7 @@
  */
 package Server;
 
-import Controller.Controller;
-import Dominio.Jugador;
+
 import EventoJuego.Evento;
 import ServerLocal.ServerComunicacion;
 import java.io.DataInputStream;
@@ -30,8 +29,8 @@ public class Server {
     private ServerSocket servidor;
     private List<Socket> clientes;
     private Map<Socket, ObjectOutputStream> outputStreams;
-    private Map<Socket, Jugador> jugadoresPorSocket;
-    private Controller blackboardController;
+//    private Map<Socket, Jugador> jugadoresPorSocket;
+//    private Controller blackboardController;
     private ServerComunicacion serverComunicacion;
     private volatile boolean running;
     private boolean isRunning;
@@ -45,8 +44,8 @@ public class Server {
     public Server() {
         this.clientes = new ArrayList<>();
         this.outputStreams = new HashMap<>();
-        this.jugadoresPorSocket = new HashMap<>();
-        this.blackboardController = new Controller(this);
+//        this.jugadoresPorSocket = new HashMap<>();
+//        this.blackboardController = new Controller(this);
         this.serverComunicacion = new ServerComunicacion(this);
         this.running = false;
         this.isConnected = false;
@@ -181,9 +180,9 @@ public class Server {
      *
      * @return El controlador blackboardController.
      */
-    public Controller getController() {
-        return this.blackboardController;
-    }
+//    public Controller getController() {
+//        return this.blackboardController;
+//    }
 
     /**
      * Registra a un jugador en el mapa de jugadores por socket.
@@ -191,9 +190,9 @@ public class Server {
      * @param socket El socket asociado al jugador.
      * @param jugador El jugador a registrar.
      */
-    public void registrarJugador(Socket socket, Jugador jugador) {
-        jugadoresPorSocket.put(socket, jugador);
-    }
+//    public void registrarJugador(Socket socket, Jugador jugador) {
+//        jugadoresPorSocket.put(socket, jugador);
+//    }
 
     /**
      * Obtiene el socket asociado a un jugador dado.
@@ -201,13 +200,13 @@ public class Server {
      * @param jugador El jugador cuyo socket se desea obtener.
      * @return El socket asociado al jugador, o null si no existe.
      */
-    public Socket getSocketJugador(Jugador jugador) {
-        return jugadoresPorSocket.entrySet().stream()
-                .filter(entry -> entry.getValue().equals(jugador))
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .orElse(null);
-    }
+//    public Socket getSocketJugador(Jugador jugador) {
+//        return jugadoresPorSocket.entrySet().stream()
+//                .filter(entry -> entry.getValue().equals(jugador))
+//                .map(Map.Entry::getKey)
+//                .findFirst()
+//                .orElse(null);
+//    }
 
     /**
      * Envía un evento a todos los clientes conectados.
@@ -244,12 +243,12 @@ public class Server {
      * @param jugador El jugador que recibirá el evento.
      * @param evento El evento a enviar.
      */
-    public void enviarEventoAJugador(Jugador jugador, Evento evento) {
-        Socket socket = getSocketJugador(jugador);
-        if (socket != null) {
-            enviarMensajeACliente(socket, evento);
-        }
-    }
+//    public void enviarEventoAJugador(Jugador jugador, Evento evento) {
+//        Socket socket = getSocketJugador(jugador);
+//        if (socket != null) {
+//            enviarMensajeACliente(socket, evento);
+//        }
+//    }
 
     /**
      * Envía un mensaje a un cliente específico.
@@ -296,10 +295,10 @@ public class Server {
             cliente.close();
             clientes.remove(cliente);
             outputStreams.remove(cliente);
-            Jugador jugador = jugadoresPorSocket.remove(cliente);
-            if (jugador != null) {
-                blackboardController.procesarDesconexion(jugador);
-            }
+//            Jugador jugador = jugadoresPorSocket.remove(cliente);
+//            if (jugador != null) {
+//                blackboardController.procesarDesconexion(jugador);
+//            }
         } catch (IOException e) {
             System.err.println("Error al cerrar la conexión: " + e.getMessage());
         }
@@ -328,7 +327,7 @@ public class Server {
             case "UNIRSE_SALA":
             case "ABANDONAR_SALA":
             case "JUGADA":
-                blackboardController.procesarEvento(cliente, evento);
+//                blackboardController.procesarEvento(cliente, evento);
                 break;
             default:
                 System.out.println("Evento no reconocido: " + evento.getTipo());

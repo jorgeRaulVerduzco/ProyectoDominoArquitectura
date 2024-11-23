@@ -4,20 +4,7 @@
  */
 package Main;
 
-import Presenctacion.CrearSalaMVC.CrearSalaController;
-import Presenctacion.CrearSalaMVC.CrearSalaModel;
-import Presenctacion.CrearSalaMVC.CrearSalaView;
-import Presenctacion.Mediador;
-import Presenctacion.MenuPrincipalMVC.CrearUsuarioController;
-import Presenctacion.MenuPrincipalMVC.CrearUsuarioView;
-import Presenctacion.PozoMVC.PozoModel;
-import Presenctacion.PozoMVC.PozoView;
-import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaController;
-import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaModel;
-import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaView;
-import PresentacionTableroMVC.TableroController;
-import PresentacionTableroMVC.TableroModel;
-import PresentacionTableroMVC.TableroView;
+
 import Server.Server;
 import java.awt.Frame;
 import java.io.IOException;
@@ -75,55 +62,55 @@ public class Juego {
             System.exit(1);
         }
 
-        // Inicializar los componentes del juego
-        PozoModel pozoModel = new PozoModel();
-        pozoModel.getPozo().inicializarFichas();
-
-        PozoView pozoView = new PozoView(new Frame(), true, pozoModel);
-        pozoView.setVisible(false);
-
-        CrearUsuarioView crearUsuarioView = new CrearUsuarioView();
-        CrearSalaModel crearSalaModel = new CrearSalaModel();
-        CrearSalaView crearSalaView = new CrearSalaView();
-        crearSalaView.setModel(crearSalaModel); // Conectar modelo y vista
-        crearSalaModel.addObserver(crearSalaView);
-        TableroModel tableroModel = new TableroModel();
-        TableroView tableroView = new TableroView(new Frame(), true, tableroModel, pozoModel);
-
-        // Inicializar controladores
-        CrearUsuarioController crearUsuarioController = new CrearUsuarioController(crearUsuarioView);
-        CrearSalaController crearSalaController = new CrearSalaController(crearSalaModel, crearSalaView);
-        TableroController tableroController = new TableroController(tableroModel, tableroView);
-        UnirseAlaSalaModel unirseAlaSalaModel = new UnirseAlaSalaModel();
-        UnirseAlaSalaView unirseAlaSalaView = new UnirseAlaSalaView();
-        UnirseAlaSalaController unirseAlaSalaController = new UnirseAlaSalaController(
-                unirseAlaSalaModel,
-                unirseAlaSalaView
-        );
-        // Crear el mediador
-        Mediador mediador = new Mediador(
-                crearUsuarioController,
-                crearSalaController,
-                crearSalaView,
-                tableroController,
-                tableroView,
-                unirseAlaSalaController
-        );
-        crearUsuarioView.setMediator(mediador);
-
-        // Configurar el servidor en el mediador y controladores
-        mediador.setServer(server);
-        crearSalaController.setServer(server);
-        // Configurar el mediador en los controladores
-        crearUsuarioController.setMediator(mediador);
-        crearSalaController.setMediator(mediador);
-        // ... resto del código ...
-        unirseAlaSalaController.setMediator(mediador);
-        unirseAlaSalaController.setServer(server);
-        tableroController.setMediator(mediador);
+//        // Inicializar los componentes del juego
+//        PozoModel pozoModel = new PozoModel();
+//        pozoModel.getPozo().inicializarFichas();
+//
+//        PozoView pozoView = new PozoView(new Frame(), true, pozoModel);
+//        pozoView.setVisible(false);
+//
+//        CrearUsuarioView crearUsuarioView = new CrearUsuarioView();
+//        CrearSalaModel crearSalaModel = new CrearSalaModel();
+//        CrearSalaView crearSalaView = new CrearSalaView();
+//        crearSalaView.setModel(crearSalaModel); // Conectar modelo y vista
+//        crearSalaModel.addObserver(crearSalaView);
+//        TableroModel tableroModel = new TableroModel();
+//        TableroView tableroView = new TableroView(new Frame(), true, tableroModel, pozoModel);
+//
+//        // Inicializar controladores
+//        CrearUsuarioController crearUsuarioController = new CrearUsuarioController(crearUsuarioView);
+//        CrearSalaController crearSalaController = new CrearSalaController(crearSalaModel, crearSalaView);
+//        TableroController tableroController = new TableroController(tableroModel, tableroView);
+//        UnirseAlaSalaModel unirseAlaSalaModel = new UnirseAlaSalaModel();
+//        UnirseAlaSalaView unirseAlaSalaView = new UnirseAlaSalaView();
+//        UnirseAlaSalaController unirseAlaSalaController = new UnirseAlaSalaController(
+//                unirseAlaSalaModel,
+//                unirseAlaSalaView
+//        );
+//        // Crear el mediador
+//        Mediador mediador = new Mediador(
+//                crearUsuarioController,
+//                crearSalaController,
+//                crearSalaView,
+//                tableroController,
+//                tableroView,
+//                unirseAlaSalaController
+//        );
+//        crearUsuarioView.setMediator(mediador);
+//
+//        // Configurar el servidor en el mediador y controladores
+//        mediador.setServer(server);
+//        crearSalaController.setServer(server);
+//        // Configurar el mediador en los controladores
+//        crearUsuarioController.setMediator(mediador);
+//        crearSalaController.setMediator(mediador);
+//        // ... resto del código ...
+//        unirseAlaSalaController.setMediator(mediador);
+//        unirseAlaSalaController.setServer(server);
+//        tableroController.setMediator(mediador);
 
         // Iniciar la aplicación
-        mediador.iniciarAplicacion();
+//        mediador.iniciarAplicacion();
 
         System.out.println("Aplicación iniciada correctamente");
 
