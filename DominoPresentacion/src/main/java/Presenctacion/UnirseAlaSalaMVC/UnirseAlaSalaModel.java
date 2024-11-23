@@ -78,6 +78,17 @@ public class UnirseAlaSalaModel {
     }
 
     /**
+     * Solicita al servidor la lista de salas disponibles. Envia un evento
+     * "SOLICITAR_SALAS" si el servidor está conectado.
+     */
+    public void solicitarSalasDisponibles() {
+        if (server != null && server.isConnected()) {
+            Evento evento = new Evento("SOLICITAR_SALAS");
+            server.enviarEvento(evento);
+        }
+    }
+
+    /**
      * Actualiza la lista de salas disponibles con una nueva lista y notifica a
      * los observadores. Si se ejecuta fuera del hilo de la interfaz gráfica,
      * utiliza el Event Dispatch Thread (EDT).
@@ -86,9 +97,20 @@ public class UnirseAlaSalaModel {
      */
     public void actualizarSalasDisponibles(List<Sala> salas) {
         System.out.println("Actualizando salas disponibles: " + (salas != null ? salas.size() : "null"));
-        this.salasDisponibles = salas != null ? new ArrayList<>(salas) : new ArrayList<>();
+        if (salas == null || salas.isEmpty()) {
+            System.out.println("No hay salas disponibles.");
+            return;
+        }
+        this.salasDisponibles = new ArrayList<>(salas);
 
-        // Asegurarnos de que la actualización ocurra en el EDT
+        // Llenar la tabla con las salas disponibles
+        for (Sala sala : salasDisponibles) {
+            System.out.println("Sala ID: " + sala.getId()
+                    + ", Estado: " + sala.getEstado()
+                    + ", Jugadores: " + sala.getJugador().size() + "/" + sala.getCantJugadores()
+                    + ", Fichas: " + sala.getNumeroFichas());
+        }
+
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(this::notifyObservers);
         } else {
@@ -110,17 +132,6 @@ public class UnirseAlaSalaModel {
                         + ", Jugadores: " + sala.getJugador().size() + "/"
                         + sala.getCantJugadores());
             }
-        }
-    }
-
-    /**
-     * Solicita al servidor la lista de salas disponibles. Envia un evento
-     * "SOLICITAR_SALAS" si el servidor está conectado.
-     */
-    public void solicitarSalasDisponibles() {
-        if (server != null && server.isConnected()) {
-            Evento evento = new Evento("SOLICITAR_SALAS");
-            server.enviarEvento(evento);
         }
     }
 

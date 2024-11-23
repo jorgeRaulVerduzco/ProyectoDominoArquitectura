@@ -4,6 +4,7 @@
  */
 package Presenctacion.UnirseAlaSalaMVC;
 
+import Dominio.Jugador;
 import Dominio.Sala;
 import Presenctacion.Observer;
 import javax.swing.*;
@@ -12,6 +13,7 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.List;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Collections;
 
 /**
@@ -30,6 +32,7 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
     public UnirseAlaSalaView() {
         initComponents();
         configurarTabla(); // Configuramos la tabla después de inicializar los componentes
+
         actualizarTablaSalas();
     }
 
@@ -50,6 +53,7 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
      * columnas y asigna renderizadores y editores personalizados.
      */
     private void configurarTabla() {
+        // Crear el modelo de la tabla
         tableModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -57,12 +61,16 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
             }
         };
 
+        // Definir las columnas de la tabla
         tableModel.addColumn("ID");
         tableModel.addColumn("Jugadores");
         tableModel.addColumn("Fichas");
         tableModel.addColumn("Acción");
 
+        // Asignar el modelo de la tabla
         tblUnirseSala.setModel(tableModel);
+
+        // Configurar la columna "Acción" para que tenga el botón de "Unirse"
         tblUnirseSala.getColumn("Acción").setCellRenderer(new BotonRenderer());
         tblUnirseSala.getColumn("Acción").setCellEditor(new BotonEditor(new JCheckBox()));
     }
@@ -73,8 +81,11 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
      */
     @Override
     public void update() {
-        System.out.println("Update llamado en la vista");
-        actualizarTablaSalas();
+        System.out.println("Actualizando vista: las salas han cambiado.");
+        // Solo actualizar la tabla si hay salas disponibles
+        if (model != null && !model.getSalasDisponibles().isEmpty()) {
+            actualizarTablaSalas();
+        }
     }
 
     /**
@@ -82,6 +93,7 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
      * proporcionada por el modelo.
      */
     private void actualizarTablaSalas() {
+        // Asegúrate de que se actualiza en el hilo de eventos de Swing
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(this::actualizarTablaSalas);
             return;
@@ -91,22 +103,25 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
             List<Sala> salas = model != null ? model.getSalasDisponibles() : Collections.emptyList();
             System.out.println("Actualizando tabla con " + salas.size() + " salas");
 
+            // Obtener el modelo de la tabla y limpiar las filas previas
             DefaultTableModel tableModel = (DefaultTableModel) tblUnirseSala.getModel();
             tableModel.setRowCount(0);
 
+            // Llenar la tabla con las salas disponibles
             for (Sala sala : salas) {
                 if ("ESPERANDO".equals(sala.getEstado())) {
                     Object[] rowData = new Object[]{
-                        sala.getId(),
-                        sala.getJugador().size() + "/" + sala.getCantJugadores(),
-                        sala.getNumeroFichas(),
-                        "Unirse"
+                        sala.getId(), // ID de la sala
+                        sala.getJugador().size() + "/" + sala.getCantJugadores(), // Jugadores en la sala
+                        sala.getNumeroFichas(), // Fichas en la sala
+                        "Unirse" // Botón "Unirse"
                     };
                     tableModel.addRow(rowData);
                     System.out.println("Agregada sala a la tabla: " + sala.getId());
                 }
             }
 
+            // Refrescar la vista de la tabla
             tblUnirseSala.repaint();
         } catch (Exception e) {
             System.err.println("Error actualizando tabla de salas: " + e.getMessage());
