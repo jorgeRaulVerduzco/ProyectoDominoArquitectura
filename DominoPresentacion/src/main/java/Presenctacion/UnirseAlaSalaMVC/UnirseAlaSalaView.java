@@ -6,7 +6,9 @@ package Presenctacion.UnirseAlaSalaMVC;
 
 import Dominio.Jugador;
 import Dominio.Sala;
+import EventoJuego.Evento;
 import Presenctacion.Observer;
+import Server.Server;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
+import javax.swing.table.TableColumn;
 
 /**
  *
@@ -25,130 +28,124 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
     private UnirseAlaSalaModel model;
     private DefaultTableModel tableModel;
 
-    /**
-     * Constructor de la clase que inicializa los componentes y configura la
-     * tabla.
-     */
     public UnirseAlaSalaView() {
-        initComponents();
-        configurarTabla(); // Configuramos la tabla después de inicializar los componentes
-
-        actualizarTablaSalas();
+       initComponents();
+    configurarTabla();
+        
+        
+        System.out.println("Tabla configurada. Columnas: " + tableModel.getColumnCount());
     }
+    
+    
 
-    /**
-     * Asigna el modelo a la vista y registra la vista como observador del
-     * modelo.
-     *
-     * @param model El modelo asociado a la vista.
-     */
     public void setModel(UnirseAlaSalaModel model) {
-        this.model = model;
-        model.addObserver(this);
-        actualizarTablaSalas();
-    }
+    System.out.println("Estableciendo modelo...");
+    this.model = model;
+    model.addObserver(this);
+    System.out.println("Solicitando salas disponibles...");
+    model.solicitarSalasDisponibles();
+}
 
-    /**
-     * Configura el modelo y las propiedades de la tabla de salas. Define las
-     * columnas y asigna renderizadores y editores personalizados.
-     */
-    private void configurarTabla() {
-        // Crear el modelo de la tabla
-        tableModel = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return column == 3; // Solo la columna del botón es editable
-            }
-        };
+     @Override
+public void update() {
+    System.out.println("Vista: Recibida notificación de actualización");
+    actualizarTablaSalas();
+}
 
-        // Definir las columnas de la tabla
-        tableModel.addColumn("ID");
-        tableModel.addColumn("Jugadores");
-        tableModel.addColumn("Fichas");
-        tableModel.addColumn("Acción");
 
-        // Asignar el modelo de la tabla
-        tblUnirseSala.setModel(tableModel);
 
-        // Configurar la columna "Acción" para que tenga el botón de "Unirse"
-        tblUnirseSala.getColumn("Acción").setCellRenderer(new BotonRenderer());
-        tblUnirseSala.getColumn("Acción").setCellEditor(new BotonEditor(new JCheckBox()));
-    }
 
-    /**
-     * Método que se ejecuta cuando el modelo notifica un cambio. Actualiza la
-     * tabla de salas disponibles.
-     */
-    @Override
-    public void update() {
-        System.out.println("Actualizando vista: las salas han cambiado.");
-        // Solo actualizar la tabla si hay salas disponibles
-        if (model != null && !model.getSalasDisponibles().isEmpty()) {
-            actualizarTablaSalas();
-        }
-    }
-
-    /**
-     * Actualiza los datos de la tabla de salas con la información más reciente
-     * proporcionada por el modelo.
-     */
-  private void actualizarTablaSalas() {
+void actualizarTablaSalas() {
     if (!SwingUtilities.isEventDispatchThread()) {
         SwingUtilities.invokeLater(this::actualizarTablaSalas);
         return;
     }
 
     try {
-        List<Sala> salas = model != null ? model.getSalasDisponibles() : Collections.emptyList();
-        System.out.println("Actualizando tabla con " + salas.size() + " salas");
-        
-        DefaultTableModel tableModel = (DefaultTableModel) tblUnirseSala.getModel();
+        List<Sala> salas = model.getSalasDisponibles();
+        System.out.println("Vista: Actualizando tabla con " + (salas != null ? salas.size() : "null") + " salas");
+
+        // Limpiar la tabla
         tableModel.setRowCount(0);
-        
-        for (Sala sala : salas) {
-          
-                Object[] rowData = new Object[]{
+
+        // Agregar las salas a la tabla
+        if (salas != null) {
+            for (Sala sala : salas) {
+                Object[] rowData = {
                     sala.getId(),
                     sala.getJugador().size() + "/" + sala.getCantJugadores(),
                     sala.getNumeroFichas(),
-                    "Unirse"
+                    "Unirse" // Botón de acción
                 };
                 tableModel.addRow(rowData);
-                System.out.println("Agregada sala a la tabla: " + sala.getId());
             }
-        
-        
+        }
+
+        // Actualizar la vista
+        tableModel.fireTableDataChanged();
         tblUnirseSala.repaint();
+
     } catch (Exception e) {
-        System.err.println("Error actualizando tabla de salas: " + e.getMessage());
+        System.err.println("Vista: Error actualizando tabla: " + e.getMessage());
         e.printStackTrace();
     }
 }
 
 
-    /**
-     * Clase interna que define un renderizador de celdas para mostrar un botón
-     * en la tabla.
-     */
-    class BotonRenderer extends JButton implements TableCellRenderer {
 
-        public BotonRenderer() {
-            setOpaque(true);
+
+    // En tu clase de manejo de eventos del servidor
+public void handleSalasDisponibles(List<Sala> salas) {
+    System.out.println("Servidor: Recibida lista de salas. Cantidad: " + 
+        (salas != null ? salas.size() : "null"));
+    // Actualizar el modelo
+    model.actualizarSalas(salas);
+}
+
+   private void configurarTabla() {
+    // Modelo de la tabla
+    tableModel = new DefaultTableModel() {
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return column == 3; // Solo la columna de "Acción" es editable
         }
 
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setText((value == null) ? "Unirse" : value.toString());
-            return this;
+        public Class<?> getColumnClass(int columnIndex) {
+            switch (columnIndex) {
+                case 0: return Integer.class; // ID
+                case 1: return String.class;  // Jugadores
+                case 2: return Integer.class; // Fichas
+                case 3: return String.class;  // Acción
+                default: return Object.class;
+            }
         }
-    }
+    };
 
-    /**
-     * Clase interna que define un editor de celdas para manejar las
-     * interacciones con el botón en la tabla.
-     */
+    // Configurar columnas
+    tableModel.addColumn("ID");
+    tableModel.addColumn("Jugadores");
+    tableModel.addColumn("Fichas");
+    tableModel.addColumn("Acción");
+
+    tblUnirseSala.setModel(tableModel);
+}
+    
+    // En UnirseAlaSalaView
+public void agregarBotonRefrescar() {
+    JButton btnRefrescar = new JButton("Refrescar");
+    btnRefrescar.addActionListener(e -> {
+        System.out.println("Vista: Solicitando actualización manual de salas");
+        if (model != null) {
+            model.solicitarSalasDisponibles();
+        }
+    });
+    // Añadir el botón a tu panel
+    jPanel1.add(btnRefrescar);
+}
+    
+
     class BotonEditor extends DefaultCellEditor {
-
         private JButton button;
         private String label;
         private boolean isPushed;
@@ -170,16 +167,18 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
             return button;
         }
 
-        @Override
-        public Object getCellEditorValue() {
-            if (isPushed) {
-                // Obtener el ID de la sala seleccionada
-                String salaId = (String) tblUnirseSala.getValueAt(selectedRow, 0);
-                model.unirseASala(salaId, null); // Aquí deberías pasar el jugador actual
-            }
-            isPushed = false;
-            return label;
+       @Override
+public Object getCellEditorValue() {
+    if (isPushed) {
+        String salaId = (String) tblUnirseSala.getValueAt(selectedRow, 0);
+        // El error está aquí - estás tratando de convertir el ID a String cuando probablemente es un Integer
+        if (model != null) {
+            model.unirseASala(salaId, null);
         }
+    }
+    isPushed = false;
+    return label;
+}
 
         @Override
         public boolean stopCellEditing() {
@@ -278,35 +277,40 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(UnirseAlaSalaView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(UnirseAlaSalaView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(UnirseAlaSalaView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(UnirseAlaSalaView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
+      try {
+          
+        // Crear modelo, vista y controlador
+        UnirseAlaSalaModel model = new UnirseAlaSalaModel();
+        UnirseAlaSalaView view = new UnirseAlaSalaView();
+        UnirseAlaSalaController controller = new UnirseAlaSalaController(model, view);
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new UnirseAlaSalaView().setVisible(true);
+        // Configurar servidor
+        Server server = new Server();
+        new Thread(() -> {
+            try {
+                server.iniciarServidor(12345); // Cambia el puerto si es necesario
+            } catch (Exception e) {
+                System.err.println("Error al iniciar el servidor: " + e.getMessage());
             }
+        }).start();
+
+        controller.setServer(server);
+
+        // Mostrar la vista
+        SwingUtilities.invokeLater(() -> {
+            view.setVisible(true);
+
+            // Solicitar las salas al servidor
+            controller.solicitarActualizacionSalasConConsola();
+
+            // Actualizar la tabla con las salas disponibles
+            controller.actualizarTablaConSalas();
         });
+
+    } catch (Exception e) {
+        System.err.println("Error en la aplicación: " + e.getMessage());
+        e.printStackTrace();
+    }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

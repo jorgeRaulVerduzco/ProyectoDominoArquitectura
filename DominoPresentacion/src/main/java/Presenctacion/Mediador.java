@@ -64,6 +64,7 @@ public class Mediador {
 
     public void iniciarAplicacion() {
         crearUsuarioController.mostrarVista();
+          
     }
 
     public void usuarioCreado(CrearUsuarioModel usuario) {
@@ -84,8 +85,12 @@ public class Mediador {
   
        public void salaCreada() {
         crearSalaView.setVisible(false);
-        // En lugar de iniciar el juego directamente, mostramos la vista de unirse a sala
-        mostrarUnirseASala();
+        // Mostrar la vista principal (puedes configurar cuál es la principal)
+    unirseAlaSalaController.mostrarVista();
+
+    // Cargar las salas disponibles en la tabla al iniciar
+    unirseAlaSalaController.cargarSalasDisponibles();
+        
     }
 
     private void iniciarJuego() {

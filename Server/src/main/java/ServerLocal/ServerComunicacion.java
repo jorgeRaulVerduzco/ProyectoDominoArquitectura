@@ -38,6 +38,8 @@ public class ServerComunicacion {
         this.server = server;
         this.servicioControlJuego = new ServicioControlJuego();
     }
+    
+    
 
     /**
      * Procesa los eventos recibidos de los clientes y ejecuta las acciones
@@ -126,22 +128,27 @@ public class ServerComunicacion {
      * Si es `null`, el evento se enviará a todos los clientes conectados.
      */
     private void enviarSalasDisponibles(Socket cliente) {
-
-
-
-
-           try {
-            List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
-            System.out.println("Enviando " + salasDisponibles.size() + " salas disponibles");
-            
-            Evento respuesta = new Evento("SOLICITAR_SALAS");
-            respuesta.agregarDato("salas", new ArrayList<>(salasDisponibles));
+    try {
+        // Obtiene las salas disponibles
+        List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
+        System.out.println("Enviando " + salasDisponibles.size() + " salas disponibles");
+        
+        // Crea el evento de respuesta con las salas
+        Evento respuesta = new Evento("RESPUESTA_SALAS");
+        respuesta.agregarDato("salas", new ArrayList<>(salasDisponibles));
+        
+        // Envía al cliente específico o a todos
+        if (cliente != null) {
             server.enviarMensajeACliente(cliente, respuesta);
-        } catch (Exception e) {
-            System.err.println("Error al enviar salas disponibles: " + e.getMessage());
-            e.printStackTrace();
+        } else {
+            server.enviarEvento(respuesta); // A todos los clientes
         }
+    } catch (Exception e) {
+        System.err.println("Error al enviar salas disponibles: " + e.getMessage());
+        e.printStackTrace();
     }
+}
+
     
 
     /**
@@ -203,6 +210,52 @@ public class ServerComunicacion {
         System.out.println("Error en la comunicación");
         server.manejarErrorComunicacion();
     }
+    
+    
+    
+//    public void manejarSolicitudSalas(Socket clienteSocket) {
+//    try {
+//        List<Sala> salasActuales = obtenerSalasDisponibles(); // método que obtiene las salas del servidor
+//        
+//        Evento respuesta = new Evento("SOLICITAR_SALAS");
+//        respuesta.agregarDato("salas", salasActuales);
+//        
+//        // Enviar solo al cliente que solicitó
+//        enviarEventoACliente(clienteSocket, respuesta);
+//        
+//        System.out.println("Servidor: Enviando " + salasActuales.size() + " salas al cliente");
+//    } catch (Exception e) {
+//        System.err.println("Error al manejar solicitud de salas: " + e.getMessage());
+//        e.printStackTrace();
+//    }
+//}
+    
+    private void responderSolicitudSalas(Socket clienteSocket) {
+        try {
+             List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
+            System.out.println("Servidor: Preparando respuesta de salas disponibles");
+            
+            // Crear evento de respuesta
+            Evento respuesta = new Evento("RESPUESTA_SALAS");
+            respuesta.agregarDato("salas", salasDisponibles);
+            
+            System.out.println("Servidor: Enviando " + 
+                (salasDisponibles != null ? salasDisponibles.size() : "0") + 
+                " salas al cliente");
+            
+            // Enviar la respuesta
+             Evento enviarEventoACliente = new Evento ("SOLICITAR_SALAS");
+            enviarEventoACliente.equals(respuesta);
+            
+        } catch (Exception e) {
+            System.err.println("Servidor: Error al responder solicitud de salas: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    
+    
+    
 
     /**
      * Notifica a todos los clientes conectados que se ha creado una nueva sala.

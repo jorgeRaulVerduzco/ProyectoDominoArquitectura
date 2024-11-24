@@ -23,6 +23,8 @@ public class UnirseAlaSalaModel {
     private List<Observer> observers;
     private Server server;
 
+    
+
     /**
      * Constructor por defecto que inicializa las listas de salas disponibles y
      * observadores.
@@ -59,14 +61,8 @@ public class UnirseAlaSalaModel {
         observers.remove(observer);
     }
 
-    /**
-     * Notifica a todos los observadores sobre un cambio en los datos.
-     */
-    private void notifyObservers() {
-        for (Observer observer : observers) {
-            observer.update();
-        }
-    }
+
+
 
     /**
      * Devuelve la lista actual de salas disponibles.
@@ -82,11 +78,24 @@ public class UnirseAlaSalaModel {
      * "SOLICITAR_SALAS" si el servidor está conectado.
      */
     public void solicitarSalasDisponibles() {
+        System.out.println("Modelo: Solicitando salas disponibles al servidor...");
+        
         if (server != null && server.isConnected()) {
             Evento evento = new Evento("SOLICITAR_SALAS");
             server.enviarEvento(evento);
+            System.out.println("Modelo: Solicitud de salas enviada");
+            
         }
     }
+    // Método que recibe la respuesta del servidor
+    public void actualizarSalas(List<Sala> salas) {
+        System.out.println("Modelo: Recibiendo actualización de salas. Cantidad: " + 
+            (salas != null ? salas.size() : "null"));
+        // Tu código de actualización
+        notifyObservers();
+    }
+    
+    
 
     /**
      * Actualiza la lista de salas disponibles con una nueva lista y notifica a
@@ -96,19 +105,36 @@ public class UnirseAlaSalaModel {
      * @param salas nueva lista de salas disponibles.
      */
     public void actualizarSalasDisponibles(List<Sala> salas) {
-        if (salas == null) {
-        this.salasDisponibles = new ArrayList<>();
-    } else {
-        this.salasDisponibles = new ArrayList<>(salas);
+        SwingUtilities.invokeLater(() -> {
+            try {
+                System.out.println("Modelo: Actualizando salas disponibles");
+                
+                if (salas == null) {
+                    this.salasDisponibles = new ArrayList<>();
+                } else {
+                    this.salasDisponibles = new ArrayList<>(salas);
+                }
+                
+                System.out.println("Modelo: Total de salas actualizadas: " + 
+                    this.salasDisponibles.size());
+                
+                // Notificar a los observadores
+                notifyObservers();
+                
+            } catch (Exception e) {
+                System.err.println("Modelo: Error actualizando salas: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
     }
-    
-    System.out.println("Actualizando salas disponibles. Total: " + 
-        (this.salasDisponibles != null ? this.salasDisponibles.size() : 0));
-    
-    // Asegúrate de que la notificación se haga en el EDT
-    SwingUtilities.invokeLater(() -> {
-        notifyObservers();
-    });
+        /**
+     * Notifica a todos los observadores sobre un cambio en los datos.
+     */
+    private void notifyObservers() {
+        System.out.println("Modelo: Notificando a " + observers.size() + " observadores");
+        for (Observer observer : observers) {
+            observer.update();
+        }
     }
 
     /**

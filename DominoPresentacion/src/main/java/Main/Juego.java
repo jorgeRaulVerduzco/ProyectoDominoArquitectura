@@ -28,7 +28,7 @@ import java.io.IOException;
  */
 public class Juego {
 
-    private static final int PUERTO_SERVIDOR = 49674 ;
+    private static final int PUERTO_SERVIDOR = 51114 ;
     private static Server server;
 
     public static void main(String[] args) {
