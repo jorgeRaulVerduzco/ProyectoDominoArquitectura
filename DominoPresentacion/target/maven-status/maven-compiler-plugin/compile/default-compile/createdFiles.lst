@@ -12,6 +12,7 @@ Presenctacion\PozoMVC\PozoController.class
 Presenctacion\Observer.class
 PresentacionTableroMVC\TableroView$1.class
 Presenctacion\CrearSalaMVC\CrearSalaController$RegresarListener.class
+Main\Juego.class
 Presenctacion\CrearSalaMVC\CrearSalaController$NumeroJugadoresListener.class
 Presenctacion\UnirseAlaSalaMVC\UnirseAlaSalaView.class
 Presenctacion\PozoMVC\PozoView.class
