@@ -50,23 +50,13 @@ public class ServerComunicacion {
      * sobre la acción a procesar.
      */
     public void procesarEvento(Socket cliente, Evento evento) {
-        System.out.println("[DEBUG] Entrando en ServerComunicacion.procesarEvento()");
-    System.out.println("[DEBUG] Evento recibido: " + evento.getTipo());
-    try {
-        switch (evento.getTipo()) {
-            case "CREAR_SALA":
-                System.out.println("[DEBUG] Procesando evento CREAR_SALA");
-                crearNuevaSala(cliente, evento);
-                break;
-
-            case "SOLICITAR_SALAS":
-                System.out.println("[DEBUG] Procesando evento SOLICITAR_SALAS");
-                enviarSalasDisponibles(cliente);
-                break;
-
-            default:
-                System.out.println("[WARNING] Evento no reconocido: " + evento.getTipo());
-        
+        System.out.println("Procesando evento: " + evento.getTipo());
+        try {
+            switch (evento.getTipo()) {
+                case "CREAR_SALA":
+                    System.out.println("Servidor: Iniciando proceso de creación de sala...");
+                    crearNuevaSala(cliente, evento);
+                    break;
                 case "UNIR_SALA":
                     unirseASala(cliente, evento);
                     break;
@@ -76,22 +66,11 @@ public class ServerComunicacion {
                 case "JUGADA":
                     // procesarJugada(cliente, evento);
                     break;
-                
-                    case "RESPUESTA_SALAS":
-            List<Sala> salas = (List<Sala>) evento.obtenerDato("salas");
-            System.out.println("Salas recibidas del servidor:");
-            if (salas.isEmpty()) {
-                System.out.println("No hay salas disponibles.");
-            } else {
-                for (Sala sala : salas) {
-                    System.out.println(" - Sala ID: " + sala.getId()
-                            + ", Jugadores: " + sala.getJugador().size() + "/" + sala.getCantJugadores()
-                            + ", Estado: " + sala.getEstado());
-                }
-            }
-            break;
-                    
-               
+                case "SOLICITAR_SALAS":
+                    enviarSalasDisponibles(cliente);
+                    break;
+                default:
+                    System.out.println("Evento no reconocido: " + evento.getTipo());
             }
      } catch (Exception e) {
             System.err.println("Error procesando evento: " + e.getMessage());
@@ -187,26 +166,22 @@ public class ServerComunicacion {
      */
   private void enviarSalasDisponibles(Socket cliente) {
     try {
-        // Obtener las salas disponibles desde el servicio de control de juego
         List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
         System.out.println("Servidor: Enviando " + salasDisponibles.size() + " salas disponibles");
 
-        // Crear un evento con la lista de salas
         Evento respuesta = new Evento("RESPUESTA_SALAS");
         respuesta.agregarDato("salas", new ArrayList<>(salasDisponibles));
 
-        // Enviar la respuesta al cliente que solicitó
         if (cliente != null) {
             server.enviarMensajeACliente(cliente, respuesta);
         } else {
-            System.err.println("No se especificó cliente para responder.");
+            server.enviarEventoATodos(respuesta);
         }
     } catch (Exception e) {
         System.err.println("Error al enviar salas disponibles: " + e.getMessage());
         e.printStackTrace();
     }
 }
-
 
 
 

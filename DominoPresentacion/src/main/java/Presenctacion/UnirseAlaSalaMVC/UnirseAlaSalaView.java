@@ -274,9 +274,17 @@ public Object getCellEditorValue() {
         UnirseAlaSalaView view = new UnirseAlaSalaView();
         UnirseAlaSalaController controller = new UnirseAlaSalaController(model, view);
 
-        
+        // Configurar servidor
+        Server server = new Server();
+        new Thread(() -> {
+            try {
+                server.iniciarServidor(12345); // Cambia el puerto si es necesario
+            } catch (Exception e) {
+                System.err.println("Error al iniciar el servidor: " + e.getMessage());
+            }
+        }).start();
 
-        
+        controller.setServer(server);
 
         // Mostrar la vista
         SwingUtilities.invokeLater(() -> {
