@@ -31,6 +31,14 @@ public class CrearSalaController {
         this.view.addNumeroFichasListener(new NumeroFichasListener());
     }
 
+    public CrearSalaModel getModel() {
+        return model;
+    }
+
+    public void setModel(CrearSalaModel model) {
+        this.model = model;
+    }
+
     public void setMediator(Mediador mediador) {
         this.mediador = mediador;
     }

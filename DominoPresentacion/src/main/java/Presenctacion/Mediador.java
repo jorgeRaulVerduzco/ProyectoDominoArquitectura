@@ -4,12 +4,14 @@
  */
 package Presenctacion;
 
+import Dominio.Jugador;
 import EventoJuego.Evento;
 import Presenctacion.CrearSalaMVC.CrearSalaView;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioController;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioModel;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioView;
 import Presenctacion.CrearSalaMVC.CrearSalaController;
+import Presenctacion.CrearSalaMVC.CrearSalaModel;
 import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaController;
 import PresentacionTableroMVC.TableroController;
 import PresentacionTableroMVC.TableroView;
@@ -29,7 +31,7 @@ public class Mediador {
     private TableroController tableroController;
     private TableroView tableroView;
     private Server server;
-
+private CrearUsuarioModel usuarioActual;
     public Mediador(
             CrearUsuarioController crearUsuarioController,
             CrearSalaController crearSalaController,
@@ -67,19 +69,28 @@ public class Mediador {
           
     }
 
-    public void usuarioCreado(CrearUsuarioModel usuario) {
+     public void usuarioCreado(CrearUsuarioModel usuario) {
+        this.usuarioActual = usuario;
         crearUsuarioController.ocultarVista();
         mostrarCrearSala(usuario);
     }
-
+    
     public void mostrarCrearSala(CrearUsuarioModel usuario) {
         System.out.println("Mostrando vista de Crear Sala...");
         if (crearSalaView != null) {
+            // Convertir el usuario a jugador y establecerlo en el modelo
+            Jugador jugador = new Jugador();
+            jugador.setNombre(usuario.getNombre());
+            jugador.setEstado("ACTIVO");
+            
+            CrearSalaModel modelo = crearSalaController.getModel();
+            modelo.setJugadorActual(jugador);
+            
             crearSalaView.pack();
             crearSalaView.setLocationRelativeTo(null);
             crearSalaView.setVisible(true);
         } else {
-            System.out.println("Error: crearSalaView es null.");
+            System.out.println("Vista de crear sala es null.");
         }
     }
   

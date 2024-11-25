@@ -4,6 +4,7 @@
  */
 package Presenctacion.CrearSalaMVC;
 
+import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
 import Negocio.ServicioControlJuego;
@@ -21,6 +22,7 @@ import java.util.logging.Logger;
  * @author INEGI
  */
 public class CrearSalaModel {
+
     private volatile boolean conexionConfirmada;
     private CountDownLatch latch;
     private int numeroJugadores;
@@ -30,6 +32,11 @@ public class CrearSalaModel {
     private Server server;
     private volatile boolean conexionExitosa;
     private final Object lockConexion = new Object();
+    private Jugador jugadorActual;
+
+    public void setJugadorActual(Jugador jugador) {
+        this.jugadorActual = jugador;
+    }
 
     public CrearSalaModel() {
         this.servicioControlJuego = new ServicioControlJuego();
@@ -39,7 +46,7 @@ public class CrearSalaModel {
     }
 
     public void setServer(Server server) {
-       this.server = server;
+        this.server = server;
         if (server != null && server.isConnected()) {
             confirmarConexion();
         } else {
@@ -60,43 +67,45 @@ public class CrearSalaModel {
             observer.update();
         }
     }
-  
+
     public void confirmarConexion() {
         synchronized (lockConexion) {
             conexionExitosa = true;
             lockConexion.notifyAll();
         }
     }
-    public void crearSala() {
-    System.out.println("[DEBUG-CREAR-SALA] Usando el método de CREAR-SALA");
-    
-    try {
-        // Verificar valores antes de crear el evento
-        if (numeroJugadores <= 0 || numeroFichas <= 0) {
-            System.err.println("[ERROR-CREAR-SALA] Número de jugadores o fichas no válido.");
-            return;
+
+     public void crearSala() {
+        System.out.println("[DEBUG] Iniciando creación de sala en el modelo");
+        try {
+            if (numeroJugadores <= 0 || numeroFichas <= 0) {
+                System.err.println("[ERROR] Números inválidos");
+                return;
+            }
+            
+            if (jugadorActual == null) {
+                System.err.println("[ERROR] No hay jugador actual");
+                return;
+            }
+
+            if (server == null) {
+                System.err.println("[ERROR] Servidor no configurado");
+                return;
+            }
+
+            Evento evento = new Evento("CREAR_SALA");
+            evento.agregarDato("numJugadores", numeroJugadores);
+            evento.agregarDato("numFichas", numeroFichas);
+            evento.agregarDato("jugador", jugadorActual);
+
+            System.out.println("[DEBUG] Enviando evento CREAR_SALA al servidor");
+            server.enviarEvento(evento);
+
+        } catch (Exception e) {
+            System.err.println("[ERROR] Error creando sala: " + e.getMessage());
+            e.printStackTrace();
         }
-
-        // Crear una nueva sala
-        System.out.println("[DEBUG-CREAR-SALA] Preparando evento para crear sala...");
-        System.out.println("  - Número de jugadores: " + numeroJugadores);
-        System.out.println("  - Número de fichas: " + numeroFichas);
-
-        Evento evento = new Evento("CREAR_SALA");
-        evento.agregarDato("numJugadores", numeroJugadores);
-        evento.agregarDato("numFichas", numeroFichas);
-
-        // Enviar evento al servidor
-        System.out.println("[DEBUG-CREAR-SALA] Enviando evento al servidor...");
-        server.enviarEvento(evento);
-        System.out.println("[DEBUG-CREAR-SALA] Evento de creación de sala enviado al servidor correctamente.");
-    } catch (Exception e) {
-        System.err.println("[ERROR-CREAR-SALA] Error al crear sala: " + e.getMessage());
-        e.printStackTrace();
     }
-}
-
-
 
     public void esperarServidor() throws InterruptedException {
         latch.await();  // Espera hasta que el servidor esté inicializado

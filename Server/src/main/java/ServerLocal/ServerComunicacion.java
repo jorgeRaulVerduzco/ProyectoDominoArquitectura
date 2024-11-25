@@ -53,15 +53,10 @@ public class ServerComunicacion {
         System.out.println("Procesando evento: " + evento.getTipo());
         try {
             switch (evento.getTipo()) {
-                 case "CREAR_SALA":
-                System.out.println("Servidor: Procesando creación de sala...");
-                System.out.println("  - Datos recibidos: ");
-                System.out.println("    - Número de jugadores: " + evento.obtenerDato("numJugadores"));
-                System.out.println("    - Número de fichas: " + evento.obtenerDato("numFichas"));
-
-                crearNuevaSala(cliente, evento); // Crear la sala
-                break;
-
+                case "CREAR_SALA":
+                    System.out.println("Servidor: Iniciando proceso de creación de sala...");
+                    crearNuevaSala(cliente, evento);
+                    break;
                 case "UNIR_SALA":
                     unirseASala(cliente, evento);
                     break;
@@ -77,7 +72,7 @@ public class ServerComunicacion {
                 default:
                     System.out.println("Evento no reconocido: " + evento.getTipo());
             }
-        } catch (Exception e) {
+     } catch (Exception e) {
             System.err.println("Error procesando evento: " + e.getMessage());
             e.printStackTrace();
         }
@@ -93,40 +88,72 @@ public class ServerComunicacion {
      * @param evento El evento que contiene los datos necesarios para crear la
      * sala (número de jugadores, fichas, etc.).
      */
-  private void crearNuevaSala(Socket cliente, Evento evento) {
-    try {
-        // Extraer datos del evento
-        int numJugadores = (int) evento.obtenerDato("numJugadores");
-        int numFichas = (int) evento.obtenerDato("numFichas");
+  
+    private void crearNuevaSala(Socket cliente, Evento evento) {
+        try {
+            // Validación de datos
+            if (!evento.getDatos().containsKey("numJugadores") || 
+                !evento.getDatos().containsKey("numFichas") || 
+                !evento.getDatos().containsKey("jugador")) {
+                System.err.println("Error: Datos incompletos para crear sala");
+                return;
+            }
 
-        // Crear una nueva sala
-        Sala nuevaSala = new Sala();
-        nuevaSala.setCantJugadores(numJugadores);
-        nuevaSala.setNumeroFichas(numFichas);
-        nuevaSala.setEstado("ESPERANDO");
+            int numJugadores = (int) evento.obtenerDato("numJugadores");
+            int numFichas = (int) evento.obtenerDato("numFichas");
+            Jugador creador = (Jugador) evento.obtenerDato("jugador");
 
-        // Agregar la sala al sistema
-        servicioControlJuego.agregarSala(nuevaSala);
+            // Validaciones adicionales
+            if (numJugadores <= 0 || numFichas <= 0 || creador == null) {
+                System.err.println("Error: Datos inválidos para crear sala");
+                return;
+            }
 
-        // Mensaje de depuración para confirmar que la sala fue añadida
-        System.out.println("Servidor: Sala creada con éxito:");
-        System.out.println("  - ID: " + nuevaSala.getId());
-        System.out.println("  - Número de jugadores: " + nuevaSala.getCantJugadores());
-        System.out.println("  - Número de fichas: " + nuevaSala.getNumeroFichas());
-        System.out.println("  - Estado: " + nuevaSala.getEstado());
-        System.out.println("Servidor: Total de salas después de agregar: " + servicioControlJuego.getSalasDisponibles().size());
+            // Crear y configurar nueva sala
+            Sala nuevaSala = new Sala();
+            nuevaSala.setCantJugadores(numJugadores);
+            nuevaSala.setNumeroFichas(numFichas);
+            nuevaSala.setEstado("ESPERANDO");
+            nuevaSala.getJugador().add(creador);
 
-        // Notificar a los clientes conectados
-        enviarSalasDisponibles(null);
-    } catch (Exception e) {
-        System.err.println("Error al crear nueva sala: " + e.getMessage());
-        e.printStackTrace();
+            // Agregar sala al servicio
+            servicioControlJuego.agregarSala(nuevaSala);
+
+            System.out.println("Servidor: Sala creada exitosamente:");
+            System.out.println("  - ID: " + nuevaSala.getId());
+            System.out.println("  - Jugadores: " + nuevaSala.getJugador().size() + "/" + nuevaSala.getCantJugadores());
+            System.out.println("  - Fichas: " + nuevaSala.getNumeroFichas());
+
+            // Enviar confirmación al creador
+            Evento confirmacion = new Evento("SALA_CREADA");
+            confirmacion.agregarDato("sala", nuevaSala);
+            server.enviarMensajeACliente(cliente, confirmacion);
+
+            // Notificar a todos los clientes
+            Evento notificacion = new Evento("NUEVA_SALA");
+            notificacion.agregarDato("sala", nuevaSala);
+            server.enviarEventoATodos(notificacion);
+
+            // Verificar estado del sistema
+            verificarEstadoSalas();
+
+        } catch (Exception e) {
+            System.err.println("Error crítico creando sala: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
-}
 
-
-
-
+ private void verificarEstadoSalas() {
+        List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
+        System.out.println("Estado actual del sistema:");
+        System.out.println("Total de salas: " + salasDisponibles.size());
+        for (Sala sala : salasDisponibles) {
+            System.out.println("  Sala " + sala.getId() + ":");
+            System.out.println("    - Estado: " + sala.getEstado());
+            System.out.println("    - Jugadores: " + sala.getJugador().size() + "/" + sala.getCantJugadores());
+            System.out.println("    - Fichas: " + sala.getNumeroFichas());
+        }
+    }
 
     /**
      * mucho texto pero ese envia la lista de salas disponibles a un cliente

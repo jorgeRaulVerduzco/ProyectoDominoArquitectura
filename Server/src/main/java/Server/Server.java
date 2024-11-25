@@ -37,6 +37,7 @@ public class Server {
     private boolean isRunning;
     private volatile boolean isConnected;
 
+
     /**
      * Constructor de la clase Server. Inicializa las estructuras de datos
      * necesarias y crea instancias del controlador y de la clase de
@@ -61,7 +62,7 @@ public class Server {
      * @throws IOException Si ocurre un error al crear el ServerSocket.
      */
     public void iniciarServidor(int puerto) throws IOException {
-        servidor = new ServerSocket(puerto, 0, InetAddress.getByName("192.168.1.66"));
+        servidor = new ServerSocket(puerto, 0, InetAddress.getByName("192.168.1.81"));
         running = true;
         isConnected = true;
         System.out.println("Servidor iniciado en dirección IP: 127.0.0.1, puerto: " + puerto);
@@ -103,10 +104,6 @@ public class Server {
             enviarMensajeACliente(entry.getKey(), evento);
         }
     }
-    
-    
-    
-    
 
     /**
      * Maneja una nueva conexión de cliente. Agrega el socket del cliente a la
@@ -218,45 +215,34 @@ public class Server {
      *
      * @param evento El evento a enviar.
      */
-    public void enviarEvento(Evento evento) {
-    System.out.println("[DEBUG] Iniciando envío de evento a todos los clientes: " + evento.getTipo());
-
+   public void enviarEvento(Evento evento) {
+    System.out.println("Iniciando envío de evento: " + evento.getTipo());
     List<Socket> clientesDesconectados = new ArrayList<>();
-
+    
     synchronized (outputStreams) {
-        System.out.println("[DEBUG] Bloqueo synchronized adquirido para enviar eventos.");
         for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
             Socket cliente = entry.getKey();
             ObjectOutputStream out = entry.getValue();
-
-            System.out.println("[DEBUG] Procesando cliente: " + cliente.getInetAddress());
-
+            
             try {
-                // Procesar el evento antes de enviarlo
-                System.out.println("[DEBUG] Procesando evento para cliente: " + cliente.getInetAddress());
-                procesarEvento(cliente, evento);
-
-                // Enviar el evento al cliente
-                System.out.println("[DEBUG] Enviando evento al cliente: " + cliente.getInetAddress());
-                out.writeObject(evento);
-                out.reset(); // Evitar problemas de caché
-                out.flush();
-
-                System.out.println("[DEBUG] Evento enviado exitosamente a: " + cliente.getInetAddress());
+                synchronized(out) {
+                    out.writeObject(evento);
+                    out.reset();
+                    out.flush();
+                }
+                System.out.println("Evento enviado exitosamente a: " + cliente.getInetAddress());
             } catch (IOException e) {
-                System.err.println("[ERROR] Error enviando evento a cliente: " + cliente.getInetAddress() + " - " + e.getMessage());
+                System.err.println("Error enviando evento a " + cliente.getInetAddress() + ": " + e.getMessage());
                 clientesDesconectados.add(cliente);
             }
         }
     }
-
-    System.out.println("[DEBUG] Envío de eventos completado.");
-
-        for (Socket socket : clientesDesconectados) {
-            cerrarConexion(socket);
-        }
+    
+    // Limpiar clientes desconectados
+    for (Socket socket : clientesDesconectados) {
+        cerrarConexion(socket);
     }
-
+}
     /**
      * Envía un evento a un jugador específico.
      *
@@ -280,7 +266,7 @@ public class Server {
         try {
             ObjectOutputStream out = outputStreams.get(cliente);
             if (out != null) {
-                synchronized(out) {
+                synchronized (out) {
                     out.writeObject(mensaje);
                     out.reset();  // Importante para evitar problemas de caché
                     out.flush();
@@ -336,21 +322,27 @@ public class Server {
      * asociados al evento que debe ser procesado.
      */
     private void procesarEvento(Socket cliente, Evento evento) {
-        System.out.println("Procesando evento: " + evento.getTipo());
-        switch (evento.getTipo()) {
-            case "CREAR_SALA":
-                serverComunicacion.procesarEvento(cliente, evento);
-                break;
-            case "SOLICITAR_SALAS":
-                serverComunicacion.procesarEvento(cliente, evento);
-                break;
-            case "UNIRSE_SALA":
-            case "ABANDONAR_SALA":
-            case "JUGADA":
-                blackboardController.procesarEvento(cliente, evento);
-                break;
-            default:
-                System.out.println("Evento no reconocido: " + evento.getTipo());
+        System.out.println("[DEBUG] Procesando evento en Server: " + evento.getTipo());
+        try {
+            switch (evento.getTipo()) {
+                case "CREAR_SALA":
+                    System.out.println("[DEBUG] Delegando evento CREAR_SALA a serverComunicacion");
+                    serverComunicacion.procesarEvento(cliente, evento);
+                    break;
+                case "SOLICITAR_SALAS":
+                    serverComunicacion.procesarEvento(cliente, evento);
+                    break;
+                case "UNIRSE_SALA":
+                case "ABANDONAR_SALA":
+                case "JUGADA":
+                    blackboardController.procesarEvento(cliente, evento);
+                    break;
+                default:
+                    System.out.println("Evento no reconocido: " + evento.getTipo());
+            }
+        } catch (Exception e) {
+            System.err.println("[ERROR] Error procesando evento: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
