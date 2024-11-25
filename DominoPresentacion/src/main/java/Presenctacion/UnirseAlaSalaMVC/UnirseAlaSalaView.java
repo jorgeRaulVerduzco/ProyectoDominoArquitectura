@@ -131,18 +131,7 @@ public void handleSalasDisponibles(List<Sala> salas) {
     tblUnirseSala.setModel(tableModel);
 }
     
-    // En UnirseAlaSalaView
-public void agregarBotonRefrescar() {
-    JButton btnRefrescar = new JButton("Refrescar");
-    btnRefrescar.addActionListener(e -> {
-        System.out.println("Vista: Solicitando actualización manual de salas");
-        if (model != null) {
-            model.solicitarSalasDisponibles();
-        }
-    });
-    // Añadir el botón a tu panel
-    jPanel1.add(btnRefrescar);
-}
+   
     
 
     class BotonEditor extends DefaultCellEditor {
@@ -167,12 +156,13 @@ public void agregarBotonRefrescar() {
             return button;
         }
 
-       @Override
+@Override
 public Object getCellEditorValue() {
     if (isPushed) {
-        String salaId = (String) tblUnirseSala.getValueAt(selectedRow, 0);
-        // El error está aquí - estás tratando de convertir el ID a String cuando probablemente es un Integer
+        // Asegúrate de obtener el ID como Integer
+        Integer salaId = (Integer) tblUnirseSala.getValueAt(selectedRow, 0);
         if (model != null) {
+            // Llama al método unirseASala con el ID correcto
             model.unirseASala(salaId, null);
         }
     }
@@ -300,8 +290,6 @@ public Object getCellEditorValue() {
         SwingUtilities.invokeLater(() -> {
             view.setVisible(true);
 
-            // Solicitar las salas al servidor
-            controller.solicitarActualizacionSalasConConsola();
 
             // Actualizar la tabla con las salas disponibles
             controller.actualizarTablaConSalas();

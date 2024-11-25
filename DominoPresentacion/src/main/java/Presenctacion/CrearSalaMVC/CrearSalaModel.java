@@ -68,29 +68,35 @@ public class CrearSalaModel {
         }
     }
     public void crearSala() {
-      if (server == null || !server.isConnected()) {
-            System.err.println("No hay conexión establecida con el servidor");
+    System.out.println("[DEBUG-CREAR-SALA] Usando el método de CREAR-SALA");
+    
+    try {
+        // Verificar valores antes de crear el evento
+        if (numeroJugadores <= 0 || numeroFichas <= 0) {
+            System.err.println("[ERROR-CREAR-SALA] Número de jugadores o fichas no válido.");
             return;
         }
 
-        try {
-            Sala nuevaSala = new Sala();
-            nuevaSala.setCantJugadores(numeroJugadores);
-            nuevaSala.setNumeroFichas(numeroFichas);
-            nuevaSala.setEstado("ESPERANDO");
-            
-            Evento evento = new Evento("CREAR_SALA");
-            evento.agregarDato("numJugadores", numeroJugadores);
-            evento.agregarDato("numFichas", numeroFichas);
-            
-            System.out.println("Enviando evento de creación de sala al servidor...");
-            server.enviarEvento(evento);
-        } catch (Exception e) {
-            System.err.println("Error al crear sala: " + e.getMessage());
-            e.printStackTrace();
-        }
-    
+        // Crear una nueva sala
+        System.out.println("[DEBUG-CREAR-SALA] Preparando evento para crear sala...");
+        System.out.println("  - Número de jugadores: " + numeroJugadores);
+        System.out.println("  - Número de fichas: " + numeroFichas);
+
+        Evento evento = new Evento("CREAR_SALA");
+        evento.agregarDato("numJugadores", numeroJugadores);
+        evento.agregarDato("numFichas", numeroFichas);
+
+        // Enviar evento al servidor
+        System.out.println("[DEBUG-CREAR-SALA] Enviando evento al servidor...");
+        server.enviarEvento(evento);
+        System.out.println("[DEBUG-CREAR-SALA] Evento de creación de sala enviado al servidor correctamente.");
+    } catch (Exception e) {
+        System.err.println("[ERROR-CREAR-SALA] Error al crear sala: " + e.getMessage());
+        e.printStackTrace();
     }
+}
+
+
 
     public void esperarServidor() throws InterruptedException {
         latch.await();  // Espera hasta que el servidor esté inicializado

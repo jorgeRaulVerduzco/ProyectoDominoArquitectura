@@ -53,10 +53,15 @@ public class ServerComunicacion {
         System.out.println("Procesando evento: " + evento.getTipo());
         try {
             switch (evento.getTipo()) {
-                case "CREAR_SALA":
-                    System.out.println("Procesando creación de sala...");
-                    crearNuevaSala(cliente, evento);
-                    break;
+                 case "CREAR_SALA":
+                System.out.println("Servidor: Procesando creación de sala...");
+                System.out.println("  - Datos recibidos: ");
+                System.out.println("    - Número de jugadores: " + evento.obtenerDato("numJugadores"));
+                System.out.println("    - Número de fichas: " + evento.obtenerDato("numFichas"));
+
+                crearNuevaSala(cliente, evento); // Crear la sala
+                break;
+
                 case "UNIR_SALA":
                     unirseASala(cliente, evento);
                     break;
@@ -77,6 +82,8 @@ public class ServerComunicacion {
             e.printStackTrace();
         }
     }
+    
+    
 
     /**
      * Crea una nueva sala de juego en respuesta a un evento de creación de sala
@@ -86,37 +93,40 @@ public class ServerComunicacion {
      * @param evento El evento que contiene los datos necesarios para crear la
      * sala (número de jugadores, fichas, etc.).
      */
-    private void crearNuevaSala(Socket cliente, Evento evento) {
-        try {
+  private void crearNuevaSala(Socket cliente, Evento evento) {
+    try {
+        // Extraer datos del evento
         int numJugadores = (int) evento.obtenerDato("numJugadores");
         int numFichas = (int) evento.obtenerDato("numFichas");
-        Jugador creador = (Jugador) evento.obtenerDato("jugador");
-        
+
+        // Crear una nueva sala
         Sala nuevaSala = new Sala();
         nuevaSala.setCantJugadores(numJugadores);
         nuevaSala.setNumeroFichas(numFichas);
         nuevaSala.setEstado("ESPERANDO");
-        
-        servicioControlJuego.agregarSala(nuevaSala);  // Añade esta línea
-        servicioControlJuego.agregarJugador(nuevaSala, creador);
-        
-        System.out.println("Nueva sala creada: " + nuevaSala.getId());
-        
-        // Notificar a todos los clientes
-        notificarNuevaSala(nuevaSala);
-        
-        // Enviar respuesta al creador
-        Evento respuesta = new Evento("SALA_CREADA");
-        respuesta.agregarDato("sala", nuevaSala);
-        server.enviarMensajeACliente(cliente, respuesta);
-        
-        // Actualizar la lista de salas para todos
-        enviarSalasDisponibles(null);  // null para enviar a todos
+
+        // Agregar la sala al sistema
+        servicioControlJuego.agregarSala(nuevaSala);
+
+        // Mensaje de depuración para confirmar que la sala fue añadida
+        System.out.println("Servidor: Sala creada con éxito:");
+        System.out.println("  - ID: " + nuevaSala.getId());
+        System.out.println("  - Número de jugadores: " + nuevaSala.getCantJugadores());
+        System.out.println("  - Número de fichas: " + nuevaSala.getNumeroFichas());
+        System.out.println("  - Estado: " + nuevaSala.getEstado());
+        System.out.println("Servidor: Total de salas después de agregar: " + servicioControlJuego.getSalasDisponibles().size());
+
+        // Notificar a los clientes conectados
+        enviarSalasDisponibles(null);
     } catch (Exception e) {
-        System.err.println("Error creando sala: " + e.getMessage());
+        System.err.println("Error al crear nueva sala: " + e.getMessage());
         e.printStackTrace();
     }
-    }
+}
+
+
+
+
 
     /**
      * mucho texto pero ese envia la lista de salas disponibles a un cliente
@@ -127,21 +137,18 @@ public class ServerComunicacion {
      * @param cliente el socket del cliente al que se debe enviar la respuesta.
      * Si es `null`, el evento se enviará a todos los clientes conectados.
      */
-    private void enviarSalasDisponibles(Socket cliente) {
+  private void enviarSalasDisponibles(Socket cliente) {
     try {
-        // Obtiene las salas disponibles
         List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
-        System.out.println("Enviando " + salasDisponibles.size() + " salas disponibles");
-        
-        // Crea el evento de respuesta con las salas
+        System.out.println("Servidor: Enviando " + salasDisponibles.size() + " salas disponibles");
+
         Evento respuesta = new Evento("RESPUESTA_SALAS");
         respuesta.agregarDato("salas", new ArrayList<>(salasDisponibles));
-        
-        // Envía al cliente específico o a todos
+
         if (cliente != null) {
             server.enviarMensajeACliente(cliente, respuesta);
         } else {
-            server.enviarEvento(respuesta); // A todos los clientes
+            server.enviarEventoATodos(respuesta);
         }
     } catch (Exception e) {
         System.err.println("Error al enviar salas disponibles: " + e.getMessage());
@@ -149,6 +156,11 @@ public class ServerComunicacion {
     }
 }
 
+
+
+
+    
+    
     
 
     /**
@@ -213,22 +225,7 @@ public class ServerComunicacion {
     
     
     
-//    public void manejarSolicitudSalas(Socket clienteSocket) {
-//    try {
-//        List<Sala> salasActuales = obtenerSalasDisponibles(); // método que obtiene las salas del servidor
-//        
-//        Evento respuesta = new Evento("SOLICITAR_SALAS");
-//        respuesta.agregarDato("salas", salasActuales);
-//        
-//        // Enviar solo al cliente que solicitó
-//        enviarEventoACliente(clienteSocket, respuesta);
-//        
-//        System.out.println("Servidor: Enviando " + salasActuales.size() + " salas al cliente");
-//    } catch (Exception e) {
-//        System.err.println("Error al manejar solicitud de salas: " + e.getMessage());
-//        e.printStackTrace();
-//    }
-//}
+
     
     private void responderSolicitudSalas(Socket clienteSocket) {
         try {

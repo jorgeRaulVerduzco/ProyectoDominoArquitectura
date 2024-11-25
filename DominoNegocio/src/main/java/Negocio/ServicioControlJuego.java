@@ -51,14 +51,22 @@ public class ServicioControlJuego {
         return false;
     }
 
-    public void agregarSala(Sala sala) {
-        if (!salas.contains(sala)) {
+      public void agregarSala(Sala sala) {
+        if (sala != null) {
             salas.add(sala);
-            System.out.println("Sala añadida: " + sala.getId());
+            System.out.println("ServicioControlJuego: Sala agregada al sistema. Total de salas: " + salas.size());
         } else {
-            System.out.println("La sala ya existe: " + sala.getId());
+            System.err.println("ServicioControlJuego: Intento de agregar una sala nula.");
         }
+        
+        
     }
+
+    public List<Sala> getSalasDisponibles() {
+        return new ArrayList<>(salas); // Devuelve una copia de la lista
+    }
+
+
 
     public void iniciarPartida(Sala sala) {
         Partida partida = new Partida();
@@ -75,14 +83,7 @@ public class ServicioControlJuego {
         sala.setEstado("EN_JUEGO");
     }
 
-    public List<Sala> getSalasDisponibles() {
-        List<Sala> salasDisponibles = salas.stream()
-                .filter(sala -> "ESPERANDO".equals(sala.getEstado()))
-                .collect(Collectors.toList());
-        System.out.println("Salas disponibles: " + salasDisponibles.size());
-        return salasDisponibles;
-    }
-
+   
     public boolean abandonarSala(Sala sala, Jugador jugador) {
         if (sala.getJugador().contains(jugador)) {
             jugador.setEstado("INACTIVO");

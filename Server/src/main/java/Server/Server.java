@@ -219,23 +219,38 @@ public class Server {
      * @param evento El evento a enviar.
      */
     public void enviarEvento(Evento evento) {
-        System.out.println("Enviando evento a todos los clientes: " + evento.getTipo());
-        List<Socket> clientesDesconectados = new ArrayList<>();
+    System.out.println("[DEBUG] Iniciando envío de evento a todos los clientes: " + evento.getTipo());
 
-        synchronized (outputStreams) {
-            for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
-                try {
-                    ObjectOutputStream out = entry.getValue();
-                    out.writeObject(evento);
-                    out.reset(); // Importante para evitar problemas de caché
-                    out.flush();
-                    System.out.println("Evento enviado exitosamente a: " + entry.getKey().getInetAddress());
-                } catch (IOException e) {
-                    System.err.println("Error enviando evento a cliente: " + e.getMessage());
-                    clientesDesconectados.add(entry.getKey());
-                }
+    List<Socket> clientesDesconectados = new ArrayList<>();
+
+    synchronized (outputStreams) {
+        System.out.println("[DEBUG] Bloqueo synchronized adquirido para enviar eventos.");
+        for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
+            Socket cliente = entry.getKey();
+            ObjectOutputStream out = entry.getValue();
+
+            System.out.println("[DEBUG] Procesando cliente: " + cliente.getInetAddress());
+
+            try {
+                // Procesar el evento antes de enviarlo
+                System.out.println("[DEBUG] Procesando evento para cliente: " + cliente.getInetAddress());
+                procesarEvento(cliente, evento);
+
+                // Enviar el evento al cliente
+                System.out.println("[DEBUG] Enviando evento al cliente: " + cliente.getInetAddress());
+                out.writeObject(evento);
+                out.reset(); // Evitar problemas de caché
+                out.flush();
+
+                System.out.println("[DEBUG] Evento enviado exitosamente a: " + cliente.getInetAddress());
+            } catch (IOException e) {
+                System.err.println("[ERROR] Error enviando evento a cliente: " + cliente.getInetAddress() + " - " + e.getMessage());
+                clientesDesconectados.add(cliente);
             }
         }
+    }
+
+    System.out.println("[DEBUG] Envío de eventos completado.");
 
         for (Socket socket : clientesDesconectados) {
             cerrarConexion(socket);

@@ -87,6 +87,7 @@ public class UnirseAlaSalaModel {
             
         }
     }
+    
     // Método que recibe la respuesta del servidor
     public void actualizarSalas(List<Sala> salas) {
         System.out.println("Modelo: Recibiendo actualización de salas. Cantidad: " + 
@@ -97,36 +98,8 @@ public class UnirseAlaSalaModel {
     
     
 
-    /**
-     * Actualiza la lista de salas disponibles con una nueva lista y notifica a
-     * los observadores. Si se ejecuta fuera del hilo de la interfaz gráfica,
-     * utiliza el Event Dispatch Thread (EDT).
-     *
-     * @param salas nueva lista de salas disponibles.
-     */
-    public void actualizarSalasDisponibles(List<Sala> salas) {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                System.out.println("Modelo: Actualizando salas disponibles");
-                
-                if (salas == null) {
-                    this.salasDisponibles = new ArrayList<>();
-                } else {
-                    this.salasDisponibles = new ArrayList<>(salas);
-                }
-                
-                System.out.println("Modelo: Total de salas actualizadas: " + 
-                    this.salasDisponibles.size());
-                
-                // Notificar a los observadores
-                notifyObservers();
-                
-            } catch (Exception e) {
-                System.err.println("Modelo: Error actualizando salas: " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
-    }
+
+
         /**
      * Notifica a todos los observadores sobre un cambio en los datos.
      */
@@ -161,7 +134,7 @@ public class UnirseAlaSalaModel {
      * @param salaId el identificador de la sala a la que se desea unir.
      * @param jugador el jugador que desea unirse.
      */
-    public void unirseASala(String salaId, Jugador jugador) {
+    public void unirseASala(Integer salaId, Jugador jugador) {
         if (server != null && server.isConnected()) {
             Evento evento = new Evento("UNIR_SALA");
             evento.agregarDato("salaId", salaId);
