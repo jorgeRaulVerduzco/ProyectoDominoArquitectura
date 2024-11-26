@@ -78,11 +78,12 @@ public class CrearUsuarioController {
     Jugador jugador = new Jugador(nombre, avatar);
     jugador.setEstado("ACTIVO");
 
-    // Registrar el jugador en el servidor (sin usar un socket real)
-if (server != null) {
-    server.registrarJugador(jugador);  // Pasar el jugador directamente
-    System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
-} else {
+    // Registrar jugador en el servidor
+    if (server != null) {
+        Socket mockSocket = new Socket(); // Simular un socket en este flujo
+        server.registrarJugador(mockSocket, jugador);
+        System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
+    } else {
         JOptionPane.showMessageDialog(view, "Error: El servidor no está disponible.", "Error", JOptionPane.ERROR_MESSAGE);
     }
 
