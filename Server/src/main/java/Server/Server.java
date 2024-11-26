@@ -122,54 +122,56 @@ public class Server {
     
 
     private void manejarNuevaConexion(Socket clienteSocket) {
-        try {
-            // Set socket timeout for connection establishment
-            clienteSocket.setSoTimeout(5000);
+    try {
+        // Configurar el socket para que tenga un tiempo de espera para la conexión
+        clienteSocket.setSoTimeout(5000);
 
-            ObjectOutputStream out = new ObjectOutputStream(clienteSocket.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(clienteSocket.getInputStream());
+        ObjectOutputStream out = new ObjectOutputStream(clienteSocket.getOutputStream());
+        ObjectInputStream in = new ObjectInputStream(clienteSocket.getInputStream());
 
-            // Synchronized registration of connection details
-            synchronized (outputStreams) {
-                outputStreams.put(clienteSocket, out);
-                clientes.add(clienteSocket);
-            }
-
-            // Enviar confirmación de conexión
-            Evento confirmacion = new Evento("CONEXION_EXITOSA");
-            enviarMensajeACliente(clienteSocket, confirmacion);
-
-            // Start listener thread for this client
-            executorService.submit(() -> escucharCliente(clienteSocket, in));
-
-        } catch (IOException e) {
-            System.err.println("[ERROR] Error estableciendo conexión: " + e.getMessage());
-            cerrarConexion(clienteSocket);
-            isConnected = false;
+        // Registrar el output stream para enviar mensajes a este cliente
+        synchronized (outputStreams) {
+            outputStreams.put(clienteSocket, out);
+            clientes.add(clienteSocket);
         }
+
+        // Enviar confirmación de conexión
+        Evento confirmacion = new Evento("CONEXION_EXITOSA");
+        enviarMensajeACliente(clienteSocket, confirmacion);
+
+        // Iniciar un hilo para escuchar mensajes de este cliente
+        executorService.submit(() -> escucharCliente(clienteSocket, in));
+
+    } catch (IOException e) {
+        System.err.println("[ERROR] Error estableciendo conexión: " + e.getMessage());
+        cerrarConexion(clienteSocket);
+        isConnected = false;
     }
+}
+
 
    public void registrarJugador(Socket socket, Jugador jugador) {
     synchronized (jugadoresPorSocket) {
-        // Prevent duplicate registrations
-        if (jugadoresPorSocket.containsValue(jugador)) {
-            System.err.println("[REGISTRO] Jugador ya registrado: " + jugador.getNombre());
-            return;
+        // Verifica si ya existe un jugador con el mismo nombre en el servidor
+        for (Jugador j : jugadoresPorSocket.values()) {
+            if (j.getNombre().equalsIgnoreCase(jugador.getNombre())) {
+                System.err.println("[REGISTRO] Jugador ya registrado: " + jugador.getNombre());
+                return;  // Si el jugador ya está registrado, no lo vuelvas a registrar
+            }
         }
 
-        // Log registration details
-        System.out.println("[REGISTRO] Registrando jugador: " + jugador.getNombre());
-        System.out.println("[REGISTRO] Socket: " + socket);
-
-        // Asegúrate de que el socket esté siendo utilizado correctamente
+        // Si no existe, registra el jugador con su socket
         jugadoresPorSocket.put(socket, jugador);
+        System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador.getNombre());
 
-        // Notificar sobre el registro de nuevo jugador
+        // Notificar sobre el registro del nuevo jugador
         Evento nuevoJugadorEvento = new Evento("NUEVO_JUGADOR_REGISTRADO");
         nuevoJugadorEvento.agregarDato("jugador", jugador);
         enviarNuevoCliente(nuevoJugadorEvento);
     }
 }
+
+   
 
 
     /**
