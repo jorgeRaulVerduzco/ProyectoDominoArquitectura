@@ -139,31 +139,28 @@ public class Server {
         }
     }
 
-    public void registrarJugador(Socket socket, Jugador jugador) {
-        try {
-            synchronized (jugadoresPorSocket) {
-                // Prevent duplicate registrations
-                if (jugadoresPorSocket.containsValue(jugador)) {
-                    System.err.println("[REGISTRO] Jugador ya registrado: " + jugador.getNombre());
-                    return;
-                }
-                
-                // Log registration details
-                System.out.println("[REGISTRO] Registrando jugador: " + jugador.getNombre());
-                System.out.println("[REGISTRO] Socket: " + socket);
-                
-                jugadoresPorSocket.put(socket, jugador);
-                
-                // Notify about new player registration
-                Evento nuevoJugadorEvento = new Evento("NUEVO_JUGADOR_REGISTRADO");
-                nuevoJugadorEvento.agregarDato("jugador", jugador);
-                enviarNuevoCliente(nuevoJugadorEvento);
-            }
-        } catch (Exception e) {
-            System.err.println("[ERROR] Error registrando jugador: " + e.getMessage());
-            e.printStackTrace();
+   public void registrarJugador(Socket socket, Jugador jugador) {
+    synchronized (jugadoresPorSocket) {
+        // Prevent duplicate registrations
+        if (jugadoresPorSocket.containsValue(jugador)) {
+            System.err.println("[REGISTRO] Jugador ya registrado: " + jugador.getNombre());
+            return;
         }
+
+        // Log registration details
+        System.out.println("[REGISTRO] Registrando jugador: " + jugador.getNombre());
+        System.out.println("[REGISTRO] Socket: " + socket);
+
+        // Asegúrate de que el socket esté siendo utilizado correctamente
+        jugadoresPorSocket.put(socket, jugador);
+
+        // Notificar sobre el registro de nuevo jugador
+        Evento nuevoJugadorEvento = new Evento("NUEVO_JUGADOR_REGISTRADO");
+        nuevoJugadorEvento.agregarDato("jugador", jugador);
+        enviarNuevoCliente(nuevoJugadorEvento);
     }
+}
+
 
     /**
      * Verifica si el servidor está conectado y operativo.
@@ -281,6 +278,25 @@ public class Server {
                 .findFirst()
                 .orElse(null);  // Cambiar .get() por .orElse(null)
     }
+    
+    /**
+ * Verifica si un jugador con el nombre dado ya está registrado en el servidor.
+ *
+ * @param nombre El nombre del jugador a buscar.
+ * @return true si el jugador ya está registrado, false en caso contrario.
+ */
+public boolean contieneJugador(String nombre) {
+    synchronized (jugadoresPorSocket) {
+        // Busca por el nombre del jugador, no por el objeto completo
+        return jugadoresPorSocket.values().stream()
+                .anyMatch(jugador -> jugador.getNombre().equalsIgnoreCase(nombre));
+    }
+}
+
+
+
+
+    
 
     /**
      * Envía un evento a todos los clientes conectados.

@@ -4,11 +4,14 @@
  */
 package Presenctacion.MenuPrincipalMVC;
 
+import Dominio.Avatar;
+import Dominio.Jugador;
 import EventoJuego.Evento;
 import Presenctacion.Mediador;
 import Server.Server;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.Socket;
 import javax.swing.JOptionPane;
 
 /**
@@ -56,39 +59,41 @@ public class CrearUsuarioController {
     }
 
     private void crearUsuario() {
-        String nombre = view.getNombre();
-        String avatar = view.getSelectedAvatar();
+    String nombre = view.getNombre();
+    String avatarSeleccionado = view.getSelectedAvatar();
 
-        // Validación de los campos
-        if (nombre == null || nombre.trim().isEmpty()) {
-            JOptionPane.showMessageDialog(view, "Por favor, ingrese un nombre válido.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        if (avatar == null || avatar.isEmpty()) {
-            JOptionPane.showMessageDialog(view, "Por favor, seleccione un avatar.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // Crear el usuario con los datos ingresados
-        CrearUsuarioModel usuario = new CrearUsuarioModel(nombre, avatar);
-
-        // Notificar al mediador que el usuario ha sido creado
-        mediador.usuarioCreado(usuario);
-        System.out.println("ENVIANDOEVENTO");
-        // Enviar el evento de creación de usuario al servidor
-        if (server != null) {
-            Evento evento = new Evento("REGISTRO_USUARIO");
-            evento.agregarDato("usuario", usuario);
-
-            // Enviar el evento a todos los clientes conectados
-            server.enviarNuevoCliente(evento);
-            System.out.println("Evento enviado al servidor: " + evento.getTipo());
-        } else {
-            JOptionPane.showMessageDialog(view, "Error: El servidor no está disponible.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-        System.out.println("Servidor en crearUsuario: " + (server != null ? "Inicializado" : "No Inicializado"));
+    // Validaciones
+    if (nombre == null || nombre.trim().isEmpty()) {
+        JOptionPane.showMessageDialog(view, "Por favor, ingrese un nombre válido.", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
     }
+
+    if (avatarSeleccionado == null || avatarSeleccionado.isEmpty()) {
+        JOptionPane.showMessageDialog(view, "Por favor, seleccione un avatar.", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    // Crear jugador
+    Avatar avatar = new Avatar(avatarSeleccionado);
+    Jugador jugador = new Jugador(nombre, avatar);
+    jugador.setEstado("ACTIVO");
+
+    // Registrar el jugador en el servidor (sin usar un socket real)
+if (server != null) {
+    server.registrarJugador(jugador);  // Pasar el jugador directamente
+    System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
+} else {
+        JOptionPane.showMessageDialog(view, "Error: El servidor no está disponible.", "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    // Notificar al mediador con el jugador creado
+    mediador.usuarioCreado(jugador);
+}
+
+
+
+
+
     
     public void crearUsuario2(CrearUsuarioModel usuario) {
     if (usuario == null) {

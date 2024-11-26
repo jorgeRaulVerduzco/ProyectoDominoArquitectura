@@ -148,45 +148,7 @@ public class CrearUsuarioView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnJugarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnJugarActionPerformed
-     // Obtener los datos de la vista
-    String nombre = txtNombre.getText();
-    System.out.println("[DEBUG] Nombre ingresado: " + nombre);
-
-    String avatar = (String) comboBoxAvatares.getSelectedItem();
-    System.out.println("[DEBUG] Avatar seleccionado: " + avatar);
-
-    // Validación inicial
-    if (nombre == null || nombre.trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Por favor, ingresa un nombre.", "Error", JOptionPane.ERROR_MESSAGE);
-        System.out.println("[ERROR] Nombre vacío.");
-        return;
-    }
-
-    if (avatar == null || avatar.trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Por favor, selecciona un avatar.", "Error", JOptionPane.ERROR_MESSAGE);
-        System.out.println("[ERROR] Avatar no seleccionado.");
-        return;
-    }
-
-    // Crear el modelo de usuario
-    CrearUsuarioModel usuario = new CrearUsuarioModel(nombre, avatar);
-    System.out.println("[DEBUG] Modelo de usuario creado: " + usuario);
-
-     CrearUsuarioController usuarioCTL = new CrearUsuarioController(this);
      
-    // Llamar al método crearUsuario del controlador
-    try {
-        if (mediador != null) {
-            mediador.usuarioCreado(usuario);
-        } else {
-            System.out.println("Error: mediador es null");
-        }
-        
-        
-    } catch (Exception ex) {
-        System.out.println("[ERROR] Ocurrió un error al crear el usuario: " + ex.getMessage());
-        ex.printStackTrace();
-    }
     }//GEN-LAST:event_BtnJugarActionPerformed
     // Mostrar vista de Crear Sala
     private void mostrarCrearSala(CrearUsuarioModel usuario) {

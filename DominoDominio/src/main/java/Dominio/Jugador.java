@@ -4,6 +4,7 @@
  */
 package Dominio;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,8 +12,8 @@ import java.util.List;
  *
  * @author INEGI
  */
-public class Jugador {
-
+public class Jugador implements Serializable {
+    private static final long serialVersionUID = 1L; // Versión de la clase para serialización
     private String nombre;
     private Avatar avatar;
     private String estado; //para cuando dicida abandonar partida osea si esta sale activo sino inactivo
@@ -23,10 +24,16 @@ public class Jugador {
      * Constructor por defecto de la clase Jugador. Inicializa una lista vacía
      * de fichas para el jugador.
      * @param nombre
+     * @param avatar
      */
     
     
     
+    public Jugador(String nombre, Avatar avatar) {
+        this.nombre = nombre;
+        this.avatar = avatar;
+    }
+
     public Jugador(String nombre) {
         this.nombre = nombre;
     }
@@ -155,5 +162,20 @@ public class Jugador {
     public String toString() {
         return "Jugador{" + "nombre=" + nombre + ", avatar=" + avatar + ", estado=" + estado + ", puntuacion=" + puntuacion + ", fichasJugador=" + fichasJugador + '}';
     }
+    
+    @Override
+public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null || getClass() != obj.getClass()) return false;
+    Jugador jugador = (Jugador) obj;
+    return nombre != null && nombre.equalsIgnoreCase(jugador.nombre);
+}
+
+@Override
+public int hashCode() {
+    return nombre != null ? nombre.toLowerCase().hashCode() : 0;
+}
+
+    
 
 }

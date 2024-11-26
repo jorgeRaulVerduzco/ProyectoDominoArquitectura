@@ -16,6 +16,7 @@ import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaController;
 import PresentacionTableroMVC.TableroController;
 import PresentacionTableroMVC.TableroView;
 import Server.Server;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -48,13 +49,18 @@ private CrearUsuarioModel usuarioActual;
 
     }
 
-    public void setServer(Server server) {
-        if (server == null) {
-            System.out.println("Error: El servidor no puede ser nulo.");
-            throw new IllegalArgumentException("El servidor no puede ser nulo.");
-        }
-        this.server = server;
-        System.out.println("Servidor configurado correctamente.");
+ 
+        public void setServer(Server server) {
+    if (server == null) {
+        System.out.println("Error: El servidor no puede ser nulo.");
+        throw new IllegalArgumentException("El servidor no puede ser nulo.");
+    }
+    this.server = server;
+    System.out.println("Servidor configurado correctamente.");
+    crearUsuarioController.setServer(server);
+
+
+     
         // Pasar el servidor a los controladores que lo necesiten
         crearUsuarioController.setServer(server);
         // Si otros controladores necesitan el servidor, puedes pasarlo aquí
@@ -69,32 +75,51 @@ private CrearUsuarioModel usuarioActual;
           
     }
 
-     public void usuarioCreado(CrearUsuarioModel usuario) {
-        this.usuarioActual = usuario;
-        crearUsuarioController.crearUsuario2(usuario);
-        crearUsuarioController.ocultarVista();
-        mostrarCrearSala(usuario);
-        
-    }
-    
-    public void mostrarCrearSala(CrearUsuarioModel usuario) {
-        System.out.println("Mostrando vista de Crear Sala...");
-        if (crearSalaView != null) {
-            // Convertir el usuario a jugador y establecerlo en el modelo
-            Jugador jugador = new Jugador();
-            jugador.setNombre(usuario.getNombre());
-            jugador.setEstado("ACTIVO");
-            
-            CrearSalaModel modelo = crearSalaController.getModel();
-            modelo.setJugadorActual(jugador);
-            
-            crearSalaView.pack();
-            crearSalaView.setLocationRelativeTo(null);
-            crearSalaView.setVisible(true);
-        } else {
-            System.out.println("Vista de crear sala es null.");
+    public void usuarioCreado(Jugador jugador) {
+    System.out.println("Usuario creado: " + jugador);
+
+    if (server != null) {
+        boolean usuarioExistente = server.contieneJugador(jugador.getNombre());
+        System.out.println("¿Usuario existe? " + usuarioExistente);
+
+        if (usuarioExistente) {
+            JOptionPane.showMessageDialog(null, 
+                "El usuario ya existe en el servidor.", 
+                "Advertencia", 
+                JOptionPane.WARNING_MESSAGE);
+            return; // Detenemos el flujo si el usuario ya existe
         }
+    } else {
+        JOptionPane.showMessageDialog(null, 
+            "El servidor no está disponible.", 
+            "Error", 
+            JOptionPane.ERROR_MESSAGE);
+        return; // Detenemos el flujo si el servidor no está inicializado
     }
+
+    // Cambiar de vista si el usuario no existe
+    crearUsuarioController.ocultarVista();
+    mostrarCrearSala(jugador);
+}
+
+
+
+
+
+    
+    public void mostrarCrearSala(Jugador jugador) {
+    System.out.println("Mostrando vista de Crear Sala...");
+    if (crearSalaView != null) {
+        CrearSalaModel modelo = crearSalaController.getModel();
+        modelo.setJugadorActual(jugador); // Pasar el jugador al modelo
+        crearSalaView.pack();
+        crearSalaView.setLocationRelativeTo(null);
+        crearSalaView.setVisible(true);
+    } else {
+        System.out.println("Vista de crear sala es null.");
+    }
+}
+
   
        public void salaCreada() {
         crearSalaView.setVisible(false);

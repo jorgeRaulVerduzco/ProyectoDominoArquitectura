@@ -22,7 +22,7 @@ public class PruebaDeConexion {
      */
   public static void main(String[] args) {
         // Configurar el servidor en un puerto específico
-        int puerto = 9977;
+        int puerto = 51114;
 
         // Crear una instancia del servidor y ejecutarla en un hilo separado
         Thread serverThread = new Thread(() -> {
