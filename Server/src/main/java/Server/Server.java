@@ -20,6 +20,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -37,51 +43,126 @@ public class Server {
     private boolean isRunning;
     private volatile boolean isConnected;
 
+        // Thread pool for handling connections
+    private final ExecutorService executorService;
 
-    /**
-     * Constructor de la clase Server. Inicializa las estructuras de datos
-     * necesarias y crea instancias del controlador y de la clase de
-     * comunicación.
-     */
     public Server() {
-        this.clientes = new ArrayList<>();
-        this.outputStreams = new HashMap<>();
-        this.jugadoresPorSocket = new HashMap<>();
+        this.clientes = new CopyOnWriteArrayList<>();
+        this.outputStreams = new ConcurrentHashMap<>();
+        this.jugadoresPorSocket = new ConcurrentHashMap<>();
         this.blackboardController = new Controller(this);
         this.serverComunicacion = new ServerComunicacion(this);
         this.running = false;
         this.isConnected = false;
+        
+        // Initialize thread pool with core and max thread counts
+        this.executorService = Executors.newCachedThreadPool(new ThreadFactory() {
+            private final AtomicInteger threadCounter = new AtomicInteger(1);
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r, "ServerThread-" + threadCounter.getAndIncrement());
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
     }
 
-    /**
-     * Inicia el servidor en el puerto especificado. El servidor escucha
-     * conexiones entrantes indefinidamente, aceptando nuevos clientes y
-     * manejándolos.
-     *
-     * @param puerto El número de puerto en el que el servidor escuchará.
-     * @throws IOException Si ocurre un error al crear el ServerSocket.
-     */
     public void iniciarServidor(int puerto) throws IOException {
-        servidor = new ServerSocket(puerto, 0, InetAddress.getByName("192.168.1.66"));
-        running = true;
-        isConnected = true;
-        System.out.println("Servidor iniciado en dirección IP: 127.0.0.1, puerto: " + puerto);
+        try {
+            // Use localhost or 0.0.0.0 instead of specific IP
+            servidor = new ServerSocket(puerto, 50, InetAddress.getByName("localhost"));
+            running = true;
+            isConnected = true;
+            
+            System.out.println("Servidor iniciado en dirección IP: 127.0.0.1, puerto: " + puerto);
 
-        // Iniciar thread para aceptar conexiones
-        new Thread(() -> {
-            while (running) {
-                try {
-                    Socket clienteSocket = servidor.accept();
-                    System.out.println("Nueva conexión aceptada: " + clienteSocket.getInetAddress());
-                    manejarNuevaConexion(clienteSocket);
-                } catch (IOException e) {
-                    if (running) {
-                        System.err.println("Error aceptando conexión: " + e.getMessage());
-                        isConnected = false;
+            // Start connection acceptor thread
+            executorService.submit(this::aceptarConexiones);
+
+        } catch (IOException e) {
+            System.err.println("Error iniciando servidor: " + e.getMessage());
+            running = false;
+            isConnected = false;
+            throw e;
+        }
+    }
+
+    private void aceptarConexiones() {
+        while (running) {
+            try {
+                Socket clienteSocket = servidor.accept();
+                System.out.println("[CONEXIÓN] Nueva conexión aceptada: " + clienteSocket.getInetAddress());
+                
+                // Handle new connection in a separate task
+                executorService.submit(() -> manejarNuevaConexion(clienteSocket));
+            } catch (IOException e) {
+                if (running) {
+                    System.err.println("[ERROR] Error aceptando conexión: " + e.getMessage());
+                    isConnected = false;
+                    
+                    // Prevent tight error loop
+                    try { 
+                        Thread.sleep(100); 
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
                     }
                 }
             }
-        }).start();
+        }
+    }
+
+    private void manejarNuevaConexion(Socket clienteSocket) {
+        try {
+            // Set socket timeout for connection establishment
+            clienteSocket.setSoTimeout(5000);
+
+            ObjectOutputStream out = new ObjectOutputStream(clienteSocket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(clienteSocket.getInputStream());
+
+            // Synchronized registration of connection details
+            synchronized (outputStreams) {
+                outputStreams.put(clienteSocket, out);
+                clientes.add(clienteSocket);
+            }
+
+            // Enviar confirmación de conexión
+            Evento confirmacion = new Evento("CONEXION_EXITOSA");
+            enviarMensajeACliente(clienteSocket, confirmacion);
+
+            // Start listener thread for this client
+            executorService.submit(() -> escucharCliente(clienteSocket, in));
+
+        } catch (IOException e) {
+            System.err.println("[ERROR] Error estableciendo conexión: " + e.getMessage());
+            cerrarConexion(clienteSocket);
+            isConnected = false;
+        }
+    }
+
+    public void registrarJugador(Socket socket, Jugador jugador) {
+        try {
+            synchronized (jugadoresPorSocket) {
+                // Prevent duplicate registrations
+                if (jugadoresPorSocket.containsValue(jugador)) {
+                    System.err.println("[REGISTRO] Jugador ya registrado: " + jugador.getNombre());
+                    return;
+                }
+                
+                // Log registration details
+                System.out.println("[REGISTRO] Registrando jugador: " + jugador.getNombre());
+                System.out.println("[REGISTRO] Socket: " + socket);
+                
+                jugadoresPorSocket.put(socket, jugador);
+                
+                // Notify about new player registration
+                Evento nuevoJugadorEvento = new Evento("NUEVO_JUGADOR_REGISTRADO");
+                nuevoJugadorEvento.agregarDato("jugador", jugador);
+                enviarNuevoCliente(nuevoJugadorEvento);
+            }
+        } catch (Exception e) {
+            System.err.println("[ERROR] Error registrando jugador: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -106,77 +187,47 @@ public class Server {
     }
 
     public void enviarNuevoCliente(Evento evento) {
-    System.out.println("Intentando enviar evento de nuevo cliente");
-    
-    // Si no hay clientes, simplemente imprimimos un mensaje
-    if (outputStreams == null || outputStreams.isEmpty()) {
-        System.out.println("Primer registro de usuario. No hay clientes para notificar.");
-        return;
-    }
+        System.out.println("Intentando enviar evento de nuevo cliente");
 
-    // Resto del método de envío a clientes existentes
-    synchronized (outputStreams) {
-        List<Socket> clientesDesconectados = new ArrayList<>();
-        
-        for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
-            Socket cliente = entry.getKey();
-            ObjectOutputStream out = entry.getValue();
-            
-            try {
-                synchronized (out) {
-                    out.writeObject(evento);
-                    out.reset();
-                    out.flush();
+        // Si no hay clientes, simplemente imprimimos un mensaje
+        if (outputStreams == null || outputStreams.isEmpty()) {
+            System.out.println("Primer registro de usuario. No hay clientes para notificar.");
+            return;
+        }
+
+        // Resto del método de envío a clientes existentes
+        synchronized (outputStreams) {
+            List<Socket> clientesDesconectados = new ArrayList<>();
+
+            for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
+                Socket cliente = entry.getKey();
+                ObjectOutputStream out = entry.getValue();
+
+                try {
+                    synchronized (out) {
+                        out.writeObject(evento);
+                        out.reset();
+                        out.flush();
+                    }
+
+                    System.out.println("Evento enviado exitosamente a: " + cliente.getInetAddress());
+                } catch (IOException e) {
+                    System.err.println("Error enviando evento a " + cliente.getInetAddress() + ": " + e.getMessage());
+                    clientesDesconectados.add(cliente);
                 }
-                
-                System.out.println("Evento enviado exitosamente a: " + cliente.getInetAddress());
-            } catch (IOException e) {
-                System.err.println("Error enviando evento a " + cliente.getInetAddress() + ": " + e.getMessage());
-                clientesDesconectados.add(cliente);
+
+                System.out.println("Exitoso. Tamaño: " + outputStreams.size());
             }
-            
-            System.out.println("Exitoso. Tamaño: " + outputStreams.size());
+
+            // Limpiar clientes desconectados
+            for (Socket socket : clientesDesconectados) {
+                cerrarConexion(socket);
+            }
         }
-        
-        // Limpiar clientes desconectados
-        for (Socket socket : clientesDesconectados) {
-            cerrarConexion(socket);
-        }
+
     }
 
 
-}
-    /**
-     * Maneja una nueva conexión de cliente. Agrega el socket del cliente a la
-     * lista de clientes conectados, y lanza un nuevo hilo para manejar la
-     * comunicación con dicho cliente.
-     *
-     * @param clienteSocket El socket del cliente que se conectó.
-     */
-    private void manejarNuevaConexion(Socket clienteSocket) {
-        try {
-            ObjectOutputStream out = new ObjectOutputStream(clienteSocket.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(clienteSocket.getInputStream());
-
-            synchronized (outputStreams) {
-                outputStreams.put(clienteSocket, out);
-                clientes.add(clienteSocket);
-            }
-
-            // Enviar confirmación de conexión
-            Evento confirmacion = new Evento("CONEXION_EXITOSA");
-            enviarMensajeACliente(clienteSocket, confirmacion);
-
-            // Iniciar thread para escuchar mensajes
-            new Thread(() -> escucharCliente(clienteSocket, in)).start();
-
-        } catch (IOException e) {
-            System.err.println("Error estableciendo conexión con cliente: " + e.getMessage());
-            cerrarConexion(clienteSocket);
-            isConnected = false;
-        }
-
-    }
 
     /**
      * Escucha continuamente los mensajes enviados por un cliente a través de su
@@ -206,8 +257,6 @@ public class Server {
      *
      * @param cliente El socket del cliente.
      */
-
-
     /**
      * Devuelve el controlador del servidor.
      *
@@ -217,15 +266,6 @@ public class Server {
         return this.blackboardController;
     }
 
-    /**
-     * Registra a un jugador en el mapa de jugadores por socket.
-     *
-     * @param socket El socket asociado al jugador.
-     * @param jugador El jugador a registrar.
-     */
-    public void registrarJugador(Socket socket, Jugador jugador) {
-        jugadoresPorSocket.put(socket, jugador);
-    }
 
     /**
      * Obtiene el socket asociado a un jugador dado.
@@ -234,11 +274,12 @@ public class Server {
      * @return El socket asociado al jugador, o null si no existe.
      */
     public Socket getSocketJugador(Jugador jugador) {
+        // Cambiar la implementación para manejar casos donde no se encuentra el socket
         return jugadoresPorSocket.entrySet().stream()
                 .filter(entry -> entry.getValue().equals(jugador))
                 .map(Map.Entry::getKey)
                 .findFirst()
-                .orElse(null);
+                .orElse(null);  // Cambiar .get() por .orElse(null)
     }
 
     /**
@@ -246,49 +287,47 @@ public class Server {
      *
      * @param evento El evento a enviar.
      */
-   public void enviarEvento(Evento evento) {
-    System.out.println("Iniciando envío de evento: " + evento.getTipo());
-   
-    
-    List<Socket> clientesDesconectados = new ArrayList<>();
-    
+    public void enviarEvento(Evento evento) {
+        System.out.println("Iniciando envío de evento: " + evento.getTipo());
 
-    synchronized (outputStreams) {
-        System.out.println("synchronized (outputStreams)" );
-        
-        
-        for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
-            System.out.println("llegue al for" );
-            Socket cliente = entry.getKey();
-            ObjectOutputStream out = entry.getValue();
-            
-            try {
-                synchronized(out) {
-                    System.out.println("Preparando para escribir en el cliente: " + cliente.getInetAddress());
+        List<Socket> clientesDesconectados = new ArrayList<>();
 
-                    out.writeObject(evento);
-                    System.out.println("out.reset();" );
-                    out.reset();
-                    System.out.println("out.flush();" );
-                    out.flush();
+        synchronized (outputStreams) {
+            System.out.println("synchronized (outputStreams)");
+
+            for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
+                System.out.println("llegue al for");
+                Socket cliente = entry.getKey();
+                ObjectOutputStream out = entry.getValue();
+
+                try {
+                    synchronized (out) {
+                        System.out.println("Preparando para escribir en el cliente: " + cliente.getInetAddress());
+
+                        out.writeObject(evento);
+                        System.out.println("out.reset();");
+                        out.reset();
+                        System.out.println("out.flush();");
+                        out.flush();
+                    }
+
+                    System.out.println("Exitoso. Tamaño: " + outputStreams.size());
+
+                    System.out.println("Evento enviado exitosamente a: " + cliente.getInetAddress());
+                } catch (IOException e) {
+                    System.err.println("Error enviando evento a " + cliente.getInetAddress() + ": " + e.getMessage());
+                    clientesDesconectados.add(cliente);
                 }
-                
-                System.out.println("Exitoso. Tamaño: " + outputStreams.size());
-                
-                System.out.println("Evento enviado exitosamente a: " + cliente.getInetAddress());
-            } catch (IOException e) {
-                System.err.println("Error enviando evento a " + cliente.getInetAddress() + ": " + e.getMessage());
-                clientesDesconectados.add(cliente);
             }
+
         }
-        
+
+        // Limpiar clientes desconectados
+        for (Socket socket : clientesDesconectados) {
+            cerrarConexion(socket);
+        }
     }
-    
-    // Limpiar clientes desconectados
-    for (Socket socket : clientesDesconectados) {
-        cerrarConexion(socket);
-    }
-}
+
     /**
      * Envía un evento a un jugador específico.
      *
@@ -368,34 +407,36 @@ public class Server {
      * asociados al evento que debe ser procesado.
      */
     private void procesarEvento(Socket cliente, Evento evento) {
-        System.out.println("[DEBUG] Procesando evento en Server: " + evento.getTipo());
-        try {
-            switch (evento.getTipo()) {
-                case "CREAR_SALA":
-                    System.out.println("[DEBUG] Delegando evento CREAR_SALA a serverComunicacion");
-                    serverComunicacion.procesarEvento(cliente, evento);
-                    break;
-                case "SOLICITAR_SALAS":
-                    serverComunicacion.procesarEvento(cliente, evento);
-                    break;
-                case "UNIRSE_SALA":
-                case "ABANDONAR_SALA":
-                case "JUGADA":
-                    blackboardController.procesarEvento(cliente, evento);
-                    break;
-                    case "REGISTRO_USUARIO":
-                // Procesar registro de usuario
+    System.out.println("[DEBUG] Procesando evento en Server: " + evento.getTipo());
+    System.out.println("[DEBUG] Cliente: " + cliente);
+    System.out.println("[DEBUG] Evento detalles: " + evento.getDatos());
+
+    try {
+        switch (evento.getTipo()) {
+            case "CREAR_SALA":
+                System.out.println("[DEBUG] Delegando evento CREAR_SALA a serverComunicacion");
                 serverComunicacion.procesarEvento(cliente, evento);
                 break;
-                    
-                    
-                default:
-                    System.out.println("Evento no reconocido: " + evento.getTipo());
-            }
-        } catch (Exception e) {
-            System.err.println("[ERROR] Error procesando evento: " + e.getMessage());
-            e.printStackTrace();
+            case "SOLICITAR_SALAS":
+                serverComunicacion.procesarEvento(cliente, evento);
+                break;
+            case "UNIRSE_SALA":
+            case "ABANDONAR_SALA":
+            case "JUGADA":
+                blackboardController.procesarEvento(cliente, evento);
+                break;
+            case "REGISTRO_USUARIO":
+                System.out.println("[DEBUG] Recibido evento REGISTRO_USUARIO");
+                serverComunicacion.procesarEvento(cliente, evento);
+                break;
+
+            default:
+                System.out.println("Evento no reconocido: " + evento.getTipo());
         }
+    } catch (Exception e) {
+        System.err.println("[ERROR] Error procesando evento: " + e.getMessage());
+        e.printStackTrace();
     }
+}
 
 }

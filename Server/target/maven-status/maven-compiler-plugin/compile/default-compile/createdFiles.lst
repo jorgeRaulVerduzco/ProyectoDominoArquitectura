@@ -1,2 +1,5 @@
-ServerLocal\ServerComunicacion.class
+Pruebas\PruebaRegistro.class
 Server\Server.class
+Pruebas\PruebaDeConexion.class
+ServerLocal\ServerComunicacion.class
+Server\Server$1.class
