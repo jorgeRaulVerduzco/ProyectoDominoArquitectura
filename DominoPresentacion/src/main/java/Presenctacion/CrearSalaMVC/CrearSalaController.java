@@ -67,12 +67,16 @@ public class CrearSalaController {
 
             // Configurar datos en el modelo
             model.setNumeroFichas(numFichas);
+            
+            
             model.setNumeroJugadores(numJugadores);
+            
+            
             model.crearSala(); // Enviar el evento al servidor
 
-            // Confirmación después de enviar el evento
-            System.out.println("Evento de creación de sala enviado al servidor.");
-
+//            // Confirmación después de enviar el evento
+//            System.out.println("Evento de creación de sala enviado al servidor.");
+//
             // Transitar al siguiente frame
             mediador.mostrarUnirseASala();
 

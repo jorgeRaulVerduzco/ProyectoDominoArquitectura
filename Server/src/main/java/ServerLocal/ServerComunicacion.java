@@ -69,6 +69,11 @@ public class ServerComunicacion {
                 case "SOLICITAR_SALAS":
                     enviarSalasDisponibles(cliente);
                     break;
+                    case "REGISTRO_USUARIO":
+               registrarUsuario(cliente,  evento);
+               
+                break;
+                    
                 default:
                     System.out.println("Evento no reconocido: " + evento.getTipo());
             }
@@ -278,7 +283,47 @@ public class ServerComunicacion {
     }
     
     
-    
+    private void registrarUsuario(Socket cliente, Evento evento) {
+    try {
+        // Validar que el evento tenga los datos necesarios para registrar un usuario
+        if (!evento.getDatos().containsKey("nombre")) {
+            System.err.println("Error: Datos incompletos para registrar usuario");
+            return;
+        }
+
+        // Obtener el nombre del usuario del evento
+        String nombreUsuario = (String) evento.obtenerDato("nombre");
+
+        // Validar que el nombre no esté vacío
+        if (nombreUsuario == null || nombreUsuario.trim().isEmpty()) {
+            System.err.println("Error: Nombre de usuario inválido");
+            return;
+        }
+
+        // Crear un nuevo jugador
+        Jugador nuevoJugador = new Jugador(nombreUsuario);
+
+        // Registrar el jugador en el servidor
+        server.registrarJugador(cliente, nuevoJugador);
+
+        // Crear un evento de confirmación de registro
+        Evento confirmacion = new Evento("REGISTRO_USUARIO_CONFIRMADO");
+        confirmacion.agregarDato("jugador", nuevoJugador);
+
+        // Enviar confirmación al cliente que se registró
+        server.enviarMensajeACliente(cliente, confirmacion);
+
+        
+
+        System.out.println("Nuevo usuario registrado: " + nombreUsuario);
+
+    } catch (Exception e) {
+        System.err.println("Error registrando usuario: " + e.getMessage());
+        e.printStackTrace();
+
+        
+    }
+}
     
 
     /**

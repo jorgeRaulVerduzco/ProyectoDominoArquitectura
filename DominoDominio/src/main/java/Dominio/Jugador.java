@@ -22,7 +22,15 @@ public class Jugador {
     /**
      * Constructor por defecto de la clase Jugador. Inicializa una lista vacía
      * de fichas para el jugador.
+     * @param nombre
      */
+    
+    
+    
+    public Jugador(String nombre) {
+        this.nombre = nombre;
+    }
+
     public Jugador() {
         fichasJugador = new ArrayList<>();
     }

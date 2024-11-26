@@ -71,8 +71,10 @@ private CrearUsuarioModel usuarioActual;
 
      public void usuarioCreado(CrearUsuarioModel usuario) {
         this.usuarioActual = usuario;
+        crearUsuarioController.crearUsuario2(usuario);
         crearUsuarioController.ocultarVista();
         mostrarCrearSala(usuario);
+        
     }
     
     public void mostrarCrearSala(CrearUsuarioModel usuario) {

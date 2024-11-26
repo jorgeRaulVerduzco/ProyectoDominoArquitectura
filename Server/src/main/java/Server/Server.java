@@ -62,7 +62,7 @@ public class Server {
      * @throws IOException Si ocurre un error al crear el ServerSocket.
      */
     public void iniciarServidor(int puerto) throws IOException {
-        servidor = new ServerSocket(puerto, 0, InetAddress.getByName("192.168.1.81"));
+        servidor = new ServerSocket(puerto, 0, InetAddress.getByName("192.168.1.66"));
         running = true;
         isConnected = true;
         System.out.println("Servidor iniciado en dirección IP: 127.0.0.1, puerto: " + puerto);
@@ -105,6 +105,47 @@ public class Server {
         }
     }
 
+    public void enviarNuevoCliente(Evento evento) {
+    System.out.println("Intentando enviar evento de nuevo cliente");
+    
+    // Si no hay clientes, simplemente imprimimos un mensaje
+    if (outputStreams == null || outputStreams.isEmpty()) {
+        System.out.println("Primer registro de usuario. No hay clientes para notificar.");
+        return;
+    }
+
+    // Resto del método de envío a clientes existentes
+    synchronized (outputStreams) {
+        List<Socket> clientesDesconectados = new ArrayList<>();
+        
+        for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
+            Socket cliente = entry.getKey();
+            ObjectOutputStream out = entry.getValue();
+            
+            try {
+                synchronized (out) {
+                    out.writeObject(evento);
+                    out.reset();
+                    out.flush();
+                }
+                
+                System.out.println("Evento enviado exitosamente a: " + cliente.getInetAddress());
+            } catch (IOException e) {
+                System.err.println("Error enviando evento a " + cliente.getInetAddress() + ": " + e.getMessage());
+                clientesDesconectados.add(cliente);
+            }
+            
+            System.out.println("Exitoso. Tamaño: " + outputStreams.size());
+        }
+        
+        // Limpiar clientes desconectados
+        for (Socket socket : clientesDesconectados) {
+            cerrarConexion(socket);
+        }
+    }
+
+
+}
     /**
      * Maneja una nueva conexión de cliente. Agrega el socket del cliente a la
      * lista de clientes conectados, y lanza un nuevo hilo para manejar la
@@ -165,17 +206,7 @@ public class Server {
      *
      * @param cliente El socket del cliente.
      */
-    private void manejarCliente(Socket cliente) {
-        try {
-            ObjectInputStream in = new ObjectInputStream(cliente.getInputStream());
-            while (true) {
-                Evento evento = (Evento) in.readObject();
-                serverComunicacion.procesarEvento(cliente, evento);
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            manejarErrorComunicacion();
-        }
-    }
+
 
     /**
      * Devuelve el controlador del servidor.
@@ -217,25 +248,40 @@ public class Server {
      */
    public void enviarEvento(Evento evento) {
     System.out.println("Iniciando envío de evento: " + evento.getTipo());
+   
+    
     List<Socket> clientesDesconectados = new ArrayList<>();
     
+
     synchronized (outputStreams) {
+        System.out.println("synchronized (outputStreams)" );
+        
+        
         for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
+            System.out.println("llegue al for" );
             Socket cliente = entry.getKey();
             ObjectOutputStream out = entry.getValue();
             
             try {
                 synchronized(out) {
+                    System.out.println("Preparando para escribir en el cliente: " + cliente.getInetAddress());
+
                     out.writeObject(evento);
+                    System.out.println("out.reset();" );
                     out.reset();
+                    System.out.println("out.flush();" );
                     out.flush();
                 }
+                
+                System.out.println("Exitoso. Tamaño: " + outputStreams.size());
+                
                 System.out.println("Evento enviado exitosamente a: " + cliente.getInetAddress());
             } catch (IOException e) {
                 System.err.println("Error enviando evento a " + cliente.getInetAddress() + ": " + e.getMessage());
                 clientesDesconectados.add(cliente);
             }
         }
+        
     }
     
     // Limpiar clientes desconectados
@@ -337,6 +383,12 @@ public class Server {
                 case "JUGADA":
                     blackboardController.procesarEvento(cliente, evento);
                     break;
+                    case "REGISTRO_USUARIO":
+                // Procesar registro de usuario
+                serverComunicacion.procesarEvento(cliente, evento);
+                break;
+                    
+                    
                 default:
                     System.out.println("Evento no reconocido: " + evento.getTipo());
             }
