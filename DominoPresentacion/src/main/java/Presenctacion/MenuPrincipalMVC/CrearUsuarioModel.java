@@ -4,6 +4,8 @@
  */
 package Presenctacion.MenuPrincipalMVC;
 
+import Dominio.Jugador;
+
 /**
  *
  * @author Serva
@@ -49,4 +51,17 @@ public class CrearUsuarioModel {
                 + ", avatar='" + avatar + '\''
                 + '}';
     }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Jugador jugador = (Jugador) obj;
+        return nombre != null && nombre.equalsIgnoreCase(jugador.getNombre()); // Comparar solo por nombre
+    }
+
+    @Override
+    public int hashCode() {
+        return nombre != null ? nombre.toLowerCase().hashCode() : 0; // Generar hashCode basado en el nombre
+    }
+    
 }
