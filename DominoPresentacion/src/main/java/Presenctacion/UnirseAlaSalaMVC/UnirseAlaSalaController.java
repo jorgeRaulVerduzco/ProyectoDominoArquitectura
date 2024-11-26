@@ -73,7 +73,7 @@ public class UnirseAlaSalaController {
     });
 }
    public void cargarSalasDisponibles() {
-    if (server != null && server.isConnected()) {
+    if (server != null && server.isServidorActivo()) {
         System.out.println("Solicitando salas disponibles al servidor...");
         Evento evento = new Evento("SOLICITAR_SALAS");
         server.enviarEvento(evento); // Solicita salas al servidor

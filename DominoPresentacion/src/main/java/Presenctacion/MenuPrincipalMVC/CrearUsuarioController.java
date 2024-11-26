@@ -11,7 +11,10 @@ import Presenctacion.Mediador;
 import Server.Server;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -33,7 +36,11 @@ public class CrearUsuarioController {
         this.view.setCreateUserListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                crearUsuario();
+                try {
+                    crearUsuario();
+                } catch (IOException ex) {
+                    Logger.getLogger(CrearUsuarioController.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }
@@ -58,38 +65,58 @@ public class CrearUsuarioController {
         view.setVisible(true);
     }
 
-    private void crearUsuario() {
-    String nombre = view.getNombre();
-    String avatarSeleccionado = view.getSelectedAvatar();
-
-    // Validaciones
-    if (nombre == null || nombre.trim().isEmpty()) {
-        JOptionPane.showMessageDialog(view, "Por favor, ingrese un nombre válido.", "Error", JOptionPane.ERROR_MESSAGE);
-        return;
+   // Método para conectar el Socket
+    public void conectarSocket() {
+        try {
+            // Intentar establecer la conexión al servidor
+            Socket socket = new Socket("localhost", 51114);  // Asegúrate de usar la IP y el puerto correctos
+            if (socket.isConnected()) {
+                System.out.println("Conexión establecida con el servidor.");
+            } else {
+                System.err.println("Error: No se pudo conectar al servidor.");
+            }
+        } catch (IOException e) {
+            System.err.println("Error al conectar el socket: " + e.getMessage());
+        }
     }
 
-    if (avatarSeleccionado == null || avatarSeleccionado.isEmpty()) {
-        JOptionPane.showMessageDialog(view, "Por favor, seleccione un avatar.", "Error", JOptionPane.ERROR_MESSAGE);
-        return;
+    public void crearUsuario() throws IOException {
+        // Verificar si el socket está conectado antes de registrar el jugador
+        conectarSocket(); // Asegúrate de que la conexión esté activa
+
+        // Continuar con el registro del jugador
+        String nombre = view.getNombre();
+        String avatarSeleccionado = view.getSelectedAvatar();
+
+        // Validaciones
+        if (nombre == null || nombre.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Por favor, ingrese un nombre válido.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (avatarSeleccionado == null || avatarSeleccionado.isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Por favor, seleccione un avatar.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Crear jugador
+        Avatar avatar = new Avatar(avatarSeleccionado);
+        Jugador jugador = new Jugador(nombre, avatar);
+        jugador.setEstado("ACTIVO");
+
+        // Registrar jugador en el servidor
+        if (server != null) {
+             Socket socket = new Socket("localhost", 51114);
+            server.registrarJugador(socket,jugador);  // Usar el nombre del jugador como clave
+            System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
+        } else {
+            JOptionPane.showMessageDialog(view, "Error: El servidor no está disponible.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        // Notificar al mediador con el jugador creado
+        mediador.usuarioCreado(jugador);
     }
 
-    // Crear jugador
-    Avatar avatar = new Avatar(avatarSeleccionado);
-    Jugador jugador = new Jugador(nombre, avatar);
-    jugador.setEstado("ACTIVO");
-
-    // Registrar jugador en el servidor
-    if (server != null) {
-        Socket mockSocket = new Socket(); // Simular un socket en este flujo
-        server.registrarJugador(mockSocket, jugador);
-        System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
-    } else {
-        JOptionPane.showMessageDialog(view, "Error: El servidor no está disponible.", "Error", JOptionPane.ERROR_MESSAGE);
-    }
-
-    // Notificar al mediador con el jugador creado
-    mediador.usuarioCreado(jugador);
-}
 
 
 

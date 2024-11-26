@@ -41,10 +41,11 @@ public class Server {
     private ServerComunicacion serverComunicacion;
     private volatile boolean running;
     private boolean isRunning;
-    private volatile boolean isConnected;
+    private boolean isConnected = false;  // Indica si el servidor está listo
 
         // Thread pool for handling connections
     private final ExecutorService executorService;
+    
 
     public Server() {
         this.clientes = new CopyOnWriteArrayList<>();
@@ -69,47 +70,56 @@ public class Server {
 
     public void iniciarServidor(int puerto) throws IOException {
         try {
-            // Use localhost or 0.0.0.0 instead of specific IP
-            servidor = new ServerSocket(puerto, 50, InetAddress.getByName("localhost"));
-            running = true;
-            isConnected = true;
-            
+            servidor = new ServerSocket(puerto);
+            isConnected = true;  // El servidor está ahora listo
             System.out.println("Servidor iniciado en dirección IP: 127.0.0.1, puerto: " + puerto);
 
-            // Start connection acceptor thread
-            executorService.submit(this::aceptarConexiones);
+            // Lógica para aceptar conexiones
+            while (isConnected) {
+                Socket clienteSocket = servidor.accept();
+                System.out.println("Cliente conectado: " + clienteSocket.getInetAddress());
+                // Maneja la conexión con el cliente
+            }
 
         } catch (IOException e) {
-            System.err.println("Error iniciando servidor: " + e.getMessage());
-            running = false;
             isConnected = false;
-            throw e;
+            System.err.println("Error al iniciar el servidor: " + e.getMessage());
         }
     }
 
-    private void aceptarConexiones() {
-        while (running) {
-            try {
-                Socket clienteSocket = servidor.accept();
-                System.out.println("[CONEXIÓN] Nueva conexión aceptada: " + clienteSocket.getInetAddress());
-                
-                // Handle new connection in a separate task
-                executorService.submit(() -> manejarNuevaConexion(clienteSocket));
-            } catch (IOException e) {
-                if (running) {
-                    System.err.println("[ERROR] Error aceptando conexión: " + e.getMessage());
-                    isConnected = false;
-                    
-                    // Prevent tight error loop
-                    try { 
-                        Thread.sleep(100); 
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                    }
+ 
+   private void aceptarConexiones() {
+    while (running) {
+        try {
+            Socket clienteSocket = servidor.accept();
+            System.out.println("[CONEXIÓN] Nueva conexión aceptada: " + clienteSocket.getInetAddress());
+            // Asegúrate de registrar el socket correctamente y de no cerrarlo inmediatamente
+            executorService.submit(() -> manejarNuevaConexion(clienteSocket));
+        } catch (IOException e) {
+            if (running) {
+                System.err.println("[ERROR] Error aceptando conexión: " + e.getMessage());
+                isConnected = false;
+                try {
+                    Thread.sleep(100); 
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
                 }
             }
         }
     }
+}
+
+    
+    public void conectarSocket() throws IOException {
+        Socket socket = new Socket("localhost", 51114);  // Conéctalo al puerto de tu servidor
+        if (socket.isConnected()) {
+            System.out.println("Conexión establecida con el servidor.");
+        } else {
+            System.err.println("Error: No se pudo conectar al servidor.");
+        }
+}
+
+    
 
     private void manejarNuevaConexion(Socket clienteSocket) {
         try {
@@ -167,9 +177,12 @@ public class Server {
      *
      * @return true si el servidor está conectado, false en caso contrario.
      */
-    public boolean isConnected() {
-        return isConnected;
-    }
+public boolean isServidorActivo() {
+    return isConnected;  // isConnected debe ser actualizado cuando el servidor esté activo
+}
+
+
+
 
     /**
      * Envía un evento a todos los clientes actualmente conectados al servidor.
@@ -287,11 +300,12 @@ public class Server {
  */
 public boolean contieneJugador(String nombre) {
     synchronized (jugadoresPorSocket) {
-        // Busca por el nombre del jugador, no por el objeto completo
+        // Verificar si algún jugador con el mismo nombre ya está registrado
         return jugadoresPorSocket.values().stream()
-                .anyMatch(jugador -> jugador.getNombre().equalsIgnoreCase(nombre));
+                .anyMatch(jugador -> jugador.getNombre().equalsIgnoreCase(nombre)); // Comparar solo por nombre
     }
 }
+
 
 
 

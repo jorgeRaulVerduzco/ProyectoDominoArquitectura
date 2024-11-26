@@ -80,7 +80,7 @@ public class UnirseAlaSalaModel {
     public void solicitarSalasDisponibles() {
         System.out.println("Modelo: Solicitando salas disponibles al servidor...");
         
-        if (server != null && server.isConnected()) {
+        if (server != null && server.isServidorActivo()) {
             Evento evento = new Evento("SOLICITAR_SALAS");
             server.enviarEvento(evento);
             System.out.println("Modelo: Solicitud de salas enviada");
@@ -135,7 +135,7 @@ public class UnirseAlaSalaModel {
      * @param jugador el jugador que desea unirse.
      */
     public void unirseASala(Integer salaId, Jugador jugador) {
-        if (server != null && server.isConnected()) {
+        if (server != null && server.isServidorActivo()) {
             Evento evento = new Evento("UNIR_SALA");
             evento.agregarDato("salaId", salaId);
             evento.agregarDato("jugador", jugador);

@@ -47,7 +47,7 @@ public class CrearSalaModel {
 
     public void setServer(Server server) {
         this.server = server;
-        if (server != null && server.isConnected()) {
+        if (server != null && server.isServidorActivo()) {
             confirmarConexion();
         } else {
             System.err.println("No se pudo establecer conexión con el servidor");

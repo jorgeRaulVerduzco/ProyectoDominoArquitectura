@@ -32,23 +32,33 @@ public class Juego {
     private static Server server;
 
     public static void main(String[] args) {
-        // Iniciar el servidor en un hilo separado
-        new Thread(() -> {
-            try {
-                server = new Server();
-                server.iniciarServidor(PUERTO_SERVIDOR);
-            } catch (IOException e) {
-                System.err.println("Error al iniciar el servidor: " + e.getMessage());
-                System.exit(1);
-            }
-        }).start();
-
-        // Esperar un momento para asegurar que el servidor esté iniciado
+      // Iniciar el servidor en un hilo separado
+    new Thread(() -> {
         try {
-            Thread.sleep(1000);
+            server = new Server();
+            server.iniciarServidor(PUERTO_SERVIDOR);
+        } catch (IOException e) {
+            System.err.println("Error al iniciar el servidor: " + e.getMessage());
+            System.exit(1);
+        }
+    }).start();
+
+    // Esperar activamente a que el servidor esté listo
+    while (server == null || !server.isServidorActivo()) {
+        try {
+            System.out.println("Esperando a que el servidor esté listo...");
+            Thread.sleep(500);  // Espera medio segundo antes de volver a comprobar
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    // Configurar la aplicación después de que el servidor esté listo
+    System.out.println("Servidor está listo para aceptar conexiones.");
+    javax.swing.SwingUtilities.invokeLater(() -> {
+        initializeApplication();
+    });
+
 
         // Configurar el look and feel
         try {
