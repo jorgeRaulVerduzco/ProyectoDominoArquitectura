@@ -82,13 +82,7 @@ private CrearUsuarioModel usuarioActual;
         boolean usuarioExistente = server.contieneJugador(jugador.getNombre());
         System.out.println("¿Usuario existe? " + usuarioExistente);
 
-        if (usuarioExistente) {
-            JOptionPane.showMessageDialog(null, 
-                "El usuario ya existe en el servidor.", 
-                "Advertencia", 
-                JOptionPane.WARNING_MESSAGE);
-            return; // Detenemos el flujo si el usuario ya existe
-        }
+ 
     } else {
         JOptionPane.showMessageDialog(null, 
             "El servidor no está disponible.", 

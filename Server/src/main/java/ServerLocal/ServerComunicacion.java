@@ -12,6 +12,7 @@ import Server.Server;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -30,47 +31,39 @@ public class ServerComunicacion {
         this.server = server;
         this.servicioControlJuego = new ServicioControlJuego();
     }
+//este es importante
+    public void registrarUsuario(Socket cliente, Evento eventoRegistro) {
+    try {
+        // Extraer el jugador del evento
+        Jugador jugador = (Jugador) eventoRegistro.obtenerDato("jugador");
 
-    private void registrarUsuario(Socket cliente, Evento evento) {
-        try {
-            // Extensive logging for debugging
-            System.out.println("[TRACE] registrarUsuario - Inicio");
-            System.out.println("[TRACE] Cliente: " + cliente);
-            System.out.println("[TRACE] Thread: " + Thread.currentThread().getName());
-            
-            // Validate event data
-            if (!evento.getDatos().containsKey("nombre")) {
-                enviarErrorRegistro(cliente, "Datos incompletos");
-                return;
-            }
-
-            String nombreUsuario = (String) evento.obtenerDato("nombre");
-            
-            // Validate username
-            if (nombreUsuario == null || nombreUsuario.trim().isEmpty()) {
-                enviarErrorRegistro(cliente, "Nombre de usuario inválido");
-                return;
-            }
-
-            // Create new player
-            Jugador nuevoJugador = new Jugador(nombreUsuario);
-
-            // Register player in server
-            server.registrarJugador(cliente, nuevoJugador);
-
-            // Send registration confirmation
-            Evento confirmacion = new Evento("REGISTRO_USUARIO_CONFIRMADO");
-            confirmacion.agregarDato("jugador", nuevoJugador);
-            server.enviarMensajeACliente(cliente, confirmacion);
-
-            System.out.println("[REGISTRO] Usuario registrado exitosamente: " + nombreUsuario);
-            System.out.println("[TRACE] registrarUsuario - Fin");
-
-        } catch (Exception e) {
-            System.err.println("[ERROR] Registro de usuario falló");
-            e.printStackTrace();
-            enviarErrorRegistro(cliente, "Error interno al registrar usuario");
+        // Verificar si el nombre de usuario ya existe
+        if (server.contieneJugador(jugador.getNombre())) {
+            // Si el nombre ya existe, enviar un evento de error
+            Evento errorEvento = new Evento("REGISTRO_USUARIO_ERROR");
+            errorEvento.agregarDato("mensaje", "El nombre de usuario ya está en uso");
+            server.enviarMensajeACliente(cliente, errorEvento);
+            return;
         }
+
+        // Registrar el jugador en el servidor
+        server.registrarJugador(cliente, jugador);
+
+//        // Crear un evento de confirmación de registro
+//        Evento confirmacionEvento = new Evento("REGISTRO_USUARIO");
+//        confirmacionEvento.agregarDato("jugador", jugador);
+//        server.enviarMensajeACliente(cliente, confirmacionEvento);
+//
+//        // Notificar a todos los clientes sobre el nuevo jugador (opcional)
+//        Evento nuevoJugadorEvento = new Evento("REGISTRO_USUARIO");
+//        nuevoJugadorEvento.agregarDato("jugador", jugador);
+//        server.enviarEventoATodos(nuevoJugadorEvento);
+
+    } catch (Exception e) {
+        // Manejar cualquier error durante el registro
+        System.err.println("Error al registrar usuario: " + e.getMessage());
+        enviarErrorRegistro(cliente, "Error interno al registrar usuario");
+    }
     }
 
     private void enviarErrorRegistro(Socket cliente, String mensaje) {
@@ -133,7 +126,7 @@ public class ServerComunicacion {
      * @param evento El evento que contiene los datos necesarios para crear la
      * sala (número de jugadores, fichas, etc.).
      */
-    private void crearNuevaSala(Socket cliente, Evento evento) {
+    private void crearNuevaSala(Socket cliente, Evento evento) { 
         try {
             // Validación de datos
             if (!evento.getDatos().containsKey("numJugadores")
@@ -321,4 +314,27 @@ public class ServerComunicacion {
         server.enviarEvento(evento);
     }
 
+     private static void CrearElJugadorFinal(String nombreJugador,int socketNumero) {
+        try (Socket socket = new Socket("localhost", socketNumero);
+             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+
+            System.out.println("[CLIENTE] Conectado al servidor.");
+
+            // Enviar un evento de registro de usuario
+            Evento eventoRegistro = new Evento("REGISTRO_USUARIO");
+            eventoRegistro.agregarDato("jugador", new Jugador(nombreJugador));
+            out.writeObject(eventoRegistro);
+            out.flush();
+
+            System.out.println("[CLIENTE] Evento de registro enviado: " + eventoRegistro);
+
+            // Leer la respuesta del servidor
+            Evento respuesta = (Evento) in.readObject();
+            System.out.println("[CLIENTE] Respuesta recibida: " + respuesta.getTipo());
+        } catch (Exception e) {
+            System.err.println("[ERROR] Error en el cliente: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

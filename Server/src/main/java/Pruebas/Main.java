@@ -4,15 +4,16 @@
  */
 package Pruebas;
 
-
-
 import Dominio.Jugador;
 import EventoJuego.Evento;
 import Server.Server;
+import ServerLocal.ServerComunicacion;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
 
@@ -32,20 +33,27 @@ public class Main {
 
             // Dar tiempo al servidor para inicializar
             Thread.sleep(1000);
+            ServerComunicacion servercito = new ServerComunicacion(server);
+            try (Socket cliente = new Socket("localhost", 51114); 
+                    ObjectOutputStream out = new ObjectOutputStream(cliente.getOutputStream()); ObjectInputStream in = new ObjectInputStream(cliente.getInputStream())) {
+                Evento eventoRegistro = new Evento("REGISTRO_USUARIO");
+                eventoRegistro.agregarDato("jugador", new Jugador("jorge"));
+                out.writeObject(eventoRegistro);
+                out.flush();
+                servercito.registrarUsuario(cliente, eventoRegistro);
 
-            // Simular un cliente que se conecta y registra un jugador
-            simularClienteRegistro("JugadorPrueba");
-
-        } catch (Exception e) {
-            System.err.println("[ERROR] Error en el main: " + e.getMessage());
-            e.printStackTrace();
+            } catch (Exception e) {
+                System.err.println("[ERROR] Error en el main: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
 
     private static void simularClienteRegistro(String nombreJugador) {
-        try (Socket socket = new Socket("localhost", 51114);
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+        try (Socket socket = new Socket("localhost", 51114); ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream()); ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
             System.out.println("[CLIENTE] Conectado al servidor.");
 
@@ -60,7 +68,6 @@ public class Main {
             // Leer la respuesta del servidor
             Evento respuesta = (Evento) in.readObject();
             System.out.println("[CLIENTE] Respuesta recibida: " + respuesta.getTipo());
-
         } catch (Exception e) {
             System.err.println("[ERROR] Error en el cliente: " + e.getMessage());
             e.printStackTrace();

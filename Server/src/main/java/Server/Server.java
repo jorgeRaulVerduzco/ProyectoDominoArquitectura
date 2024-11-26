@@ -69,22 +69,34 @@ public class Server {
     }
 
     public void iniciarServidor(int puerto) throws IOException {
-        try {
-            servidor = new ServerSocket(puerto);
-            isConnected = true;  // El servidor está ahora listo
-            System.out.println("Servidor iniciado en dirección IP: 127.0.0.1, puerto: " + puerto);
+          try {
+        servidor = new ServerSocket(puerto);
+        isConnected = true;
+        System.out.println("Servidor iniciado en dirección IP: 127.0.0.1, puerto: " + puerto);
 
-            // Lógica para aceptar conexiones
+        // Lanzar un hilo para aceptar conexiones
+        Thread acceptThread = new Thread(() -> {
             while (isConnected) {
-                Socket clienteSocket = servidor.accept();
-                System.out.println("Cliente conectado: " + clienteSocket.getInetAddress());
-                // Maneja la conexión con el cliente
+                try {
+                    Socket clienteSocket = servidor.accept();
+                    System.out.println("Cliente conectado: " + clienteSocket.getInetAddress());
+                    
+                    // Delegar el manejo de la conexión a un método específico
+                    manejarNuevaConexion(clienteSocket);
+                } catch (IOException e) {
+                    if (isConnected) {
+                        System.err.println("Error aceptando conexión: " + e.getMessage());
+                    }
+                }
             }
+        });
+        acceptThread.start();
 
-        } catch (IOException e) {
-            isConnected = false;
-            System.err.println("Error al iniciar el servidor: " + e.getMessage());
-        }
+    } catch (IOException e) {
+        isConnected = false;
+        System.err.println("Error al iniciar el servidor: " + e.getMessage());
+        throw e;
+    }
     }
 
  
@@ -167,7 +179,7 @@ public class Server {
         // Notificar sobre el registro del nuevo jugador
         Evento nuevoJugadorEvento = new Evento("NUEVO_JUGADOR_REGISTRADO");
         nuevoJugadorEvento.agregarDato("jugador", jugador);
-        enviarNuevoCliente(nuevoJugadorEvento);
+        enviarEvento(nuevoJugadorEvento);
     }
 }
 
