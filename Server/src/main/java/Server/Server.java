@@ -6,6 +6,7 @@ package Server;
 
 import Controller.Controller;
 import Dominio.Jugador;
+import Dominio.Sala;
 import EventoJuego.Evento;
 import ServerLocal.ServerComunicacion;
 import java.io.DataInputStream;
@@ -42,11 +43,13 @@ public class Server {
     private volatile boolean running;
     private boolean isRunning;
     private boolean isConnected = false;  // Indica si el servidor está listo
+    private List<Sala> salas; // Lista de salas activas
 
     // Thread pool for handling connections
     private final ExecutorService executorService;
 
     public Server() {
+        this.salas = new ArrayList<>();
         this.clientes = new CopyOnWriteArrayList<>();
         this.outputStreams = new ConcurrentHashMap<>();
         this.jugadoresPorSocket = new ConcurrentHashMap<>();
@@ -58,15 +61,32 @@ public class Server {
         // Initialize thread pool with core and max thread counts
         this.executorService = Executors.newCachedThreadPool(new ThreadFactory() {
             private final AtomicInteger threadCounter = new AtomicInteger(1);
+            
 
             @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r, "ServerThread-" + threadCounter.getAndIncrement());
-                thread.setDaemon(true);
-                return thread;
-            }
-        });
+        public Thread newThread(Runnable r) {
+            Thread thread = new Thread(r, "ServerThread-" + threadCounter.getAndIncrement());
+            thread.setDaemon(true);
+            return thread;
+        }
+    });
     }
+    
+    // Método getSalas()
+/**
+ * Devuelve la lista de salas activas en el servidor.
+ *
+ * @return Una lista de salas disponibles.
+ */
+public List<Sala> getSalas() {
+    synchronized (salas) {
+        
+        return new ArrayList<>(salas); // Retorna una copia para evitar modificaciones externas
+    
+    }
+}
+    
+    
 
     public void iniciarServidor(int puerto) throws IOException {
         try {
@@ -340,11 +360,11 @@ public class Server {
             }
 
         }
-
-        // Limpiar clientes desconectados
-        for (Socket socket : clientesDesconectados) {
-            cerrarConexion(socket);
-        }
+        System.out.println("SALTO DE CERRAR CONEXION");
+//        // Limpiar clientes desconectados
+//        for (Socket socket : clientesDesconectados) {
+//            cerrarConexion(socket);
+//        }
     }
 
     /**

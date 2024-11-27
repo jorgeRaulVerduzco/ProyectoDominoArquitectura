@@ -82,28 +82,7 @@ public class UnirseAlaSalaController {
         }
     }
 
-    public void procesarEvento(Evento evento) {
-        System.out.println("Cliente: Evento recibido - " + evento.getTipo());
-
-        if ("RESPUESTA_SALAS".equals(evento.getTipo())) {
-            @SuppressWarnings("unchecked")
-            List<Sala> salas = (List<Sala>) evento.obtenerDato("salas");
-
-            if (salas != null) {
-                System.out.println("Cliente: Salas recibidas. Cantidad: " + salas.size());
-                for (Sala sala : salas) {
-                    System.out.println(" - Sala ID: " + sala.getId() + ", Estado: " + sala.getEstado());
-                }
-            } else {
-                System.out.println("Cliente: No se recibieron salas.");
-            }
-
-            // Actualiza el modelo
-            model.actualizarSalas(salas);
-        } else {
-            System.out.println("Cliente: Evento no reconocido: " + evento.getTipo());
-        }
-    }
+    
 
     /**
      * Procesa la respuesta recibida del servidor. En particular, maneja eventos

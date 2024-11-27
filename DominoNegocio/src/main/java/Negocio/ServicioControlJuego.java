@@ -50,6 +50,54 @@ public class ServicioControlJuego {
         }
         return false;
     }
+    
+    /**
+ * Procesa una lista de salas actualizando o realizando acciones según las reglas del sistema.
+ *
+ * @param salas Lista de salas a procesar.
+ */
+public void procesarSalas(List<Sala> salas) {
+    if (salas == null || salas.isEmpty()) {
+        System.out.println("ServicioControlJuego: No hay salas para procesar.");
+        return;
+    }
+
+    System.out.println("ServicioControlJuego: Procesando salas recibidas...");
+
+    for (Sala sala : salas) {
+        // Ejemplo: Verificar si la sala ya existe en el sistema
+        boolean salaExiste = this.salas.stream()
+                .anyMatch(s -> s.getId().equals(sala.getId()));
+
+        if (salaExiste) {
+            System.out.println(" - Sala ID: " + sala.getId() + " ya existe. Actualizando su estado...");
+            actualizarSalaExistente(sala);
+        } else {
+            System.out.println(" - Sala ID: " + sala.getId() + " es nueva. Agregándola al sistema...");
+            agregarSala(sala);
+        }
+    }
+
+    System.out.println("ServicioControlJuego: Salas procesadas. Total de salas en el sistema: " + this.salas.size());
+}
+
+/**
+ * Actualiza una sala existente en el sistema.
+ *
+ * @param sala Sala con los nuevos datos a actualizar.
+ */
+private void actualizarSalaExistente(Sala sala) {
+    for (int i = 0; i < salas.size(); i++) {
+        if (salas.get(i).getId().equals(sala.getId())) {
+            salas.set(i, sala); // Actualiza la sala en la lista
+            System.out.println("ServicioControlJuego: Sala ID: " + sala.getId() + " actualizada.");
+            break;
+        }
+    }
+}
+
+    
+    
 
       public void agregarSala(Sala sala) {
         if (sala != null) {

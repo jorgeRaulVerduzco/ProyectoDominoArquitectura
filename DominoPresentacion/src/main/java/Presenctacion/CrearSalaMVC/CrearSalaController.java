@@ -78,7 +78,7 @@ public class CrearSalaController {
 //            System.out.println("Evento de creación de sala enviado al servidor.");
 //
             // Transitar al siguiente frame
-            mediador.mostrarUnirseASala();
+            mediador.salaCreada();
 
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(view, "Por favor ingrese números válidos");

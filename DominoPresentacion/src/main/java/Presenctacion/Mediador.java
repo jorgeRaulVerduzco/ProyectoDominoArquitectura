@@ -135,10 +135,6 @@ private CrearUsuarioModel usuarioActual;
     }
     
       
-     public void mostrarUnirseASala() {
-         
-        unirseAlaSalaController.mostrarVista();
-    
-    }
+     
      
 }
