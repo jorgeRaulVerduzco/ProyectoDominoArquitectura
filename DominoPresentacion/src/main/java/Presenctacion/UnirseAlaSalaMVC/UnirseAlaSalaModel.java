@@ -9,6 +9,10 @@ import Dominio.Sala;
 import EventoJuego.Evento;
 import Presenctacion.Observer;
 import Server.Server;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -18,12 +22,9 @@ import javax.swing.SwingUtilities;
  * @author INEGI
  */
 public class UnirseAlaSalaModel {
-
-    private List<Sala> salasDisponibles;
+ private List<Sala> salasDisponibles;
     private List<Observer> observers;
     private Server server;
-
-    
 
     /**
      * Constructor por defecto que inicializa las listas de salas disponibles y
@@ -61,9 +62,6 @@ public class UnirseAlaSalaModel {
         observers.remove(observer);
     }
 
-
-
-
     /**
      * Devuelve la lista actual de salas disponibles.
      *
@@ -77,30 +75,36 @@ public class UnirseAlaSalaModel {
      * Solicita al servidor la lista de salas disponibles. Envia un evento
      * "SOLICITAR_SALAS" si el servidor está conectado.
      */
-    public void solicitarSalasDisponibles() {
+    public void solicitarSalasDisponibles() throws IOException {
         System.out.println("Modelo: Solicitando salas disponibles al servidor...");
-        
+        Socket socket = new Socket("localhost", 51114);
+        ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+        ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+
+        System.out.println("ENTRANDO AL IF DE SOLICITAR");
+
         if (server != null && server.isServidorActivo()) {
-            Evento evento = new Evento("SOLICITAR_SALAS");
-            server.enviarEvento(evento);
+            Evento evento = new Evento("RESPUESTA_SALAS");
+            server.enviarMensajeACliente(socket, evento);
             System.out.println("Modelo: Solicitud de salas enviada");
-            
+
         }
     }
-    
-    // Método que recibe la respuesta del servidor
+
     public void actualizarSalas(List<Sala> salas) {
-        System.out.println("Modelo: Recibiendo actualización de salas. Cantidad: " + 
-            (salas != null ? salas.size() : "null"));
-        // Tu código de actualización
+        if (salas != null) {
+            System.out.println("Modelo: Actualizando salas. Cantidad recibida: " + salas.size());
+            this.salasDisponibles = salas;
+        } else {
+            System.out.println("Modelo: Salas recibidas es null. Inicializando lista vacía.");
+            this.salasDisponibles = new ArrayList<>();
+        }
+
+        // Notifica a la vista
         notifyObservers();
     }
-    
-    
 
-
-
-        /**
+    /**
      * Notifica a todos los observadores sobre un cambio en los datos.
      */
     private void notifyObservers() {

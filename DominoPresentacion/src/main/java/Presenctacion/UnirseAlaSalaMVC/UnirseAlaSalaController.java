@@ -23,8 +23,7 @@ import javax.swing.Timer;
  * @author INEGI
  */
 public class UnirseAlaSalaController {
-
-    private UnirseAlaSalaModel model;
+  private UnirseAlaSalaModel model;
     private UnirseAlaSalaView view;
     private Mediador mediador;
     private Server server;
@@ -39,7 +38,6 @@ public class UnirseAlaSalaController {
     public UnirseAlaSalaController(UnirseAlaSalaModel model, UnirseAlaSalaView view) {
         this.model = model;
         this.view = view;
-        this.view.setModel(model);
         this.model.addObserver(view); // Aseguramos que la vista observe al modelo
     }
 
@@ -67,35 +65,45 @@ public class UnirseAlaSalaController {
      * disponibles.
      */
     public void mostrarVista() {
-    SwingUtilities.invokeLater(() -> {
-        view.setVisible(true);
-       
-    });
-}
-   public void cargarSalasDisponibles() {
-    if (server != null && server.isServidorActivo()) {
-        System.out.println("Solicitando salas disponibles al servidor...");
-        Evento evento = new Evento("SOLICITAR_SALAS");
-        server.enviarEvento(evento); // Solicita salas al servidor
+        SwingUtilities.invokeLater(() -> {
+            view.setVisible(true);
 
-        // Simula una respuesta del servidor después de un breve retraso
-        new Thread(() -> {
-            try {
-                Thread.sleep(500); // Simula la espera de respuesta
-                SwingUtilities.invokeLater(() -> model.imprimirEstadoActual());
-                SwingUtilities.invokeLater(() -> view.actualizarTablaSalas());
-            } catch (InterruptedException e) {
-                System.err.println("Error al cargar salas: " + e.getMessage());
-                Thread.currentThread().interrupt();
-            }
-        }).start();
-    } else {
-        System.err.println("Error: El servidor no está conectado.");
+        });
     }
-}
 
+    public void cargarSalasDisponibles() {
+        System.out.println("llegua al metodo de CARGARSDALAS EN UNIRSESALACONTROLLER");
+        if (server != null && server.isServidorActivo()) {
+            System.out.println("Solicitando salas disponibles al servidor...");
+            Evento evento = new Evento("RESPUESTA_SALAS");
+            server.enviarEventoATodos(evento);
+        } else {
+            System.err.println("Error: El servidor no está conectado.");
+        }
+    }
 
-    
+    public void procesarEvento(Evento evento) {
+        System.out.println("Cliente: Evento recibido - " + evento.getTipo());
+
+        if ("RESPUESTA_SALAS".equals(evento.getTipo())) {
+            @SuppressWarnings("unchecked")
+            List<Sala> salas = (List<Sala>) evento.obtenerDato("salas");
+
+            if (salas != null) {
+                System.out.println("Cliente: Salas recibidas. Cantidad: " + salas.size());
+                for (Sala sala : salas) {
+                    System.out.println(" - Sala ID: " + sala.getId() + ", Estado: " + sala.getEstado());
+                }
+            } else {
+                System.out.println("Cliente: No se recibieron salas.");
+            }
+
+            // Actualiza el modelo
+            model.actualizarSalas(salas);
+        } else {
+            System.out.println("Cliente: Evento no reconocido: " + evento.getTipo());
+        }
+    }
 
     /**
      * Procesa la respuesta recibida del servidor. En particular, maneja eventos
@@ -103,23 +111,21 @@ public class UnirseAlaSalaController {
      *
      * @param evento el evento recibido del servidor.
      */
+    public void actualizarTablaConSalas() {
+        try {
+            List<Sala> salas = model.getSalasDisponibles();
+            if (salas == null || salas.isEmpty()) {
+                System.out.println("No hay salas disponibles para mostrar.");
+                return;
+            }
 
-
-public void actualizarTablaConSalas() {
-    try {
-        List<Sala> salas = model.getSalasDisponibles();
-        if (salas == null || salas.isEmpty()) {
-            System.out.println("No hay salas disponibles para mostrar.");
-            return;
+            // Llamar al método de la vista para actualizar la tabla
+        } catch (Exception e) {
+            System.err.println("Error al actualizar la tabla con salas: " + e.getMessage());
+            e.printStackTrace();
         }
-
-        // Llamar al método de la vista para actualizar la tabla
-    
-    } catch (Exception e) {
-        System.err.println("Error al actualizar la tabla con salas: " + e.getMessage());
-        e.printStackTrace();
     }
-}
+
 
 
 

@@ -24,8 +24,7 @@ import javax.swing.table.TableColumn;
  * @author INEGI
  */
 public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
-
-    private UnirseAlaSalaModel model;
+ private UnirseAlaSalaModel model;
     private DefaultTableModel tableModel;
 
     public UnirseAlaSalaView() {
@@ -35,61 +34,34 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
         
         System.out.println("Tabla configurada. Columnas: " + tableModel.getColumnCount());
     }
-    
-    
 
-    public void setModel(UnirseAlaSalaModel model) {
-    System.out.println("Estableciendo modelo...");
-    this.model = model;
-    model.addObserver(this);
-    System.out.println("Solicitando salas disponibles...");
-    model.solicitarSalasDisponibles();
-}
-
-     @Override
+    @Override
 public void update() {
-    System.out.println("Vista: Recibida notificación de actualización");
+    System.out.println("Vista: Notificación recibida del modelo. Actualizando tabla.");
     actualizarTablaSalas();
 }
 
-
-
-
 void actualizarTablaSalas() {
-    if (!SwingUtilities.isEventDispatchThread()) {
-        SwingUtilities.invokeLater(this::actualizarTablaSalas);
-        return;
-    }
+    List<Sala> salas = model.getSalasDisponibles();
+    System.out.println("Vista: Actualizando tabla con " + (salas != null ? salas.size() : 0) + " salas.");
 
-    try {
-        List<Sala> salas = model.getSalasDisponibles();
-        System.out.println("Vista: Actualizando tabla con " + (salas != null ? salas.size() : "null") + " salas");
+    tableModel.setRowCount(0); // Limpia la tabla
 
-        // Limpiar la tabla
-        tableModel.setRowCount(0);
-
-        // Agregar las salas a la tabla
-        if (salas != null) {
-            for (Sala sala : salas) {
-                Object[] rowData = {
-                    sala.getId(),
-                    sala.getJugador().size() + "/" + sala.getCantJugadores(),
-                    sala.getNumeroFichas(),
-                    "Unirse" // Botón de acción
-                };
-                tableModel.addRow(rowData);
-            }
+    if (salas != null) {
+        for (Sala sala : salas) {
+            tableModel.addRow(new Object[]{
+                sala.getId(),
+                sala.getJugador().size() + "/" + sala.getCantJugadores(),
+                sala.getNumeroFichas(),
+                "Unirse"
+            });
         }
-
-        // Actualizar la vista
-        tableModel.fireTableDataChanged();
-        tblUnirseSala.repaint();
-
-    } catch (Exception e) {
-        System.err.println("Vista: Error actualizando tabla: " + e.getMessage());
-        e.printStackTrace();
     }
+
+    tableModel.fireTableDataChanged(); // Notifica cambios a la tabla
+    tblUnirseSala.repaint(); // Refresca la tabla visualmente
 }
+
 
 
 
@@ -181,7 +153,6 @@ public Object getCellEditorValue() {
             super.fireEditingStopped();
         }
     }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
