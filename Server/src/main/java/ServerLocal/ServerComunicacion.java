@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class ServerComunicacion {
 
-   private Server server;
+    private Server server;
     private ServicioControlJuego servicioControlJuego;
 
     public ServerComunicacion(Server server) {
@@ -32,22 +32,23 @@ public class ServerComunicacion {
         this.servicioControlJuego = new ServicioControlJuego();
     }
 //este es importante
+
     public void registrarUsuario(Socket cliente, Evento eventoRegistro) {
-    try {
-        // Extraer el jugador del evento
-        Jugador jugador = (Jugador) eventoRegistro.obtenerDato("jugador");
+        try {
+            // Extraer el jugador del evento
+            Jugador jugador = (Jugador) eventoRegistro.obtenerDato("jugador");
 
-        // Verificar si el nombre de usuario ya existe
-        if (server.contieneJugador(jugador.getNombre())) {
-            // Si el nombre ya existe, enviar un evento de error
-            Evento errorEvento = new Evento("REGISTRO_USUARIO_ERROR");
-            errorEvento.agregarDato("mensaje", "El nombre de usuario ya está en uso");
-            server.enviarMensajeACliente(cliente, errorEvento);
-            return;
-        }
+            // Verificar si el nombre de usuario ya existe
+            if (server.contieneJugador(jugador.getNombre())) {
+                // Si el nombre ya existe, enviar un evento de error
+                Evento errorEvento = new Evento("REGISTRO_USUARIO_ERROR");
+                errorEvento.agregarDato("mensaje", "El nombre de usuario ya está en uso");
+                server.enviarMensajeACliente(cliente, errorEvento);
+                return;
+            }
 
-        // Registrar el jugador en el servidor
-        server.registrarJugador(cliente, jugador);
+            // Registrar el jugador en el servidor
+            server.registrarJugador(cliente, jugador);
 
 //        // Crear un evento de confirmación de registro
 //        Evento confirmacionEvento = new Evento("REGISTRO_USUARIO");
@@ -58,12 +59,11 @@ public class ServerComunicacion {
 //        Evento nuevoJugadorEvento = new Evento("REGISTRO_USUARIO");
 //        nuevoJugadorEvento.agregarDato("jugador", jugador);
 //        server.enviarEventoATodos(nuevoJugadorEvento);
-
-    } catch (Exception e) {
-        // Manejar cualquier error durante el registro
-        System.err.println("Error al registrar usuario: " + e.getMessage());
-        enviarErrorRegistro(cliente, "Error interno al registrar usuario");
-    }
+        } catch (Exception e) {
+            // Manejar cualquier error durante el registro
+            System.err.println("Error al registrar usuario: " + e.getMessage());
+            enviarErrorRegistro(cliente, "Error interno al registrar usuario");
+        }
     }
 
     private void enviarErrorRegistro(Socket cliente, String mensaje) {
@@ -101,7 +101,7 @@ public class ServerComunicacion {
                 case "JUGADA":
                     // procesarJugada(cliente, evento);
                     break;
-                case "SOLICITAR_SALAS":
+                case "RESPUESTA_SALAS":
                     enviarSalasDisponibles(cliente);
                     break;
                 case "REGISTRO_USUARIO":
@@ -126,7 +126,7 @@ public class ServerComunicacion {
      * @param evento El evento que contiene los datos necesarios para crear la
      * sala (número de jugadores, fichas, etc.).
      */
-    private void crearNuevaSala(Socket cliente, Evento evento) { 
+    private void crearNuevaSala(Socket cliente, Evento evento) {
         try {
             // Validación de datos
             if (!evento.getDatos().containsKey("numJugadores")
@@ -199,20 +199,21 @@ public class ServerComunicacion {
      * evento con esta información para enviarlo al cliente(s).
      *
      * @param cliente el socket del cliente al que se debe enviar la respuesta.
-     * Si es `null`, el evento se enviará a todos los clientes conectados.
+     * Si es null, el evento se enviará a todos los clientes conectados.
      */
     private void enviarSalasDisponibles(Socket cliente) {
         try {
             List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
-            System.out.println("Servidor: Enviando " + salasDisponibles.size() + " salas disponibles");
+            System.out.println("Servidor: Enviando salas disponibles:");
+            for (Sala sala : salasDisponibles) {
+                System.out.println(" - Sala ID: " + sala.getId() + ", Estado: " + sala.getEstado());
+            }
 
             Evento respuesta = new Evento("RESPUESTA_SALAS");
             respuesta.agregarDato("salas", new ArrayList<>(salasDisponibles));
 
             if (cliente != null) {
                 server.enviarMensajeACliente(cliente, respuesta);
-            } else {
-                server.enviarEventoATodos(respuesta);
             }
         } catch (Exception e) {
             System.err.println("Error al enviar salas disponibles: " + e.getMessage());
@@ -314,10 +315,8 @@ public class ServerComunicacion {
         server.enviarEvento(evento);
     }
 
-     private static void CrearElJugadorFinal(String nombreJugador,int socketNumero) {
-        try (Socket socket = new Socket("localhost", socketNumero);
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+    private static void CrearElJugadorFinal(String nombreJugador, int socketNumero) {
+        try (Socket socket = new Socket("localhost", socketNumero); ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream()); ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
             System.out.println("[CLIENTE] Conectado al servidor.");
 
