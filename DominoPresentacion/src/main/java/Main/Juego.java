@@ -28,37 +28,33 @@ import java.io.IOException;
  */
 public class Juego {
 
-    private static final int PUERTO_SERVIDOR =51114;
+    private static final int PUERTO_SERVIDOR = 51114;
     private static Server server;
 
     public static void main(String[] args) {
-      // Iniciar el servidor en un hilo separado
-    new Thread(() -> {
-        try {
-            server = new Server();
-            server.iniciarServidor(PUERTO_SERVIDOR);
-        } catch (IOException e) {
-            System.err.println("Error al iniciar el servidor: " + e.getMessage());
-            System.exit(1);
+        // Iniciar el servidor en un hilo separado
+        new Thread(() -> {
+            try {
+                server = new Server();
+                server.iniciarServidor(PUERTO_SERVIDOR);
+            } catch (IOException e) {
+                System.err.println("Error al iniciar el servidor: " + e.getMessage());
+                System.exit(1);
+            }
+        }).start();
+
+        // Esperar activamente a que el servidor esté listo
+        while (server == null || !server.isServidorActivo()) {
+            try {
+                System.out.println("Esperando a que el servidor esté listo...");
+                Thread.sleep(500);  // Espera medio segundo antes de volver a comprobar
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
-    }).start();
 
-    // Esperar activamente a que el servidor esté listo
-    while (server == null || !server.isServidorActivo()) {
-        try {
-            System.out.println("Esperando a que el servidor esté listo...");
-            Thread.sleep(500);  // Espera medio segundo antes de volver a comprobar
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    // Configurar la aplicación después de que el servidor esté listo
-    System.out.println("Servidor está listo para aceptar conexiones.");
-    javax.swing.SwingUtilities.invokeLater(() -> {
-        initializeApplication();
-    });
-
+        // Configurar la aplicación después de que el servidor esté listo
+        System.out.println("Servidor está listo para aceptar conexiones.");
 
         // Configurar el look and feel
         try {
@@ -84,6 +80,8 @@ public class Juego {
             System.err.println("Error: El servidor no se inició correctamente");
             System.exit(1);
         }
+        
+        
 
         // Inicializar los componentes del juego
         PozoModel pozoModel = new PozoModel();
@@ -105,11 +103,12 @@ public class Juego {
         CrearSalaController crearSalaController = new CrearSalaController(crearSalaModel, crearSalaView);
         TableroController tableroController = new TableroController(tableroModel, tableroView);
         UnirseAlaSalaModel unirseAlaSalaModel = new UnirseAlaSalaModel();
-        UnirseAlaSalaView unirseAlaSalaView = new UnirseAlaSalaView();
+        UnirseAlaSalaView unirseAlaSalaView = new UnirseAlaSalaView(unirseAlaSalaModel);
         UnirseAlaSalaController unirseAlaSalaController = new UnirseAlaSalaController(
                 unirseAlaSalaModel,
                 unirseAlaSalaView
         );
+
         // Crear el mediador
         Mediador mediador = new Mediador(
                 crearUsuarioController,
@@ -124,10 +123,10 @@ public class Juego {
         // Configurar el servidor en el mediador y controladores
         mediador.setServer(server);
         crearSalaController.setServer(server);
+
         // Configurar el mediador en los controladores
         crearUsuarioController.setMediator(mediador);
         crearSalaController.setMediator(mediador);
-        // ... resto del código ...
         unirseAlaSalaController.setMediator(mediador);
         unirseAlaSalaController.setServer(server);
         tableroController.setMediator(mediador);
@@ -136,6 +135,5 @@ public class Juego {
         mediador.iniciarAplicacion();
 
         System.out.println("Aplicación iniciada correctamente");
-
     }
 }

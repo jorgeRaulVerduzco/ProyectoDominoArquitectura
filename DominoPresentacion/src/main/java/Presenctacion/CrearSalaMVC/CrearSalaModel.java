@@ -96,9 +96,16 @@ public class CrearSalaModel {
                 System.err.println("[ERROR] Servidor no configurado");
                 return;
             }
+            
+
+
+  // Asegúrate de que el estado sea correcto
+
+
 Sala sala = new Sala();
 sala.setCantJugadores(numeroJugadores);
 sala.setNumeroFichas(numeroFichas);
+sala.setEstado("ESPERANDO");
             Evento evento = new Evento("CREAR_SALA");
             evento.agregarDato("numJugadores", numeroJugadores);
             evento.agregarDato("numFichas", numeroFichas);

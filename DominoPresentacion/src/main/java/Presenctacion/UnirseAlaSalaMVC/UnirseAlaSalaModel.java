@@ -7,6 +7,7 @@ package Presenctacion.UnirseAlaSalaMVC;
 import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
+import Negocio.ServicioControlJuego;
 import Presenctacion.Observer;
 import Server.Server;
 import ServerLocal.ServerComunicacion;
@@ -22,20 +23,24 @@ import javax.swing.SwingUtilities;
  *
  * @author INEGI
  */
+
 public class UnirseAlaSalaModel {
 
-    private List<Sala> salasDisponibles;
     private List<Observer> observers;
     private Server server;
+    private ServicioControlJuego servicioControlJuego;
 
     /**
      * Constructor por defecto que inicializa las listas de salas disponibles y
      * observadores.
      */
     public UnirseAlaSalaModel() {
-        this.salasDisponibles = new ArrayList<>();
         this.observers = new ArrayList<>();
+        this.servicioControlJuego = ServicioControlJuego.getInstance();  // Usar la instancia única
     }
+    
+    
+    
 
     /**
      * Establece la conexión con el servidor.
@@ -68,18 +73,24 @@ public class UnirseAlaSalaModel {
      * Devuelve la lista actual de salas disponibles.
      *
      * @return una lista de objetos {@code Sala}.
+     * @throws java.io.IOException
      */
     public List<Sala> getSalasDisponibles() throws IOException {
-        Socket socket = new Socket("localhost", 51114);
-        ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-        ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-        Evento solicitudSalas = new Evento("RESPUESTA_SALAS");
-       
-        ServerComunicacion servercito = new ServerComunicacion(server);
-        System.out.println("se ven al millon");
-                 servercito.procesarEvento(socket, solicitudSalas);
+        System.out.println("UnirseAlaSalaModel: Solicitando salas al servidor...");
 
-        return servercito.enviarSalasDisponibles2(socket);
+        // Obtener las salas disponibles desde ServicioControlJuego
+        List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
+
+        if (salasDisponibles != null) {
+            System.out.println("UnirseAlaSalaModel: Salas recibidas. Total: " + salasDisponibles.size());
+            for (Sala sala : salasDisponibles) {
+                System.out.println("Sala ID: " + sala.getId() + ", Estado: " + sala.getEstado());
+            }
+        } else {
+            System.out.println("UnirseAlaSalaModel: No se recibieron salas del servidor.");
+        }
+
+        return salasDisponibles;
     }
 
     /**
@@ -99,17 +110,15 @@ public class UnirseAlaSalaModel {
             out.writeObject(solicitudSalas);
             out.flush();
             System.out.println("Modelo: Solicitud de salas enviada");
-
         }
     }
 
     public void actualizarSalas(List<Sala> salas) {
         if (salas != null) {
             System.out.println("Modelo: Actualizando salas. Cantidad recibida: " + salas.size());
-            this.salasDisponibles = salas;
+            // Las salas se gestionan directamente desde ServicioControlJuego, por lo que no necesitamos almacenar una lista local
         } else {
             System.out.println("Modelo: Salas recibidas es null. Inicializando lista vacía.");
-            this.salasDisponibles = new ArrayList<>();
         }
 
         // Notifica a la vista
@@ -132,6 +141,7 @@ public class UnirseAlaSalaModel {
      */
     public void imprimirEstadoActual() {
         System.out.println("Estado actual del modelo:");
+        List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
         System.out.println("Número de salas disponibles: " + (salasDisponibles != null ? salasDisponibles.size() : "null"));
         if (salasDisponibles != null) {
             for (Sala sala : salasDisponibles) {

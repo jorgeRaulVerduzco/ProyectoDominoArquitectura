@@ -15,6 +15,7 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.List;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,15 +29,21 @@ import javax.swing.table.TableColumn;
  */
 public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
 
-    private UnirseAlaSalaModel model;
+   private UnirseAlaSalaModel model;  // Modelo de la vista
     private DefaultTableModel tableModel;
 
-    public UnirseAlaSalaView() {
+    // Constructor donde se pasa el modelo
+    public UnirseAlaSalaView(UnirseAlaSalaModel model) {
+        this.model = model;  // Asegúrate de asignar el modelo correctamente
         initComponents();
         configurarTabla();
-
+        System.out.println("Tabla configurada. Columnas: " + tableModel.getColumnCount());
+   
         System.out.println("Tabla configurada. Columnas: " + tableModel.getColumnCount());
     }
+    
+    
+    
 
     @Override
     public void update() {
@@ -45,14 +52,16 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
     }
 
     void actualizarTablaSalas() {
-        try {
-            List<Sala> salas = model.getSalasDisponibles();
-            System.out.println("Vista: Actualizando tabla con " + (salas != null ? salas.size() : 0) + " salas.");
+    try {
+        List<Sala> salas = model.getSalasDisponibles();
+        System.out.println("Vista: Actualizando tabla con " + (salas != null ? salas.size() : 0) + " salas.");
 
-            tableModel.setRowCount(0); // Limpia la tabla
+        tableModel.setRowCount(0); // Limpiar la tabla
 
-            if (salas != null) {
-                for (Sala sala : salas) {
+        if (salas != null) {
+            for (Sala sala : salas) {
+                // Solo agregamos las salas que tienen estado válido
+                if (sala.getEstado() != null && !sala.getEstado().isEmpty()) {
                     tableModel.addRow(new Object[]{
                         sala.getId(),
                         sala.getJugador().size() + "/" + sala.getCantJugadores(),
@@ -61,13 +70,21 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
                     });
                 }
             }
-
-            tableModel.fireTableDataChanged(); // Notifica cambios a la tabla
-            tblUnirseSala.repaint(); // Refresca la tabla visualmente
-        } catch (IOException ex) {
-            Logger.getLogger(UnirseAlaSalaView.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        tableModel.fireTableDataChanged(); // Refresca la tabla
+    } catch (IOException ex) {
+        Logger.getLogger(UnirseAlaSalaView.class.getName()).log(Level.SEVERE, null, ex);
     }
+    
+    
+}
+
+public void addActualizarListener(ActionListener listener) {
+    btnActualizar.addActionListener(listener); // Vincula el evento al botón de actualización
+}
+
+
 
     // En tu clase de manejo de eventos del servidor
     public void handleSalasDisponibles(List<Sala> salas) {
@@ -124,6 +141,11 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
             button.setOpaque(true);
             button.addActionListener(e -> fireEditingStopped());
         }
+        
+        public void addActualizarListener(ActionListener listener) {
+    btnActualizar.addActionListener(listener); // Vincula el evento al botón de actualización
+}
+
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
@@ -169,117 +191,102 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     public void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tblUnirseSala = new javax.swing.JTable();
-        btnRegresar = new javax.swing.JButton();
+    jPanel1 = new javax.swing.JPanel();
+    jLabel1 = new javax.swing.JLabel();
+    jScrollPane1 = new javax.swing.JScrollPane();
+    tblUnirseSala = new javax.swing.JTable();
+    btnRegresar = new javax.swing.JButton();
+    btnActualizar = new javax.swing.JButton();  // Botón de actualizar
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+    setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jPanel1.setBackground(new java.awt.Color(0, 204, 0));
+    jPanel1.setBackground(new java.awt.Color(0, 204, 0));
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel1.setText("Salas disponibles");
+    jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+    jLabel1.setText("Salas disponibles");
 
-        tblUnirseSala.setModel(new javax.swing.table.DefaultTableModel(
-                new Object[][]{
-                    {null, null},
-                    {null, null},
-                    {null, null},
-                    {null, null}
-                },
-                new String[]{
-                    "ID", "Unirse Boton"
-                }
-        ));
-        jScrollPane1.setViewportView(tblUnirseSala);
+    tblUnirseSala.setModel(new javax.swing.table.DefaultTableModel(
+            new Object[][]{
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String[]{
+                "ID", "Unirse Boton"
+            }
+    ));
+    jScrollPane1.setViewportView(tblUnirseSala);
 
-        btnRegresar.setBackground(new java.awt.Color(204, 0, 0));
-        btnRegresar.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        btnRegresar.setText("Regresar");
+    btnRegresar.setBackground(new java.awt.Color(204, 0, 0));
+    btnRegresar.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+    btnRegresar.setText("Regresar");
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                                .addGap(224, 224, 224)
-                                                .addComponent(jLabel1))
-                                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                                .addGap(51, 51, 51)
-                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addComponent(btnRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                .addContainerGap(52, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(20, 20, 20)
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(27, 27, 27)
-                                .addComponent(btnRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(25, 25, 25))
-        );
+    btnActualizar.setBackground(new java.awt.Color(51, 153, 255));  // Color para el botón
+    btnActualizar.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+    btnActualizar.setText("Actualizar Tabla");  // Texto del botón
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+    // Configurar el layout del panel
+    javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+    jPanel1.setLayout(jPanel1Layout);
+    jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addContainerGap()
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                            .addGap(224, 224, 224)
+                                            .addComponent(jLabel1))
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                                            .addComponent(btnRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                            .addComponent(btnActualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)  // Botón de "Actualizar"
+                                                    )
+                                            )
+                                    )
+                            )
+                            .addContainerGap(52, Short.MAX_VALUE))
+    );
+    jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGap(20, 20, 20)
+                            .addComponent(jLabel1)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(27, 27, 27)
+                            .addComponent(btnActualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)  // Ubicamos el botón de actualizar
+                            .addGap(18, 18, 18)
+                            .addComponent(btnRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(25, 25, 25))
+    );
 
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
+    javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+    getContentPane().setLayout(layout);
+    layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+    );
+    layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+    );
+
+    pack();
+}
+
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        try {
-
-            // Crear modelo, vista y controlador
-            UnirseAlaSalaModel model = new UnirseAlaSalaModel();
-            UnirseAlaSalaView view = new UnirseAlaSalaView();
-            UnirseAlaSalaController controller = new UnirseAlaSalaController(model, view);
-
-            // Configurar servidor
-            Server server = new Server();
-            new Thread(() -> {
-                try {
-                    server.iniciarServidor(12345); // Cambia el puerto si es necesario
-                } catch (Exception e) {
-                    System.err.println("Error al iniciar el servidor: " + e.getMessage());
-                }
-            }).start();
-
-            controller.setServer(server);
-
-            // Mostrar la vista
-            SwingUtilities.invokeLater(() -> {
-                view.setVisible(true);
-
-                // Actualizar la tabla con las salas disponibles
-                controller.actualizarTablaConSalas();
-            });
-
-        } catch (Exception e) {
-            System.err.println("Error en la aplicación: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnRegresar;
+    private javax.swing.JButton btnActualizar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;

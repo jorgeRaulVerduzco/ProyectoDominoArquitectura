@@ -45,13 +45,13 @@ public class Server {
     private boolean isRunning;
     private boolean isConnected = false;  // Indica si el servidor está listo
     private List<Sala> salas; // Lista de salas activas
-    private static ServicioControlJuego servicioC;
+     
     // Thread pool for handling connections
     private final ExecutorService executorService;
 
     public Server() {
-        servicioC = new ServicioControlJuego();
-        this.salas = new ArrayList<>();
+       
+         
         this.clientes = new CopyOnWriteArrayList<>();
         this.outputStreams = new ConcurrentHashMap<>();
         this.jugadoresPorSocket = new ConcurrentHashMap<>();
@@ -337,6 +337,7 @@ public class Server {
                 System.out.println("llegue al for");
                 Socket cliente = entry.getKey();
                 ObjectOutputStream out = entry.getValue();
+ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
 
                 try {
                     synchronized (out) {
@@ -347,12 +348,7 @@ public class Server {
                         System.out.println("out.flush();");
                         out.flush();
                     }
-                    Sala sala = new Sala();
-                    sala.setCantJugadores(12);
-                    sala.setNumeroFichas(27);
-                    servicioC.agregarSala(sala);
-                    System.out.println("Exitoso. Tamaño: " + outputStreams.size());
-
+                   
                     System.out.println("Evento enviado exitosamente a: " + cliente.getInetAddress());
                 } catch (IOException e) {
                     System.err.println("Error enviando evento a " + cliente.getInetAddress() + ": " + e.getMessage());
@@ -415,6 +411,8 @@ public class Server {
             cerrarConexion(cliente);
         }
     }
+    
+    
 
     /**
      * Maneja los errores de comunicación con los clientes. Muestra un mensaje

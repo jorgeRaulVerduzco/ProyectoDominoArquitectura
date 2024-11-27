@@ -26,11 +26,11 @@ import java.util.List;
 public class ServerComunicacion {
 
     private Server server;
-    private ServicioControlJuego servicioControlJuego;
+  
 
     public ServerComunicacion(Server server) {
         this.server = server;
-        this.servicioControlJuego = new ServicioControlJuego();
+         
     }
 //este es importante
 
@@ -146,6 +146,9 @@ public class ServerComunicacion {
                 System.err.println("Error: Datos inválidos para crear sala");
                 return;
             }
+            
+            ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
+
 
             // Crear y configurar nueva sala
             Sala nuevaSala = new Sala();
@@ -162,15 +165,7 @@ public class ServerComunicacion {
             System.out.println("  - Jugadores: " + nuevaSala.getJugador().size() + "/" + nuevaSala.getCantJugadores());
             System.out.println("  - Fichas: " + nuevaSala.getNumeroFichas());
 
-            // Enviar confirmación al creador
-            Evento confirmacion = new Evento("SALA_CREADA");
-            confirmacion.agregarDato("sala", nuevaSala);
-            server.enviarMensajeACliente(cliente, confirmacion);
-
-            // Notificar a todos los clientes
-            Evento notificacion = new Evento("NUEVA_SALA");
-            notificacion.agregarDato("sala", nuevaSala);
-            server.enviarEventoATodos(notificacion);
+            
 
             // Verificar estado del sistema
             verificarEstadoSalas();
@@ -182,6 +177,8 @@ public class ServerComunicacion {
     }
 
     private void verificarEstadoSalas() {
+        ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
+
         List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
         System.out.println("Estado actual del sistema:");
         System.out.println("Total de salas: " + salasDisponibles.size());
@@ -204,38 +201,30 @@ public class ServerComunicacion {
      * @param cliente el socket del cliente al que se debe enviar la respuesta.
      * Si es null, el evento se enviará a todos los clientes conectados.
      */
-    private void enviarSalasDisponibles(Socket cliente) {
-    try {
-        // Get available rooms from the server
+   private void enviarSalasDisponibles(Socket cliente) {
+     ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
+       
+       try {
+        // Obtener las salas disponibles desde el ServicioControlJuego
         List<Sala> salasServidor = servicioControlJuego.getSalasDisponibles();
-        
-        System.out.println("Salas disponibles: " + salasServidor.size());
-        
-        // Create an event with available rooms
+
+        // Crear un evento con las salas disponibles
         Evento respuesta = new Evento("RESPUESTA_SALAS");
         respuesta.agregarDato("salas", salasServidor);
-        
-        // Send the rooms to the specific client
-        if (cliente != null) {
-            server.enviarMensajeACliente(cliente, respuesta);
-        } else {
-            // If no specific client, send to all connected clients
-            server.enviarEvento(respuesta);
-        }
-        
-        // Log the rooms for debugging
-        for (Sala sala : salasServidor) {
-            System.out.println("Sala ID: " + sala.getId() + 
-                               ", Jugadores: " + sala.getJugador().size() + 
-                               "/" + sala.getCantJugadores() + 
-                               ", Fichas: " + sala.getNumeroFichas());
-        }
+
+        // Enviar el evento al cliente
+        server.enviarMensajeACliente(cliente, respuesta);
+
     } catch (Exception e) {
         System.err.println("Error al enviar salas disponibles: " + e.getMessage());
     }
 }
+
   public List<Sala> enviarSalasDisponibles2(Socket cliente) {
+      System.out.println("ejecutando ENVIOSALAS 222");
     try {
+        ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
+
         // Get available rooms from the server
         List<Sala> salasServidor = servicioControlJuego.getSalasDisponibles();
         
@@ -301,6 +290,8 @@ public List<Sala> convertirSalasDesdeEvento(Evento evento) {
     private void unirseASala(Socket cliente, Evento evento) {
         Sala sala = (Sala) evento.obtenerDato("sala");
         Jugador jugador = (Jugador) evento.obtenerDato("jugador");
+        ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
+
 
         if (servicioControlJuego.agregarJugador(sala, jugador)) {
             Evento respuesta = new Evento("JUGADOR_UNIDO");
@@ -352,6 +343,8 @@ public List<Sala> convertirSalasDesdeEvento(Evento evento) {
 
     private void responderSolicitudSalas(Socket clienteSocket) {
         try {
+            ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
+
             List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
             System.out.println("Servidor: Preparando respuesta de salas disponibles");
 
