@@ -15,8 +15,11 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.List;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.TableColumn;
 
 /**
@@ -24,89 +27,92 @@ import javax.swing.table.TableColumn;
  * @author INEGI
  */
 public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
- private UnirseAlaSalaModel model;
+
+    private UnirseAlaSalaModel model;
     private DefaultTableModel tableModel;
 
     public UnirseAlaSalaView() {
-       initComponents();
-    configurarTabla();
-        
-        
+        initComponents();
+        configurarTabla();
+
         System.out.println("Tabla configurada. Columnas: " + tableModel.getColumnCount());
     }
 
     @Override
-public void update() {
-    System.out.println("Vista: Notificación recibida del modelo. Actualizando tabla.");
-    actualizarTablaSalas();
-}
+    public void update() {
+        System.out.println("Vista: Notificación recibida del modelo. Actualizando tabla.");
+        actualizarTablaSalas();
+    }
 
-void actualizarTablaSalas() {
-    List<Sala> salas = model.getSalasDisponibles();
-    System.out.println("Vista: Actualizando tabla con " + (salas != null ? salas.size() : 0) + " salas.");
+    void actualizarTablaSalas() {
+        try {
+            List<Sala> salas = model.getSalasDisponibles();
+            System.out.println("Vista: Actualizando tabla con " + (salas != null ? salas.size() : 0) + " salas.");
 
-    tableModel.setRowCount(0); // Limpia la tabla
+            tableModel.setRowCount(0); // Limpia la tabla
 
-    if (salas != null) {
-        for (Sala sala : salas) {
-            tableModel.addRow(new Object[]{
-                sala.getId(),
-                sala.getJugador().size() + "/" + sala.getCantJugadores(),
-                sala.getNumeroFichas(),
-                "Unirse"
-            });
+            if (salas != null) {
+                for (Sala sala : salas) {
+                    tableModel.addRow(new Object[]{
+                        sala.getId(),
+                        sala.getJugador().size() + "/" + sala.getCantJugadores(),
+                        sala.getNumeroFichas(),
+                        "Unirse"
+                    });
+                }
+            }
+
+            tableModel.fireTableDataChanged(); // Notifica cambios a la tabla
+            tblUnirseSala.repaint(); // Refresca la tabla visualmente
+        } catch (IOException ex) {
+            Logger.getLogger(UnirseAlaSalaView.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    tableModel.fireTableDataChanged(); // Notifica cambios a la tabla
-    tblUnirseSala.repaint(); // Refresca la tabla visualmente
-}
-
-
-
-
-
     // En tu clase de manejo de eventos del servidor
-public void handleSalasDisponibles(List<Sala> salas) {
-    System.out.println("Servidor: Recibida lista de salas. Cantidad: " + 
-        (salas != null ? salas.size() : "null"));
-    // Actualizar el modelo
-    model.actualizarSalas(salas);
-}
+    public void handleSalasDisponibles(List<Sala> salas) {
+        System.out.println("Servidor: Recibida lista de salas. Cantidad: "
+                + (salas != null ? salas.size() : "null"));
+        // Actualizar el modelo
+        model.actualizarSalas(salas);
+    }
 
-   private void configurarTabla() {
-    // Modelo de la tabla
-    tableModel = new DefaultTableModel() {
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return column == 3; // Solo la columna de "Acción" es editable
-        }
-
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            switch (columnIndex) {
-                case 0: return Integer.class; // ID
-                case 1: return String.class;  // Jugadores
-                case 2: return Integer.class; // Fichas
-                case 3: return String.class;  // Acción
-                default: return Object.class;
+    private void configurarTabla() {
+        // Modelo de la tabla
+        tableModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 3; // Solo la columna de "Acción" es editable
             }
-        }
-    };
 
-    // Configurar columnas
-    tableModel.addColumn("ID");
-    tableModel.addColumn("Jugadores");
-    tableModel.addColumn("Fichas");
-    tableModel.addColumn("Acción");
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                switch (columnIndex) {
+                    case 0:
+                        return Integer.class; // ID
+                    case 1:
+                        return String.class;  // Jugadores
+                    case 2:
+                        return Integer.class; // Fichas
+                    case 3:
+                        return String.class;  // Acción
+                    default:
+                        return Object.class;
+                }
+            }
+        };
 
-    tblUnirseSala.setModel(tableModel);
-}
-    
-   
-    
+        // Configurar columnas
+        tableModel.addColumn("ID");
+        tableModel.addColumn("Jugadores");
+        tableModel.addColumn("Fichas");
+        tableModel.addColumn("Acción");
+
+        tblUnirseSala.setModel(tableModel);
+    }
 
     class BotonEditor extends DefaultCellEditor {
+
         private JButton button;
         private String label;
         private boolean isPushed;
@@ -128,19 +134,19 @@ public void handleSalasDisponibles(List<Sala> salas) {
             return button;
         }
 
-@Override
-public Object getCellEditorValue() {
-    if (isPushed) {
-        // Asegúrate de obtener el ID como Integer
-        Integer salaId = (Integer) tblUnirseSala.getValueAt(selectedRow, 0);
-        if (model != null) {
-            // Llama al método unirseASala con el ID correcto
-            model.unirseASala(salaId, null);
+        @Override
+        public Object getCellEditorValue() {
+            if (isPushed) {
+                // Asegúrate de obtener el ID como Integer
+                Integer salaId = (Integer) tblUnirseSala.getValueAt(selectedRow, 0);
+                if (model != null) {
+                    // Llama al método unirseASala con el ID correcto
+                    model.unirseASala(salaId, null);
+                }
+            }
+            isPushed = false;
+            return label;
         }
-    }
-    isPushed = false;
-    return label;
-}
 
         @Override
         public boolean stopCellEditing() {
@@ -153,6 +159,7 @@ public Object getCellEditorValue() {
             super.fireEditingStopped();
         }
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -238,38 +245,37 @@ public Object getCellEditorValue() {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-      try {
-          
-        // Crear modelo, vista y controlador
-        UnirseAlaSalaModel model = new UnirseAlaSalaModel();
-        UnirseAlaSalaView view = new UnirseAlaSalaView();
-        UnirseAlaSalaController controller = new UnirseAlaSalaController(model, view);
+        try {
 
-        // Configurar servidor
-        Server server = new Server();
-        new Thread(() -> {
-            try {
-                server.iniciarServidor(12345); // Cambia el puerto si es necesario
-            } catch (Exception e) {
-                System.err.println("Error al iniciar el servidor: " + e.getMessage());
-            }
-        }).start();
+            // Crear modelo, vista y controlador
+            UnirseAlaSalaModel model = new UnirseAlaSalaModel();
+            UnirseAlaSalaView view = new UnirseAlaSalaView();
+            UnirseAlaSalaController controller = new UnirseAlaSalaController(model, view);
 
-        controller.setServer(server);
+            // Configurar servidor
+            Server server = new Server();
+            new Thread(() -> {
+                try {
+                    server.iniciarServidor(12345); // Cambia el puerto si es necesario
+                } catch (Exception e) {
+                    System.err.println("Error al iniciar el servidor: " + e.getMessage());
+                }
+            }).start();
 
-        // Mostrar la vista
-        SwingUtilities.invokeLater(() -> {
-            view.setVisible(true);
+            controller.setServer(server);
 
+            // Mostrar la vista
+            SwingUtilities.invokeLater(() -> {
+                view.setVisible(true);
 
-            // Actualizar la tabla con las salas disponibles
-            controller.actualizarTablaConSalas();
-        });
+                // Actualizar la tabla con las salas disponibles
+                controller.actualizarTablaConSalas();
+            });
 
-    } catch (Exception e) {
-        System.err.println("Error en la aplicación: " + e.getMessage());
-        e.printStackTrace();
-    }
+        } catch (Exception e) {
+            System.err.println("Error en la aplicación: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

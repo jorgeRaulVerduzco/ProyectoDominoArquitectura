@@ -102,9 +102,9 @@ public class ServerComunicacion {
                 case "JUGADA":
                     // procesarJugada(cliente, evento);
                     break;
-                case "RESPUESTA_SALAS":
-                    enviarSalasDisponibles(cliente);
-                    break;
+               case "RESPUESTA_SALAS":
+    enviarSalasDisponibles(cliente);
+    break;
                 case "REGISTRO_USUARIO":
                     registrarUsuario(cliente, evento);
 
@@ -204,36 +204,68 @@ public class ServerComunicacion {
      * @param cliente el socket del cliente al que se debe enviar la respuesta.
      * Si es null, el evento se enviará a todos los clientes conectados.
      */
-    private List<Sala> enviarSalasDisponibles(Socket cliente) {
+    private void enviarSalasDisponibles(Socket cliente) {
     try {
-        // Obtener las salas disponibles directamente desde el servidor
-        List<Sala> salasServidor = server.getSalas(); // Método asumido en el servidor
-        System.out.println("SALAS INCIALES"+salasServidor);
-        System.out.println("Servidor: Enviando salas disponibles:");
-        for (Sala sala : salasServidor) {
-            System.out.println(" - Sala ID: " + sala.getId() + ", Estado: " + sala.getEstado());
-        }
-
-        // Crear un evento con las salas disponibles
+        // Get available rooms from the server
+        List<Sala> salasServidor = servicioControlJuego.getSalasDisponibles();
+        
+        System.out.println("Salas disponibles: " + salasServidor.size());
+        
+        // Create an event with available rooms
         Evento respuesta = new Evento("RESPUESTA_SALAS");
-        respuesta.agregarDato("salas", new ArrayList<>(salasServidor));
-
-     
-        // Convertir las salas del evento a una lista y mandarlas al ServicioControlJuego
-        List<Sala> salasEvento = convertirSalasDesdeEvento(respuesta);
-        System.out.println("SALASEVENTO"+salasEvento);
-        servicioControlJuego.procesarSalas(salasEvento);
-
-        // Devolver la lista de salas disponibles
-        return salasEvento;
-
+        respuesta.agregarDato("salas", salasServidor);
+        
+        // Send the rooms to the specific client
+        if (cliente != null) {
+            server.enviarMensajeACliente(cliente, respuesta);
+        } else {
+            // If no specific client, send to all connected clients
+            server.enviarEvento(respuesta);
+        }
+        
+        // Log the rooms for debugging
+        for (Sala sala : salasServidor) {
+            System.out.println("Sala ID: " + sala.getId() + 
+                               ", Jugadores: " + sala.getJugador().size() + 
+                               "/" + sala.getCantJugadores() + 
+                               ", Fichas: " + sala.getNumeroFichas());
+        }
     } catch (Exception e) {
         System.err.println("Error al enviar salas disponibles: " + e.getMessage());
-        e.printStackTrace();
-        return Collections.emptyList(); // En caso de error, devolver una lista vacía
     }
 }
-
+  public List<Sala> enviarSalasDisponibles2(Socket cliente) {
+    try {
+        // Get available rooms from the server
+        List<Sala> salasServidor = servicioControlJuego.getSalasDisponibles();
+        
+        System.out.println("Salas disponibles: " + salasServidor.size());
+        
+        // Create an event with available rooms
+        Evento respuesta = new Evento("RESPUESTA_SALAS");
+        respuesta.agregarDato("salas", salasServidor);
+        
+        // Send the rooms to the specific client
+        if (cliente != null) {
+            server.enviarMensajeACliente(cliente, respuesta);
+        } else {
+            // If no specific client, send to all connected clients
+            server.enviarEvento(respuesta);
+        }
+      
+        // Log the rooms for debugging
+        for (Sala sala : salasServidor) {
+            System.out.println("Sala ID: " + sala.getId() + 
+                               ", Jugadores: " + sala.getJugador().size() + 
+                               "/" + sala.getCantJugadores() + 
+                               ", Fichas: " + sala.getNumeroFichas());
+        }
+            return salasServidor;
+    } catch (Exception e) {
+        System.err.println("Error al enviar salas disponibles: " + e.getMessage());
+    }
+      return null;
+}
 
 // Método auxiliar para convertir las salas desde el evento
 public List<Sala> convertirSalasDesdeEvento(Evento evento) {

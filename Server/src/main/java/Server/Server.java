@@ -8,6 +8,7 @@ import Controller.Controller;
 import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
+import Negocio.ServicioControlJuego;
 import ServerLocal.ServerComunicacion;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -44,11 +45,12 @@ public class Server {
     private boolean isRunning;
     private boolean isConnected = false;  // Indica si el servidor está listo
     private List<Sala> salas; // Lista de salas activas
-
+    private static ServicioControlJuego servicioC;
     // Thread pool for handling connections
     private final ExecutorService executorService;
 
     public Server() {
+        servicioC = new ServicioControlJuego();
         this.salas = new ArrayList<>();
         this.clientes = new CopyOnWriteArrayList<>();
         this.outputStreams = new ConcurrentHashMap<>();
@@ -61,32 +63,29 @@ public class Server {
         // Initialize thread pool with core and max thread counts
         this.executorService = Executors.newCachedThreadPool(new ThreadFactory() {
             private final AtomicInteger threadCounter = new AtomicInteger(1);
-            
 
             @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r, "ServerThread-" + threadCounter.getAndIncrement());
-            thread.setDaemon(true);
-            return thread;
-        }
-    });
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r, "ServerThread-" + threadCounter.getAndIncrement());
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
     }
-    
+
     // Método getSalas()
-/**
- * Devuelve la lista de salas activas en el servidor.
- *
- * @return Una lista de salas disponibles.
- */
-public List<Sala> getSalas() {
-    synchronized (salas) {
-        
-        return new ArrayList<>(salas); // Retorna una copia para evitar modificaciones externas
-    
+    /**
+     * Devuelve la lista de salas activas en el servidor.
+     *
+     * @return Una lista de salas disponibles.
+     */
+    public List<Sala> getSalas() {
+        synchronized (salas) {
+
+            return new ArrayList<>(salas); // Retorna una copia para evitar modificaciones externas
+
+        }
     }
-}
-    
-    
 
     public void iniciarServidor(int puerto) throws IOException {
         try {
@@ -344,12 +343,14 @@ public List<Sala> getSalas() {
                         System.out.println("Preparando para escribir en el cliente: " + cliente.getInetAddress());
 
                         out.writeObject(evento);
-                        System.out.println("out.reset();");
-                        out.reset();
+                  
                         System.out.println("out.flush();");
                         out.flush();
                     }
-
+                    Sala sala = new Sala();
+                    sala.setCantJugadores(12);
+                    sala.setNumeroFichas(27);
+                    servicioC.agregarSala(sala);
                     System.out.println("Exitoso. Tamaño: " + outputStreams.size());
 
                     System.out.println("Evento enviado exitosamente a: " + cliente.getInetAddress());
@@ -362,9 +363,9 @@ public List<Sala> getSalas() {
         }
         System.out.println("SALTO DE CERRAR CONEXION");
 //        // Limpiar clientes desconectados
-//        for (Socket socket : clientesDesconectados) {
-//            cerrarConexion(socket);
-//        }
+    for (Socket socket : clientesDesconectados) {
+      cerrarConexion(socket);
+    }
     }
 
     /**
@@ -487,5 +488,8 @@ public List<Sala> getSalas() {
             e.printStackTrace();
         }
     }
-
+public void solicitarSalas() {
+    Evento solicitud = new Evento("RESPUESTA_SALAS");
+    enviarEvento(solicitud);
+}
 }

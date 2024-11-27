@@ -10,6 +10,10 @@ import EventoJuego.Evento;
 import Negocio.ServicioControlJuego;
 import Presenctacion.Observer;
 import Server.Server;
+import ServerLocal.ServerComunicacion;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -75,14 +79,14 @@ public class CrearSalaModel {
         }
     }
 
-     public void crearSala() {
+    public void crearSala() {
         System.out.println("[DEBUG] Iniciando creación de sala en el modelo");
         try {
             if (numeroJugadores <= 0 || numeroFichas <= 0) {
                 System.err.println("[ERROR] Números inválidos");
                 return;
             }
-            
+
             if (jugadorActual == null) {
                 System.err.println("[ERROR] No hay jugador actual");
                 return;
@@ -92,15 +96,20 @@ public class CrearSalaModel {
                 System.err.println("[ERROR] Servidor no configurado");
                 return;
             }
-
+Sala sala = new Sala();
+sala.setCantJugadores(numeroJugadores);
+sala.setNumeroFichas(numeroFichas);
             Evento evento = new Evento("CREAR_SALA");
             evento.agregarDato("numJugadores", numeroJugadores);
             evento.agregarDato("numFichas", numeroFichas);
             evento.agregarDato("jugador", jugadorActual);
-
+            ServerComunicacion servercito = new ServerComunicacion(server);
             System.out.println("[DEBUG] Enviando evento CREAR_SALA al servidor");
-            server.enviarEvento(evento);
-
+            Socket cliente = new Socket("localhost", 51114);
+            ObjectOutputStream out = new ObjectOutputStream(cliente.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(cliente.getInputStream());
+           servercito.procesarEvento(cliente, evento);
+ //  server.enviarEvento(evento);
         } catch (Exception e) {
             System.err.println("[ERROR] Error creando sala: " + e.getMessage());
             e.printStackTrace();

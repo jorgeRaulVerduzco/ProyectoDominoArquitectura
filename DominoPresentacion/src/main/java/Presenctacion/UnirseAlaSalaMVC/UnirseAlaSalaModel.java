@@ -9,6 +9,7 @@ import Dominio.Sala;
 import EventoJuego.Evento;
 import Presenctacion.Observer;
 import Server.Server;
+import ServerLocal.ServerComunicacion;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -22,7 +23,8 @@ import javax.swing.SwingUtilities;
  * @author INEGI
  */
 public class UnirseAlaSalaModel {
- private List<Sala> salasDisponibles;
+
+    private List<Sala> salasDisponibles;
     private List<Observer> observers;
     private Server server;
 
@@ -67,8 +69,17 @@ public class UnirseAlaSalaModel {
      *
      * @return una lista de objetos {@code Sala}.
      */
-    public List<Sala> getSalasDisponibles() {
-        return salasDisponibles;
+    public List<Sala> getSalasDisponibles() throws IOException {
+        Socket socket = new Socket("localhost", 51114);
+        ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+        ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+        Evento solicitudSalas = new Evento("RESPUESTA_SALAS");
+       
+        ServerComunicacion servercito = new ServerComunicacion(server);
+        System.out.println("se ven al millon");
+                 servercito.procesarEvento(socket, solicitudSalas);
+
+        return servercito.enviarSalasDisponibles2(socket);
     }
 
     /**
@@ -84,8 +95,9 @@ public class UnirseAlaSalaModel {
         System.out.println("ENTRANDO AL IF DE SOLICITAR");
 
         if (server != null && server.isServidorActivo()) {
-            Evento evento = new Evento("RESPUESTA_SALAS");
-            server.enviarMensajeACliente(socket, evento);
+            Evento solicitudSalas = new Evento("RESPUESTA_SALAS");
+            out.writeObject(solicitudSalas);
+            out.flush();
             System.out.println("Modelo: Solicitud de salas enviada");
 
         }

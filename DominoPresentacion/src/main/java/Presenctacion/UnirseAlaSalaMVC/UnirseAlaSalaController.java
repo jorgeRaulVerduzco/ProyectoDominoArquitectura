@@ -9,9 +9,16 @@ import Dominio.Sala;
 import EventoJuego.Evento;
 import Presenctacion.Mediador;
 import Server.Server;
+import ServerLocal.ServerComunicacion;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -74,9 +81,18 @@ public class UnirseAlaSalaController {
     public void cargarSalasDisponibles() {
         System.out.println("llegua al metodo de CARGARSDALAS EN UNIRSESALACONTROLLER");
         if (server != null && server.isServidorActivo()) {
-            System.out.println("Solicitando salas disponibles al servidor...");
-            Evento evento = new Evento("RESPUESTA_SALAS");
-            server.enviarEventoATodos(evento);
+            try {
+                Socket socket = new Socket("localhost", 51114);
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+                Evento solicitudSalas = new Evento("RESPUESTA_SALAS");
+                
+                  ServerComunicacion servercito = new ServerComunicacion(server);
+        System.out.println("se ven al millon");
+                 servercito.procesarEvento(socket, solicitudSalas);
+            } catch (IOException ex) {
+                Logger.getLogger(UnirseAlaSalaController.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else {
             System.err.println("Error: El servidor no está conectado.");
         }
@@ -91,18 +107,18 @@ public class UnirseAlaSalaController {
      * @param evento el evento recibido del servidor.
      */
     public void actualizarTablaConSalas() {
-        try {
-            List<Sala> salas = model.getSalasDisponibles();
-            if (salas == null || salas.isEmpty()) {
-                System.out.println("No hay salas disponibles para mostrar.");
-                return;
-            }
-
-            // Llamar al método de la vista para actualizar la tabla
-        } catch (Exception e) {
-            System.err.println("Error al actualizar la tabla con salas: " + e.getMessage());
-            e.printStackTrace();
+    try {
+        List<Sala> salas = model.getSalasDisponibles();
+        if (salas == null || salas.isEmpty()) {
+            System.out.println("No hay salas disponibles para mostrar.");
+            return;
         }
+        // Agregar esta línea
+        view.actualizarTablaSalas();
+    } catch (Exception e) {
+        System.err.println("Error al actualizar la tabla con salas: " + e.getMessage());
+        e.printStackTrace();
+    }
     }
 
 
