@@ -8,18 +8,14 @@ import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
 import Negocio.ServicioControlJuego;
+import Presenctacion.ConfiguracionSocket;
 import Presenctacion.Observer;
 import Server.Server;
 import ServerLocal.ServerComunicacion;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -97,6 +93,9 @@ public class CrearSalaModel {
                 return;
             }
             
+            ServicioControlJuego.getInstance().getSalasDisponibles();
+            System.out.println("Salas antes de agregar"+ServicioControlJuego.getInstance().getSalasDisponibles());
+            
 
 
   // Asegúrate de que el estado sea correcto
@@ -112,9 +111,12 @@ sala.setEstado("ESPERANDO");
             evento.agregarDato("jugador", jugadorActual);
             ServerComunicacion servercito = new ServerComunicacion(server);
             System.out.println("[DEBUG] Enviando evento CREAR_SALA al servidor");
-            Socket cliente = new Socket("localhost", 51114);
-            ObjectOutputStream out = new ObjectOutputStream(cliente.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(cliente.getInputStream());
+            
+            int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
+            Socket cliente = new Socket("localhost", puertoSocket);
+            
+            
+            
            servercito.procesarEvento(cliente, evento);
  //  server.enviarEvento(evento);
         } catch (Exception e) {

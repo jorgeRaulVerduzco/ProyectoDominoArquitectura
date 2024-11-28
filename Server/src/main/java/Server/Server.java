@@ -20,8 +20,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -411,6 +413,31 @@ ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
             cerrarConexion(cliente);
         }
     }
+    
+    public void enviarMensajeATodosLosClientes(Evento mensaje) {
+    // Creamos una copia de los clientes para evitar modificaciones concurrentes
+    Set<Socket> clientes = new HashSet<>(outputStreams.keySet());
+    
+    for (Socket cliente : clientes) {
+        try {
+            ObjectOutputStream out = outputStreams.get(cliente);
+            if (out != null) {
+                synchronized (out) {
+                    out.writeObject(mensaje);
+                    out.reset();  // Importante para evitar problemas de caché
+                    out.flush();
+                }
+                System.out.println("Mensaje enviado exitosamente a cliente: " + cliente.getInetAddress() + " - " + mensaje.getTipo());
+                procesarEvento(cliente, mensaje);
+            } else {
+                System.err.println("No se encontró stream de salida para el cliente: " + cliente.getInetAddress());
+            }
+        } catch (IOException e) {
+            System.err.println("Error enviando mensaje al cliente " + cliente.getInetAddress() + ": " + e.getMessage());
+            cerrarConexion(cliente);
+        }
+    }
+}
     
     
 

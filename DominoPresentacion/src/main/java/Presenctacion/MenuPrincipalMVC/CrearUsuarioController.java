@@ -7,6 +7,7 @@ package Presenctacion.MenuPrincipalMVC;
 import Dominio.Avatar;
 import Dominio.Jugador;
 import EventoJuego.Evento;
+import Presenctacion.ConfiguracionSocket;
 import Presenctacion.Mediador;
 import Server.Server;
 import ServerLocal.ServerComunicacion;
@@ -93,14 +94,17 @@ public class CrearUsuarioController {
     String textoPuerto = view.getPuertoSocket().getText().trim();
         
         int puerto = Integer.parseInt(textoPuerto);
+        ConfiguracionSocket.getInstance().setPuertoSocket(puerto);
+        int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
         ServerComunicacion comunicacion = new ServerComunicacion(server);
         if (server != null) {
-            Socket socket = new Socket("localhost", puerto);
+            Socket socket = new Socket("localhost", puertoSocket);
             Evento eventoRegistro = new Evento("REGISTRO_USUARIO");
             eventoRegistro.agregarDato("jugador", jugador);
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+           
+            
             comunicacion.registrarUsuario(socket, eventoRegistro);  // Usar el nombre del jugador como clave
+             
             System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
         } else {
             JOptionPane.showMessageDialog(view, "Error: El servidor no está disponible.", "Error", JOptionPane.ERROR_MESSAGE);

@@ -16,7 +16,7 @@ public class ConfiguracionSocket {
     private static ConfiguracionSocket instance;
     
     // Puerto por defecto
-    private int puertoSocket = 51114;
+    private int puertoSocket = 0;
     
     // Constructor privado para prevenir instanciación directa
     private ConfiguracionSocket() {}

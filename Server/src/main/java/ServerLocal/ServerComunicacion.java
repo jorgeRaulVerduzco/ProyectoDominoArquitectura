@@ -103,7 +103,7 @@ public class ServerComunicacion {
                     // procesarJugada(cliente, evento);
                     break;
                case "RESPUESTA_SALAS":
-    enviarSalasDisponibles(cliente);
+    enviarSalasDisponibles();
     break;
                 case "REGISTRO_USUARIO":
                     registrarUsuario(cliente, evento);
@@ -201,7 +201,7 @@ public class ServerComunicacion {
      * @param cliente el socket del cliente al que se debe enviar la respuesta.
      * Si es null, el evento se enviará a todos los clientes conectados.
      */
-   private void enviarSalasDisponibles(Socket cliente) {
+   private void enviarSalasDisponibles() {
      ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
        
        try {
@@ -213,8 +213,8 @@ public class ServerComunicacion {
         respuesta.agregarDato("salas", salasServidor);
 
         // Enviar el evento al cliente
-        server.enviarMensajeACliente(cliente, respuesta);
-
+        server.enviarMensajeATodosLosClientes(respuesta);
+           System.out.println("SE AGREGOCORRECTAMENTE LAS SAALAS NUEVAS");
     } catch (Exception e) {
         System.err.println("Error al enviar salas disponibles: " + e.getMessage());
     }

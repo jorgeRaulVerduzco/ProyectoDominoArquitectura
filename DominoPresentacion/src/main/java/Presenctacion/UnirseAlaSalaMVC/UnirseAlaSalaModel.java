@@ -93,26 +93,7 @@ public class UnirseAlaSalaModel {
         return salasDisponibles;
     }
 
-    /**
-     * Solicita al servidor la lista de salas disponibles. Envia un evento
-     * "SOLICITAR_SALAS" si el servidor está conectado.
-     */
-    public void solicitarSalasDisponibles() throws IOException {
-        System.out.println("Modelo: Solicitando salas disponibles al servidor...");
-        Socket socket = new Socket("localhost", 51114);
-        ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-        ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-
-        System.out.println("ENTRANDO AL IF DE SOLICITAR");
-
-        if (server != null && server.isServidorActivo()) {
-            Evento solicitudSalas = new Evento("RESPUESTA_SALAS");
-            out.writeObject(solicitudSalas);
-            out.flush();
-            System.out.println("Modelo: Solicitud de salas enviada");
-        }
-    }
-
+    
     public void actualizarSalas(List<Sala> salas) {
         if (salas != null) {
             System.out.println("Modelo: Actualizando salas. Cantidad recibida: " + salas.size());

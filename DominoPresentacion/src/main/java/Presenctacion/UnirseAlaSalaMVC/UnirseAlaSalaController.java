@@ -6,6 +6,7 @@ package Presenctacion.UnirseAlaSalaMVC;
 
 import Dominio.Sala;
 import EventoJuego.Evento;
+import Presenctacion.ConfiguracionSocket;
 import Presenctacion.Mediador;
 import Server.Server;
 import ServerLocal.ServerComunicacion;
@@ -91,15 +92,16 @@ public class UnirseAlaSalaController {
     public void cargarSalasDisponibles() {
         System.out.println("llegua al metodo de CARGARSDALAS EN UNIRSESALACONTROLLER");
         if (server != null && server.isServidorActivo()) {
+            
             try {
-                Socket socket = new Socket("localhost", 51114);
-                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+            
+                int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
+            Socket cliente = new Socket("localhost", puertoSocket);
                 Evento solicitudSalas = new Evento("RESPUESTA_SALAS");
                 
                   ServerComunicacion servercito = new ServerComunicacion(server);
         System.out.println("se ven al millon");
-                 servercito.procesarEvento(socket, solicitudSalas);
+                 servercito.procesarEvento(cliente, solicitudSalas);
             } catch (IOException ex) {
                 Logger.getLogger(UnirseAlaSalaController.class.getName()).log(Level.SEVERE, null, ex);
             }
