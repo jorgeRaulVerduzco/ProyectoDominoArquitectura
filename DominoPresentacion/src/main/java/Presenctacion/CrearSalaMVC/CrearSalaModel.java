@@ -4,23 +4,25 @@
  */
 package Presenctacion.CrearSalaMVC;
 
+import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
 import Negocio.ServicioControlJuego;
+import Presenctacion.ConfiguracionSocket;
 import Presenctacion.Observer;
 import Server.Server;
+import ServerLocal.ServerComunicacion;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author INEGI
  */
 public class CrearSalaModel {
+
     private volatile boolean conexionConfirmada;
     private CountDownLatch latch;
     private int numeroJugadores;
@@ -30,6 +32,11 @@ public class CrearSalaModel {
     private Server server;
     private volatile boolean conexionExitosa;
     private final Object lockConexion = new Object();
+    private Jugador jugadorActual;
+
+    public void setJugadorActual(Jugador jugador) {
+        this.jugadorActual = jugador;
+    }
 
     public CrearSalaModel() {
         this.servicioControlJuego = new ServicioControlJuego();
@@ -39,8 +46,8 @@ public class CrearSalaModel {
     }
 
     public void setServer(Server server) {
-       this.server = server;
-        if (server != null && server.isConnected()) {
+        this.server = server;
+        if (server != null && server.isServidorActivo()) {
             confirmarConexion();
         } else {
             System.err.println("No se pudo establecer conexión con el servidor");
@@ -60,36 +67,62 @@ public class CrearSalaModel {
             observer.update();
         }
     }
-  
+
     public void confirmarConexion() {
         synchronized (lockConexion) {
             conexionExitosa = true;
             lockConexion.notifyAll();
         }
     }
-    public void crearSala() {
-      if (server == null || !server.isConnected()) {
-            System.err.println("No hay conexión establecida con el servidor");
-            return;
-        }
 
+    public void crearSala() {
+        System.out.println("[DEBUG] Iniciando creación de sala en el modelo");
         try {
-            Sala nuevaSala = new Sala();
-            nuevaSala.setCantJugadores(numeroJugadores);
-            nuevaSala.setNumeroFichas(numeroFichas);
-            nuevaSala.setEstado("ESPERANDO");
+            if (numeroJugadores <= 0 || numeroFichas <= 0) {
+                System.err.println("[ERROR] Números inválidos");
+                return;
+            }
+
+            if (jugadorActual == null) {
+                System.err.println("[ERROR] No hay jugador actual");
+                return;
+            }
+
+            if (server == null) {
+                System.err.println("[ERROR] Servidor no configurado");
+                return;
+            }
             
+            ServicioControlJuego.getInstance().getSalasDisponibles();
+            System.out.println("Salas antes de agregar"+ServicioControlJuego.getInstance().getSalasDisponibles());
+            
+
+
+  // Asegúrate de que el estado sea correcto
+
+
+Sala sala = new Sala();
+sala.setCantJugadores(numeroJugadores);
+sala.setNumeroFichas(numeroFichas);
+sala.setEstado("ESPERANDO");
             Evento evento = new Evento("CREAR_SALA");
             evento.agregarDato("numJugadores", numeroJugadores);
             evento.agregarDato("numFichas", numeroFichas);
+            evento.agregarDato("jugador", jugadorActual);
+            ServerComunicacion servercito = new ServerComunicacion(server);
+            System.out.println("[DEBUG] Enviando evento CREAR_SALA al servidor");
             
-            System.out.println("Enviando evento de creación de sala al servidor...");
-            server.enviarEvento(evento);
+            int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
+            Socket cliente = new Socket("localhost", puertoSocket);
+            
+            
+            
+           servercito.procesarEvento(cliente, evento);
+ //  server.enviarEvento(evento);
         } catch (Exception e) {
-            System.err.println("Error al crear sala: " + e.getMessage());
+            System.err.println("[ERROR] Error creando sala: " + e.getMessage());
             e.printStackTrace();
         }
-    
     }
 
     public void esperarServidor() throws InterruptedException {

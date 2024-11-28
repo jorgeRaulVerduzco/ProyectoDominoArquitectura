@@ -31,6 +31,14 @@ public class CrearSalaController {
         this.view.addNumeroFichasListener(new NumeroFichasListener());
     }
 
+    public CrearSalaModel getModel() {
+        return model;
+    }
+
+    public void setModel(CrearSalaModel model) {
+        this.model = model;
+    }
+
     public void setMediator(Mediador mediador) {
         this.mediador = mediador;
     }
@@ -41,27 +49,44 @@ public class CrearSalaController {
     }
 
     class CrearSalaListener implements ActionListener {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        try {
+            int numFichas = Integer.parseInt(view.getNumeroFichas());
+            int numJugadores = Integer.parseInt(view.getNumeroJugadores());
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            try {
-                int numFichas = Integer.parseInt(view.getNumeroFichas());
-                if (numFichas <= 0) {
-                    JOptionPane.showMessageDialog(view, "El número de fichas debe ser positivo");
-                    return;
-                }
-                model.setNumeroFichas(numFichas);
-                model.setNumeroJugadores(Integer.parseInt(view.getNumeroJugadores()));
-                model.crearSala();
-
-                // Verificar la creación de la sala
-                System.out.println("Sala enviada al servidor");
-                mediador.salaCreada();
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(view, "Por favor ingrese números válidos");
+            if (numFichas <= 0) {
+                JOptionPane.showMessageDialog(view, "El número de fichas debe ser positivo");
+                return;
             }
+
+            // Mensajes de depuración
+            System.out.println("Creando sala con:");
+            System.out.println("  - Número de jugadores: " + numJugadores);
+            System.out.println("  - Número de fichas: " + numFichas);
+
+            // Configurar datos en el modelo
+            model.setNumeroFichas(numFichas);
+            
+            
+            model.setNumeroJugadores(numJugadores);
+            
+            
+            model.crearSala(); // Enviar el evento al servidor
+
+//            // Confirmación después de enviar el evento
+//            System.out.println("Evento de creación de sala enviado al servidor.");
+//
+            // Transitar al siguiente frame
+            mediador.salaCreada();
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(view, "Por favor ingrese números válidos");
         }
     }
+}
+
+
 
     class RegresarListener implements ActionListener {
 

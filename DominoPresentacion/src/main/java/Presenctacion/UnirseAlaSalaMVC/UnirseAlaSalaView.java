@@ -6,15 +6,22 @@ package Presenctacion.UnirseAlaSalaMVC;
 
 import Dominio.Jugador;
 import Dominio.Sala;
+import EventoJuego.Evento;
 import Presenctacion.Observer;
+import Server.Server;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.List;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.table.TableColumn;
 
 /**
  *
@@ -22,131 +29,105 @@ import java.util.Collections;
  */
 public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
 
-    private UnirseAlaSalaModel model;
+   private UnirseAlaSalaModel model;  // Modelo de la vista
     private DefaultTableModel tableModel;
 
-    /**
-     * Constructor de la clase que inicializa los componentes y configura la
-     * tabla.
-     */
-    public UnirseAlaSalaView() {
+    // Constructor donde se pasa el modelo
+    public UnirseAlaSalaView(UnirseAlaSalaModel model) {
+        this.model = model;  // Asegúrate de asignar el modelo correctamente
         initComponents();
-        configurarTabla(); // Configuramos la tabla después de inicializar los componentes
+        configurarTabla();
+        System.out.println("Tabla configurada. Columnas: " + tableModel.getColumnCount());
+   
+        System.out.println("Tabla configurada. Columnas: " + tableModel.getColumnCount());
+    }
+    
+    
+    
 
+    @Override
+    public void update() {
+        System.out.println("Vista: Notificación recibida del modelo. Actualizando tabla.");
         actualizarTablaSalas();
     }
 
-    /**
-     * Asigna el modelo a la vista y registra la vista como observador del
-     * modelo.
-     *
-     * @param model El modelo asociado a la vista.
-     */
-    public void setModel(UnirseAlaSalaModel model) {
-        this.model = model;
-        model.addObserver(this);
-        actualizarTablaSalas();
+    void actualizarTablaSalas() {
+    try {
+        List<Sala> salas = model.getSalasDisponibles();
+        System.out.println("Vista: Actualizando tabla con " + (salas != null ? salas.size() : 0) + " salas.");
+
+        tableModel.setRowCount(0); // Limpiar la tabla
+
+        if (salas != null) {
+            for (Sala sala : salas) {
+                // Solo agregamos las salas que tienen estado válido
+                if (sala.getEstado() != null && !sala.getEstado().isEmpty()) {
+                    tableModel.addRow(new Object[]{
+                        sala.getId(),
+                        sala.getJugador().size() + "/" + sala.getCantJugadores(),
+                        sala.getNumeroFichas(),
+                        "Unirse"
+                    });
+                }
+            }
+        }
+
+        tableModel.fireTableDataChanged(); // Refresca la tabla
+    } catch (IOException ex) {
+        Logger.getLogger(UnirseAlaSalaView.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    
+    
+}
+
+public void addActualizarListener(ActionListener listener) {
+    btnActualizar.addActionListener(listener); // Vincula el evento al botón de actualización
+}
+
+
+
+    // En tu clase de manejo de eventos del servidor
+    public void handleSalasDisponibles(List<Sala> salas) {
+        System.out.println("Servidor: Recibida lista de salas. Cantidad: "
+                + (salas != null ? salas.size() : "null"));
+        // Actualizar el modelo
+        model.actualizarSalas(salas);
     }
 
-    /**
-     * Configura el modelo y las propiedades de la tabla de salas. Define las
-     * columnas y asigna renderizadores y editores personalizados.
-     */
     private void configurarTabla() {
-        // Crear el modelo de la tabla
+        // Modelo de la tabla
         tableModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 3; // Solo la columna del botón es editable
+                return column == 3; // Solo la columna de "Acción" es editable
+            }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                switch (columnIndex) {
+                    case 0:
+                        return Integer.class; // ID
+                    case 1:
+                        return String.class;  // Jugadores
+                    case 2:
+                        return Integer.class; // Fichas
+                    case 3:
+                        return String.class;  // Acción
+                    default:
+                        return Object.class;
+                }
             }
         };
 
-        // Definir las columnas de la tabla
+        // Configurar columnas
         tableModel.addColumn("ID");
         tableModel.addColumn("Jugadores");
         tableModel.addColumn("Fichas");
         tableModel.addColumn("Acción");
 
-        // Asignar el modelo de la tabla
         tblUnirseSala.setModel(tableModel);
-
-        // Configurar la columna "Acción" para que tenga el botón de "Unirse"
-        tblUnirseSala.getColumn("Acción").setCellRenderer(new BotonRenderer());
-        tblUnirseSala.getColumn("Acción").setCellEditor(new BotonEditor(new JCheckBox()));
     }
 
-    /**
-     * Método que se ejecuta cuando el modelo notifica un cambio. Actualiza la
-     * tabla de salas disponibles.
-     */
-    @Override
-    public void update() {
-        System.out.println("Actualizando vista: las salas han cambiado.");
-        // Solo actualizar la tabla si hay salas disponibles
-        if (model != null && !model.getSalasDisponibles().isEmpty()) {
-            actualizarTablaSalas();
-        }
-    }
-
-    /**
-     * Actualiza los datos de la tabla de salas con la información más reciente
-     * proporcionada por el modelo.
-     */
-  private void actualizarTablaSalas() {
-    if (!SwingUtilities.isEventDispatchThread()) {
-        SwingUtilities.invokeLater(this::actualizarTablaSalas);
-        return;
-    }
-
-    try {
-        List<Sala> salas = model != null ? model.getSalasDisponibles() : Collections.emptyList();
-        System.out.println("Actualizando tabla con " + salas.size() + " salas");
-        
-        DefaultTableModel tableModel = (DefaultTableModel) tblUnirseSala.getModel();
-        tableModel.setRowCount(0);
-        
-        for (Sala sala : salas) {
-          
-                Object[] rowData = new Object[]{
-                    sala.getId(),
-                    sala.getJugador().size() + "/" + sala.getCantJugadores(),
-                    sala.getNumeroFichas(),
-                    "Unirse"
-                };
-                tableModel.addRow(rowData);
-                System.out.println("Agregada sala a la tabla: " + sala.getId());
-            }
-        
-        
-        tblUnirseSala.repaint();
-    } catch (Exception e) {
-        System.err.println("Error actualizando tabla de salas: " + e.getMessage());
-        e.printStackTrace();
-    }
-}
-
-
-    /**
-     * Clase interna que define un renderizador de celdas para mostrar un botón
-     * en la tabla.
-     */
-    class BotonRenderer extends JButton implements TableCellRenderer {
-
-        public BotonRenderer() {
-            setOpaque(true);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setText((value == null) ? "Unirse" : value.toString());
-            return this;
-        }
-    }
-
-    /**
-     * Clase interna que define un editor de celdas para manejar las
-     * interacciones con el botón en la tabla.
-     */
     class BotonEditor extends DefaultCellEditor {
 
         private JButton button;
@@ -160,6 +141,11 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
             button.setOpaque(true);
             button.addActionListener(e -> fireEditingStopped());
         }
+        
+        public void addActualizarListener(ActionListener listener) {
+    btnActualizar.addActionListener(listener); // Vincula el evento al botón de actualización
+}
+
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
@@ -173,9 +159,12 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
         @Override
         public Object getCellEditorValue() {
             if (isPushed) {
-                // Obtener el ID de la sala seleccionada
-                String salaId = (String) tblUnirseSala.getValueAt(selectedRow, 0);
-                model.unirseASala(salaId, null); // Aquí deberías pasar el jugador actual
+                // Asegúrate de obtener el ID como Integer
+                Integer salaId = (Integer) tblUnirseSala.getValueAt(selectedRow, 0);
+                if (model != null) {
+                    // Llama al método unirseASala con el ID correcto
+                    model.unirseASala(salaId, null);
+                }
             }
             isPushed = false;
             return label;
@@ -202,115 +191,102 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     public void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tblUnirseSala = new javax.swing.JTable();
-        btnRegresar = new javax.swing.JButton();
+    jPanel1 = new javax.swing.JPanel();
+    jLabel1 = new javax.swing.JLabel();
+    jScrollPane1 = new javax.swing.JScrollPane();
+    tblUnirseSala = new javax.swing.JTable();
+    btnRegresar = new javax.swing.JButton();
+    btnActualizar = new javax.swing.JButton();  // Botón de actualizar
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+    setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jPanel1.setBackground(new java.awt.Color(0, 204, 0));
+    jPanel1.setBackground(new java.awt.Color(0, 204, 0));
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel1.setText("Salas disponibles");
+    jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+    jLabel1.setText("Salas disponibles");
 
-        tblUnirseSala.setModel(new javax.swing.table.DefaultTableModel(
-                new Object[][]{
-                    {null, null},
-                    {null, null},
-                    {null, null},
-                    {null, null}
-                },
-                new String[]{
-                    "ID", "Unirse Boton"
-                }
-        ));
-        jScrollPane1.setViewportView(tblUnirseSala);
+    tblUnirseSala.setModel(new javax.swing.table.DefaultTableModel(
+            new Object[][]{
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String[]{
+                "ID", "Unirse Boton"
+            }
+    ));
+    jScrollPane1.setViewportView(tblUnirseSala);
 
-        btnRegresar.setBackground(new java.awt.Color(204, 0, 0));
-        btnRegresar.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        btnRegresar.setText("Regresar");
+    btnRegresar.setBackground(new java.awt.Color(204, 0, 0));
+    btnRegresar.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+    btnRegresar.setText("Regresar");
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                                .addGap(224, 224, 224)
-                                                .addComponent(jLabel1))
-                                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                                .addGap(51, 51, 51)
-                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addComponent(btnRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                .addContainerGap(52, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(20, 20, 20)
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(27, 27, 27)
-                                .addComponent(btnRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(25, 25, 25))
-        );
+    btnActualizar.setBackground(new java.awt.Color(51, 153, 255));  // Color para el botón
+    btnActualizar.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+    btnActualizar.setText("Actualizar Tabla");  // Texto del botón
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+    // Configurar el layout del panel
+    javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+    jPanel1.setLayout(jPanel1Layout);
+    jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addContainerGap()
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                            .addGap(224, 224, 224)
+                                            .addComponent(jLabel1))
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                                            .addComponent(btnRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                            .addComponent(btnActualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)  // Botón de "Actualizar"
+                                                    )
+                                            )
+                                    )
+                            )
+                            .addContainerGap(52, Short.MAX_VALUE))
+    );
+    jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGap(20, 20, 20)
+                            .addComponent(jLabel1)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(27, 27, 27)
+                            .addComponent(btnActualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)  // Ubicamos el botón de actualizar
+                            .addGap(18, 18, 18)
+                            .addComponent(btnRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(25, 25, 25))
+    );
 
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
+    javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+    getContentPane().setLayout(layout);
+    layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+    );
+    layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+    );
+
+    pack();
+}
+
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(UnirseAlaSalaView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(UnirseAlaSalaView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(UnirseAlaSalaView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(UnirseAlaSalaView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new UnirseAlaSalaView().setVisible(true);
-            }
-        });
-    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnRegresar;
+    private javax.swing.JButton btnActualizar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;

@@ -1,2 +1,6 @@
-ServerLocal\ServerComunicacion.class
 Server\Server.class
+Pruebas\PruebaDeConexion.class
+Pruebas\IniciarServer.class
+ServerLocal\ServerComunicacion.class
+Pruebas\Main.class
+Server\Server$1.class

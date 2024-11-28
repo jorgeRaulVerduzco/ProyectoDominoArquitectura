@@ -4,11 +4,21 @@
  */
 package Presenctacion.MenuPrincipalMVC;
 
+import Dominio.Avatar;
+import Dominio.Jugador;
 import EventoJuego.Evento;
+import Presenctacion.ConfiguracionSocket;
 import Presenctacion.Mediador;
 import Server.Server;
+import ServerLocal.ServerComunicacion;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -23,11 +33,16 @@ public class CrearUsuarioController {
 
     public CrearUsuarioController(CrearUsuarioView view) {
         this.view = view;
+
         // Vinculando el evento de creación de usuario a la vista
         this.view.setCreateUserListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                crearUsuario();
+                try {
+                    crearUsuario();
+                } catch (IOException ex) {
+                    Logger.getLogger(CrearUsuarioController.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }
@@ -52,39 +67,92 @@ public class CrearUsuarioController {
         view.setVisible(true);
     }
 
-    private void crearUsuario() {
-        String nombre = view.getNombre();
-        String avatar = view.getSelectedAvatar();
+   
 
-        // Validación de los campos
+    public void crearUsuario() throws IOException {
+        // Verificar si el socket está conectado antes de registrar el jugador
+
+        // Continuar con el registro del jugador
+        String nombre = view.getNombre();
+        String avatarSeleccionado = view.getSelectedAvatar();
+
+        // Validaciones
         if (nombre == null || nombre.trim().isEmpty()) {
             JOptionPane.showMessageDialog(view, "Por favor, ingrese un nombre válido.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        if (avatar == null || avatar.isEmpty()) {
+        if (avatarSeleccionado == null || avatarSeleccionado.isEmpty()) {
             JOptionPane.showMessageDialog(view, "Por favor, seleccione un avatar.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // Crear el usuario con los datos ingresados
-        CrearUsuarioModel usuario = new CrearUsuarioModel(nombre, avatar);
+        // Crear jugador
+        Avatar avatar = new Avatar(avatarSeleccionado);
+        Jugador jugador = new Jugador(nombre);
+        jugador.setEstado("ACTIVO");
+    String textoPuerto = view.getPuertoSocket().getText().trim();
+        
+        int puerto = Integer.parseInt(textoPuerto);
+        ConfiguracionSocket.getInstance().setPuertoSocket(puerto);
+        int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
+        ServerComunicacion comunicacion = new ServerComunicacion(server);
+        if (server != null) {
+            Socket socket = new Socket("localhost", puertoSocket);
+            Evento eventoRegistro = new Evento("REGISTRO_USUARIO");
+            eventoRegistro.agregarDato("jugador", jugador);
+           
+            
+            comunicacion.registrarUsuario(socket, eventoRegistro);  // Usar el nombre del jugador como clave
+             
+            System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
+        } else {
+            JOptionPane.showMessageDialog(view, "Error: El servidor no está disponible.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        // Notificar al mediador con el jugador creado
+        mediador.usuarioCreado(jugador);
+    }
+
+    public void crearUsuario2(CrearUsuarioModel usuario) {
+        System.out.println("es el 2");
+        if (usuario == null) {
+            System.out.println("[ERROR] El modelo de usuario es null.");
+            JOptionPane.showMessageDialog(view, "Error: Datos de usuario inválidos.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String nombre = usuario.getNombre();
+        String avatar = usuario.getAvatar();
+
+        // Validación de los campos
+        if (nombre == null || nombre.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Por favor, ingrese un nombre válido.", "Error", JOptionPane.ERROR_MESSAGE);
+            System.out.println("[ERROR] Nombre inválido: " + nombre);
+            return;
+        }
+
+        if (avatar == null || avatar.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Por favor, seleccione un avatar.", "Error", JOptionPane.ERROR_MESSAGE);
+            System.out.println("[ERROR] Avatar inválido: " + avatar);
+            return;
+        }
+
+        System.out.println("[DEBUG] Usuario válido. Nombre: " + nombre + ", Avatar: " + avatar);
 
         // Notificar al mediador que el usuario ha sido creado
-        mediador.usuarioCreado(usuario);
-
+        System.out.println("");
         // Enviar el evento de creación de usuario al servidor
         if (server != null) {
             Evento evento = new Evento("REGISTRO_USUARIO");
             evento.agregarDato("usuario", usuario);
 
-            // Enviar el evento a todos los clientes conectados
-            server.enviarEventoATodos(evento);
-            System.out.println("Evento enviado al servidor: " + evento.getTipo());
+            server.enviarNuevoCliente(evento);
+            System.out.println("[DEBUG] Evento enviado al servidor: " + evento.getTipo());
         } else {
             JOptionPane.showMessageDialog(view, "Error: El servidor no está disponible.", "Error", JOptionPane.ERROR_MESSAGE);
+            System.out.println("[ERROR] Servidor no inicializado.");
         }
-        System.out.println("Servidor en crearUsuario: " + (server != null ? "Inicializado" : "No Inicializado"));
     }
 
     public void ocultarVista() {

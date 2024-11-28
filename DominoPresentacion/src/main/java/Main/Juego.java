@@ -28,40 +28,11 @@ import java.io.IOException;
  */
 public class Juego {
 
-    private static final int PUERTO_SERVIDOR = 49674 ;
     private static Server server;
 
     public static void main(String[] args) {
         // Iniciar el servidor en un hilo separado
-        new Thread(() -> {
-            try {
-                server = new Server();
-                server.iniciarServidor(PUERTO_SERVIDOR);
-            } catch (IOException e) {
-                System.err.println("Error al iniciar el servidor: " + e.getMessage());
-                System.exit(1);
-            }
-        }).start();
-
-        // Esperar un momento para asegurar que el servidor esté iniciado
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        // Configurar el look and feel
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error al configurar el look and feel: " + e.getMessage());
-        }
-
+server = new Server();
         // Lanzar la aplicación en el Event Dispatch Thread
         javax.swing.SwingUtilities.invokeLater(() -> {
             initializeApplication();
@@ -74,6 +45,8 @@ public class Juego {
             System.err.println("Error: El servidor no se inició correctamente");
             System.exit(1);
         }
+        
+        
 
         // Inicializar los componentes del juego
         PozoModel pozoModel = new PozoModel();
@@ -95,11 +68,12 @@ public class Juego {
         CrearSalaController crearSalaController = new CrearSalaController(crearSalaModel, crearSalaView);
         TableroController tableroController = new TableroController(tableroModel, tableroView);
         UnirseAlaSalaModel unirseAlaSalaModel = new UnirseAlaSalaModel();
-        UnirseAlaSalaView unirseAlaSalaView = new UnirseAlaSalaView();
+        UnirseAlaSalaView unirseAlaSalaView = new UnirseAlaSalaView(unirseAlaSalaModel);
         UnirseAlaSalaController unirseAlaSalaController = new UnirseAlaSalaController(
                 unirseAlaSalaModel,
                 unirseAlaSalaView
         );
+
         // Crear el mediador
         Mediador mediador = new Mediador(
                 crearUsuarioController,
@@ -114,10 +88,10 @@ public class Juego {
         // Configurar el servidor en el mediador y controladores
         mediador.setServer(server);
         crearSalaController.setServer(server);
+
         // Configurar el mediador en los controladores
         crearUsuarioController.setMediator(mediador);
         crearSalaController.setMediator(mediador);
-        // ... resto del código ...
         unirseAlaSalaController.setMediator(mediador);
         unirseAlaSalaController.setServer(server);
         tableroController.setMediator(mediador);
@@ -126,6 +100,5 @@ public class Juego {
         mediador.iniciarAplicacion();
 
         System.out.println("Aplicación iniciada correctamente");
-
     }
 }

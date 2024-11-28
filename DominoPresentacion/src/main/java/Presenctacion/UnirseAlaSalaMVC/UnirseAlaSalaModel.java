@@ -7,8 +7,14 @@ package Presenctacion.UnirseAlaSalaMVC;
 import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
+import Negocio.ServicioControlJuego;
 import Presenctacion.Observer;
 import Server.Server;
+import ServerLocal.ServerComunicacion;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -17,20 +23,24 @@ import javax.swing.SwingUtilities;
  *
  * @author INEGI
  */
+
 public class UnirseAlaSalaModel {
 
-    private List<Sala> salasDisponibles;
     private List<Observer> observers;
     private Server server;
+    private ServicioControlJuego servicioControlJuego;
 
     /**
      * Constructor por defecto que inicializa las listas de salas disponibles y
      * observadores.
      */
     public UnirseAlaSalaModel() {
-        this.salasDisponibles = new ArrayList<>();
         this.observers = new ArrayList<>();
+        this.servicioControlJuego = ServicioControlJuego.getInstance();  // Usar la instancia única
     }
+    
+    
+    
 
     /**
      * Establece la conexión con el servidor.
@@ -60,55 +70,50 @@ public class UnirseAlaSalaModel {
     }
 
     /**
-     * Notifica a todos los observadores sobre un cambio en los datos.
-     */
-    private void notifyObservers() {
-        for (Observer observer : observers) {
-            observer.update();
-        }
-    }
-
-    /**
      * Devuelve la lista actual de salas disponibles.
      *
      * @return una lista de objetos {@code Sala}.
+     * @throws java.io.IOException
      */
-    public List<Sala> getSalasDisponibles() {
+    public List<Sala> getSalasDisponibles() throws IOException {
+        System.out.println("UnirseAlaSalaModel: Solicitando salas al servidor...");
+
+        // Obtener las salas disponibles desde ServicioControlJuego
+        List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
+
+        if (salasDisponibles != null) {
+            System.out.println("UnirseAlaSalaModel: Salas recibidas. Total: " + salasDisponibles.size());
+            for (Sala sala : salasDisponibles) {
+                System.out.println("Sala ID: " + sala.getId() + ", Estado: " + sala.getEstado());
+            }
+        } else {
+            System.out.println("UnirseAlaSalaModel: No se recibieron salas del servidor.");
+        }
+
         return salasDisponibles;
     }
 
-    /**
-     * Solicita al servidor la lista de salas disponibles. Envia un evento
-     * "SOLICITAR_SALAS" si el servidor está conectado.
-     */
-    public void solicitarSalasDisponibles() {
-        if (server != null && server.isConnected()) {
-            Evento evento = new Evento("SOLICITAR_SALAS");
-            server.enviarEvento(evento);
+    
+    public void actualizarSalas(List<Sala> salas) {
+        if (salas != null) {
+            System.out.println("Modelo: Actualizando salas. Cantidad recibida: " + salas.size());
+            // Las salas se gestionan directamente desde ServicioControlJuego, por lo que no necesitamos almacenar una lista local
+        } else {
+            System.out.println("Modelo: Salas recibidas es null. Inicializando lista vacía.");
         }
+
+        // Notifica a la vista
+        notifyObservers();
     }
 
     /**
-     * Actualiza la lista de salas disponibles con una nueva lista y notifica a
-     * los observadores. Si se ejecuta fuera del hilo de la interfaz gráfica,
-     * utiliza el Event Dispatch Thread (EDT).
-     *
-     * @param salas nueva lista de salas disponibles.
+     * Notifica a todos los observadores sobre un cambio en los datos.
      */
-    public void actualizarSalasDisponibles(List<Sala> salas) {
-        if (salas == null) {
-        this.salasDisponibles = new ArrayList<>();
-    } else {
-        this.salasDisponibles = new ArrayList<>(salas);
-    }
-    
-    System.out.println("Actualizando salas disponibles. Total: " + 
-        (this.salasDisponibles != null ? this.salasDisponibles.size() : 0));
-    
-    // Asegúrate de que la notificación se haga en el EDT
-    SwingUtilities.invokeLater(() -> {
-        notifyObservers();
-    });
+    private void notifyObservers() {
+        System.out.println("Modelo: Notificando a " + observers.size() + " observadores");
+        for (Observer observer : observers) {
+            observer.update();
+        }
     }
 
     /**
@@ -117,6 +122,7 @@ public class UnirseAlaSalaModel {
      */
     public void imprimirEstadoActual() {
         System.out.println("Estado actual del modelo:");
+        List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
         System.out.println("Número de salas disponibles: " + (salasDisponibles != null ? salasDisponibles.size() : "null"));
         if (salasDisponibles != null) {
             for (Sala sala : salasDisponibles) {
@@ -135,8 +141,8 @@ public class UnirseAlaSalaModel {
      * @param salaId el identificador de la sala a la que se desea unir.
      * @param jugador el jugador que desea unirse.
      */
-    public void unirseASala(String salaId, Jugador jugador) {
-        if (server != null && server.isConnected()) {
+    public void unirseASala(Integer salaId, Jugador jugador) {
+        if (server != null && server.isServidorActivo()) {
             Evento evento = new Evento("UNIR_SALA");
             evento.agregarDato("salaId", salaId);
             evento.agregarDato("jugador", jugador);

@@ -4,40 +4,59 @@
  */
 package Presenctacion.UnirseAlaSalaMVC;
 
-import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
+import Presenctacion.ConfiguracionSocket;
 import Presenctacion.Mediador;
 import Server.Server;
-import java.util.Collections;
+import ServerLocal.ServerComunicacion;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.List;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /**
  *
  * @author INEGI
  */
 public class UnirseAlaSalaController {
-
-    private UnirseAlaSalaModel model;
+  private UnirseAlaSalaModel model;
     private UnirseAlaSalaView view;
     private Mediador mediador;
     private Server server;
 
-    /**
-     * Constructor que inicializa el controlador con un modelo y una vista.
-     * También configura la relación entre la vista y el modelo.
-     *
-     * @param model instancia del modelo a utilizar.
-     * @param view instancia de la vista a utilizar.
-     */
+
+    // Constructor donde se inicializa el modelo y la vista
     public UnirseAlaSalaController(UnirseAlaSalaModel model, UnirseAlaSalaView view) {
         this.model = model;
         this.view = view;
-        this.view.setModel(model);
-        this.model.addObserver(view); // Aseguramos que la vista observe al modelo
+
+        // Verificar que el modelo no sea null
+        if (this.model == null) {
+            System.err.println("El modelo es null, no se puede inicializar.");
+        }
+
+        // Aquí asignamos el listener al botón de actualizar
+        this.view.addActualizarListener(e -> actualizarTabla());
+    }
+
+    // Método para actualizar la tabla
+    private void actualizarTabla() {
+        try {
+            // Verifica que el modelo no sea null
+            if (model != null) {
+                List<Sala> salas = model.getSalasDisponibles();  // Obtener las salas disponibles
+                view.actualizarTablaSalas();  // Actualiza la vista de la tabla con las salas
+            } else {
+                System.err.println("El modelo es null. No se puede actualizar la tabla.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -64,9 +83,34 @@ public class UnirseAlaSalaController {
      * disponibles.
      */
     public void mostrarVista() {
-        view.setVisible(true);
-        solicitarActualizacionSalas();
+        SwingUtilities.invokeLater(() -> {
+            view.setVisible(true);
+
+        });
     }
+
+    public void cargarSalasDisponibles() {
+        System.out.println("llegua al metodo de CARGARSDALAS EN UNIRSESALACONTROLLER");
+        if (server != null && server.isServidorActivo()) {
+            
+            try {
+            
+                int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
+            Socket cliente = new Socket("localhost", puertoSocket);
+                Evento solicitudSalas = new Evento("RESPUESTA_SALAS");
+                
+                  ServerComunicacion servercito = new ServerComunicacion(server);
+        System.out.println("se ven al millon");
+                 servercito.procesarEvento(cliente, solicitudSalas);
+            } catch (IOException ex) {
+                Logger.getLogger(UnirseAlaSalaController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.err.println("Error: El servidor no está conectado.");
+        }
+    }
+
+    
 
     /**
      * Procesa la respuesta recibida del servidor. En particular, maneja eventos
@@ -74,32 +118,22 @@ public class UnirseAlaSalaController {
      *
      * @param evento el evento recibido del servidor.
      */
-    public void procesarRespuestaServer(Evento evento) {
-        if ("SOLICITAR_SALAS".equals(evento.getTipo())) {
-            try {
-                List<Sala> salas = (List<Sala>) evento.obtenerDato("salas");
-                System.out.println("Salas recibidas en controller: " + (salas != null ? salas.size() : "null"));
-                model.actualizarSalasDisponibles(salas);
-                model.imprimirEstadoActual(); // Agregamos depuración
-            } catch (Exception e) {
-                System.err.println("Error procesando salas: " + e.getMessage());
-                e.printStackTrace();
-            }
+    public void actualizarTablaConSalas() {
+    try {
+        List<Sala> salas = model.getSalasDisponibles();
+        if (salas == null || salas.isEmpty()) {
+            System.out.println("No hay salas disponibles para mostrar.");
+            return;
         }
+        // Agregar esta línea
+        view.actualizarTablaSalas();
+    } catch (Exception e) {
+        System.err.println("Error al actualizar la tabla con salas: " + e.getMessage());
+        e.printStackTrace();
+    }
     }
 
-    /**
-     * Solicita al servidor la lista actualizada de salas disponibles. Verifica
-     * la conexión al servidor antes de enviar la solicitud.
-     */
-    public void solicitarActualizacionSalas() {
-        if (server != null && server.isConnected()) {
-            System.out.println("Solicitando actualización de salas...");
-            Evento evento = new Evento("SOLICITAR_SALAS");
-            server.enviarEvento(evento);
-        } else {
-            System.err.println("No se puede solicitar actualización: servidor no conectado");
-        }
-    }
+
+
 
 }

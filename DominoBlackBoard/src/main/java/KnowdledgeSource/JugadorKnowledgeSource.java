@@ -44,7 +44,7 @@ public class JugadorKnowledgeSource implements KnowdledgeSource {
             // Registrar el jugador en el Blackboard
             registrarJugador(jugador);
             // Notificar al servidor o a otros componentes si es necesario
-            server.enviarEventoAJugador(jugador, evento);
+//            server.enviarEventoAJugador(jugador, evento);
         }
     }
 
