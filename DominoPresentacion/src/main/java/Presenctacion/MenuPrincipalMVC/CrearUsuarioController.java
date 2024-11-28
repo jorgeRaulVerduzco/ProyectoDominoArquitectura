@@ -90,10 +90,12 @@ public class CrearUsuarioController {
         Avatar avatar = new Avatar(avatarSeleccionado);
         Jugador jugador = new Jugador(nombre);
         jugador.setEstado("ACTIVO");
-
+    String textoPuerto = view.getPuertoSocket().getText().trim();
+        
+        int puerto = Integer.parseInt(textoPuerto);
         ServerComunicacion comunicacion = new ServerComunicacion(server);
         if (server != null) {
-            Socket socket = new Socket("localhost", 51114);
+            Socket socket = new Socket("localhost", puerto);
             Evento eventoRegistro = new Evento("REGISTRO_USUARIO");
             eventoRegistro.agregarDato("jugador", jugador);
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());

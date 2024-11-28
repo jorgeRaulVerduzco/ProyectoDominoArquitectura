@@ -16,6 +16,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 /**
  *
@@ -105,6 +106,8 @@ public class CrearUsuarioView extends javax.swing.JFrame {
         CheckBoxMembresia = new javax.swing.JCheckBox();
         jLabel5 = new javax.swing.JLabel();
         BtnJugar = new javax.swing.JButton();
+        jLabel6 = new javax.swing.JLabel();
+        puertoSocket = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(0, 153, 0));
@@ -120,7 +123,7 @@ public class CrearUsuarioView extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel1.setText("Crear Usuario");
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 20, 120, 20));
-        getContentPane().add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 130, 210, 30));
+        getContentPane().add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 120, 210, 30));
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel4.setText("Avatar");
@@ -132,8 +135,8 @@ public class CrearUsuarioView extends javax.swing.JFrame {
         getContentPane().add(CheckBoxMembresia, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 370, 20, 20));
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel5.setText("Domino");
-        getContentPane().add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 60, -1, -1));
+        jLabel5.setText("Socket");
+        getContentPane().add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 320, -1, -1));
 
         BtnJugar.setText("Jugar");
         BtnJugar.addActionListener(new java.awt.event.ActionListener() {
@@ -142,6 +145,11 @@ public class CrearUsuarioView extends javax.swing.JFrame {
             }
         });
         getContentPane().add(BtnJugar, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 440, -1, -1));
+
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jLabel6.setText("Domino");
+        getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 60, -1, -1));
+        getContentPane().add(puertoSocket, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 330, 210, 30));
 
         pack();
         setLocationRelativeTo(null);
@@ -170,6 +178,14 @@ public class CrearUsuarioView extends javax.swing.JFrame {
 
     public void addCreateUserListener(ActionListener listener) {
         BtnJugar.addActionListener(listener);
+    }
+
+    public JTextField getPuertoSocket() {
+        return puertoSocket;
+    }
+
+    public void setPuertoSocket(JTextField puertoSocket) {
+        this.puertoSocket = puertoSocket;
     }
 
     public void setCreateUserListener(ActionListener actionListener) {
@@ -220,6 +236,8 @@ public class CrearUsuarioView extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JTextField puertoSocket;
     private javax.swing.JTextField txtNombre;
     // End of variables declaration//GEN-END:variables
 

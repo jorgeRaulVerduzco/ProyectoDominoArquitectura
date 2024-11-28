@@ -34,10 +34,6 @@ public class CrearUsuarioMediador {
         }
     }
 
-    public void esperarServidor() throws InterruptedException {
-        latch.await();  // Espera hasta que el servidor esté inicializado
-    }
-
 //    public void crearJugador(Usuario usuario) throws InterruptedException {
 //        esperarServidor();  // Asegura que el servidor esté listo antes de continuar
 //        if (server == null) {

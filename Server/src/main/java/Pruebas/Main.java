@@ -18,23 +18,10 @@ import java.util.logging.Logger;
 
 public class Main {
     public static void main(String[] args) {
-        try {
             // Iniciar el servidor en un hilo separado
             Server server = new Server();
             ServerComunicacion servercito = new ServerComunicacion(server);
 
-            Thread serverThread = new Thread(() -> {
-                try {
-                    server.iniciarServidor(51114);
-                } catch (Exception e) {
-                    System.err.println("[ERROR] Error al iniciar el servidor: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            });
-            serverThread.start();
-
-            // Dar tiempo al servidor para inicializar
-            Thread.sleep(1000);
 
             try (Socket cliente = new Socket("localhost", 51114);
                  ObjectOutputStream out = new ObjectOutputStream(cliente.getOutputStream());
@@ -65,8 +52,5 @@ Evento solicitudSalas = new Evento("RESPUESTA_SALAS");
                 System.err.println("[ERROR] Error en el main: " + e.getMessage());
                 e.printStackTrace();
             }
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-}
