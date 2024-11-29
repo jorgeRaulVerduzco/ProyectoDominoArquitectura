@@ -28,18 +28,19 @@ import java.io.IOException;
  */
 public class Juego {
 
-    private static Server server;
-
-    public static void main(String[] args) {
-        // Iniciar el servidor en un hilo separado
-server = new Server();
-        // Lanzar la aplicación en el Event Dispatch Thread
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            initializeApplication();
-        });
+    private Server server;
+    public  static void main(String[] args) {
+    Juego juego = new Juego();
+        juego.iniciar();
     }
-
-    private static void initializeApplication() {
+ private void iniciar() {
+        // Iniciar el servidor
+        server = new Server();
+        
+        // Lanzar la aplicación en el Event Dispatch Thread
+        javax.swing.SwingUtilities.invokeLater(this::initializeApplication);
+    }
+    private   void initializeApplication() {
         // Verificar que el servidor esté iniciado
         if (server == null) {
             System.err.println("Error: El servidor no se inició correctamente");

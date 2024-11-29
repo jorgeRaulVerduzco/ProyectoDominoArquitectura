@@ -32,105 +32,95 @@ public class ServicioControlJuego {
     private ServicioPozo servicioPozo = new ServicioPozo();
     private ServicioFicha servicioFicha = new ServicioFicha();
     private List<Sala> salas;
-     private static ServicioControlJuego instancia;
+    private static ServicioControlJuego instancia;
+    private List<Jugador> Jugadores;
 
     public ServicioControlJuego() {
         this.salas = new ArrayList<>();
         this.servicioPozo = new ServicioPozo();
+        Jugadores = new ArrayList<>();
     }
 
     public synchronized boolean agregarJugador(Sala sala, Jugador jugador) {
-    if (sala.getJugador().size() < sala.getCantJugadores()) {
-        sala.getJugador().add(jugador);
-        jugador.setEstado("ACTIVO");
+        if (sala.getJugador().size() < sala.getCantJugadores()) {
+            sala.getJugador().add(jugador);
+            jugador.setEstado("ACTIVO");
 
-        if (sala.getJugador().size() == sala.getCantJugadores()) {
-            iniciarPartida(sala);
+            if (sala.getJugador().size() == sala.getCantJugadores()) {
+                iniciarPartida(sala);
+            }
+            return true;
         }
-        return true;
+        return false;
     }
-    return false;
-}
 
-    
     public static synchronized ServicioControlJuego getInstance() {
         if (instancia == null) {
             instancia = new ServicioControlJuego();
         }
         return instancia;
     }
-    
-    
+
     /**
- * Procesa una lista de salas actualizando o realizando acciones según las reglas del sistema.
- *
- * @param salas Lista de salas a procesar.
- */
-public synchronized void procesarSalas(List<Sala> salas) {
-    if (salas == null || salas.isEmpty()) {
-        System.out.println("ServicioControlJuego: No hay salas para procesar.");
-        return;
+     * Procesa una lista de salas actualizando o realizando acciones según las
+     * reglas del sistema.
+     *
+     * @param salas Lista de salas a procesar.
+     */
+    public synchronized void procesarSalas(List<Sala> salas) {
+        if (salas == null || salas.isEmpty()) {
+            System.out.println("ServicioControlJuego: No hay salas para procesar.");
+            return;
+        }
+
+        System.out.println("ServicioControlJuego: Procesando salas recibidas...");
+
+        for (Sala sala : salas) {
+            boolean salaExiste = this.salas.stream()
+                    .anyMatch(s -> s.getId().equals(sala.getId()));
+
+            if (salaExiste) {
+                System.out.println(" - Sala ID: " + sala.getId() + " ya existe. Actualizando su estado...");
+                actualizarSalaExistente(sala);
+            } else {
+                System.out.println(" - Sala ID: " + sala.getId() + " es nueva. Agregándola al sistema...");
+                agregarSala(sala);
+            }
+        }
+
+        System.out.println("ServicioControlJuego: Salas procesadas. Total de salas en el sistema: " + this.salas.size());
     }
 
-    System.out.println("ServicioControlJuego: Procesando salas recibidas...");
+    /**
+     * Actualiza una sala existente en el sistema.
+     *
+     * @param sala Sala con los nuevos datos a actualizar.
+     */
+    private synchronized void actualizarSalaExistente(Sala sala) {
+        for (int i = 0; i < salas.size(); i++) {
+            if (salas.get(i).getId().equals(sala.getId())) {
+                salas.set(i, sala); // Actualiza la sala en la lista
+                System.out.println("ServicioControlJuego: Sala ID: " + sala.getId() + " actualizada.");
+                break;
+            }
+        }
+    }
 
-    for (Sala sala : salas) {
-        boolean salaExiste = this.salas.stream()
-                .anyMatch(s -> s.getId().equals(sala.getId()));
-
-        if (salaExiste) {
-            System.out.println(" - Sala ID: " + sala.getId() + " ya existe. Actualizando su estado...");
-            actualizarSalaExistente(sala);
+    public synchronized void agregarSala(Sala sala) {
+        if (sala != null) {
+            System.out.println("ServicioControlJuego: Intentando agregar sala ID: " + sala.getId());
+            salas.add(sala);
+            System.out.println("ServicioControlJuego: Sala agregada. Total de salas: " + salas.size());
         } else {
-            System.out.println(" - Sala ID: " + sala.getId() + " es nueva. Agregándola al sistema...");
-            agregarSala(sala);
+            System.err.println("ServicioControlJuego: Error - Intento de agregar una sala nula.");
         }
+
     }
 
-    System.out.println("ServicioControlJuego: Salas procesadas. Total de salas en el sistema: " + this.salas.size());
-}
-
-/**
- * Actualiza una sala existente en el sistema.
- *
- * @param sala Sala con los nuevos datos a actualizar.
- */
-private synchronized void actualizarSalaExistente(Sala sala) {
-    for (int i = 0; i < salas.size(); i++) {
-        if (salas.get(i).getId().equals(sala.getId())) {
-            salas.set(i, sala); // Actualiza la sala en la lista
-            System.out.println("ServicioControlJuego: Sala ID: " + sala.getId() + " actualizada.");
-            break;
-        }
+    public synchronized List<Sala> getSalasDisponibles() {
+        System.out.println("ServicioControlJuego: Obteniendo salas disponibles. Total de salas: " + salas.size());
+        return new ArrayList<>(salas); // Devuelve una copia para evitar modificaciones externas
     }
-}
-
-    
-    
-
-      public synchronized void agregarSala(Sala sala) {
-    if (sala != null) {
-        System.out.println("ServicioControlJuego: Intentando agregar sala ID: " + sala.getId());
-        salas.add(sala);
-        System.out.println("ServicioControlJuego: Sala agregada. Total de salas: " + salas.size());
-    } else {
-        System.err.println("ServicioControlJuego: Error - Intento de agregar una sala nula.");
-    }
-
-
-
-
-        
-    }
-      
-
-   public synchronized List<Sala> getSalasDisponibles() {
-    System.out.println("ServicioControlJuego: Obteniendo salas disponibles. Total de salas: " + salas.size());
-    return new ArrayList<>(salas); // Devuelve una copia para evitar modificaciones externas
-}
-
-
-
 
     public void iniciarPartida(Sala sala) {
         Partida partida = new Partida();
@@ -147,7 +137,6 @@ private synchronized void actualizarSalaExistente(Sala sala) {
         sala.setEstado("EN_JUEGO");
     }
 
-   
     public boolean abandonarSala(Sala sala, Jugador jugador) {
         if (sala.getJugador().contains(jugador)) {
             jugador.setEstado("INACTIVO");
@@ -187,6 +176,10 @@ private synchronized void actualizarSalaExistente(Sala sala) {
      */
     public Jugador obtenerJugadorActual(Partida partida) {
         return partida.getJugadores().get(jugadorActual);
+    }
+
+    public void crearJugador(Jugador jugador) {
+        Jugadores.add(jugador);
     }
 
     /**

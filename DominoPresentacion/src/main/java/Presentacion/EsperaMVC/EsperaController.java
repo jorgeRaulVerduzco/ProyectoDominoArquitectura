@@ -27,23 +27,23 @@ public class EsperaController {
     }
 
     public void iniciarEscucha() {
-        new Thread(() -> {
-            while (!model.isPartidaIniciada()) {
-                // Escucha eventos del servidor
-                Object evento = server.isConnected();
-
-                if (evento instanceof String eventoTexto) {
-                    if (eventoTexto.startsWith("NUEVO_JUGADOR:")) {
-                        String nuevoJugador = eventoTexto.split(":")[1];
-                        model.agregarJugador(nuevoJugador);
-                    } else if (eventoTexto.equals("PARTIDA_INICIADA")) {
-                        model.setPartidaIniciada(true);
-                        view.actualizarEstado("¡La partida ha iniciado!");
-                        iniciarPartida();
-                    }
-                }
-            }
-        }).start();
+//        new Thread(() -> {
+//            while (!model.isPartidaIniciada()) {
+//                // Escucha eventos del servidor
+//                Object evento = server.isConnected();
+//
+//                if (evento instanceof String eventoTexto) {
+//                    if (eventoTexto.startsWith("NUEVO_JUGADOR:")) {
+//                        String nuevoJugador = eventoTexto.split(":")[1];
+//                        model.agregarJugador(nuevoJugador);
+//                    } else if (eventoTexto.equals("PARTIDA_INICIADA")) {
+//                        model.setPartidaIniciada(true);
+//                        view.actualizarEstado("¡La partida ha iniciado!");
+//                        iniciarPartida();
+//                        }
+//                    }
+//                }
+//            }).start();
     }
 
     public void iniciarPartida() {
