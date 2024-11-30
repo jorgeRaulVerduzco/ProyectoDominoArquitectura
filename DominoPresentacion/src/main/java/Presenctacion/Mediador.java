@@ -12,6 +12,7 @@ import Presenctacion.MenuPrincipalMVC.CrearUsuarioModel;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioView;
 import Presenctacion.CrearSalaMVC.CrearSalaController;
 import Presenctacion.CrearSalaMVC.CrearSalaModel;
+import Presenctacion.SeleccionJuego.OpcionesDeJuegoView;
 import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaController;
 import PresentacionTableroMVC.TableroController;
 import PresentacionTableroMVC.TableroView;
@@ -33,6 +34,7 @@ public class Mediador {
     private TableroView tableroView;
     private Server server;
     private CrearUsuarioModel usuarioActual;
+    private OpcionesDeJuegoView opcionesDeJuegoView;
 
     public Mediador(
             CrearUsuarioController crearUsuarioController,
@@ -40,14 +42,17 @@ public class Mediador {
             CrearSalaView crearSalaView,
             TableroController tableroController,
             TableroView tableroView,
-            UnirseAlaSalaController unirseAlaSalaController) {
+            UnirseAlaSalaController unirseAlaSalaController,
+            OpcionesDeJuegoView opcionesDeJuegoView) {
         this.crearUsuarioController = crearUsuarioController;
         this.crearSalaController = crearSalaController;
         this.crearSalaView = crearSalaView;
         this.tableroController = tableroController;
         this.tableroView = tableroView;
         this.unirseAlaSalaController = unirseAlaSalaController;
-
+        this.opcionesDeJuegoView = opcionesDeJuegoView; // Inicializar
+        // Establecer el mediador en la vista de opciones de juego
+        opcionesDeJuegoView.setMediator(this);
     }
 
     public void setServer(Server server) {
@@ -61,6 +66,7 @@ public class Mediador {
 
         // Pasar el servidor a los controladores que lo necesiten
         crearUsuarioController.setServer(server);
+        opcionesDeJuegoView.setServer(server);
         // Si otros controladores necesitan el servidor, puedes pasarlo aquí
         crearSalaController.setServer(server);  // Si es necesario en este controlador
         tableroController.setServer(server);    // Si es necesario en este controlador
@@ -73,13 +79,24 @@ public class Mediador {
 
     }
 
+    // Método para mostrar la vista de OpcionesDeJuego
+    public void mostrarOpcionesDeJuego(Jugador jugador) {
+        if (opcionesDeJuegoView != null) {
+            opcionesDeJuegoView.setJugador(jugador);  // Pasar el jugador a la vista
+            opcionesDeJuegoView.setServer(server);    // Pasar el servidor a la vista
+            opcionesDeJuegoView.setLocationRelativeTo(null);  // Centrar la ventana
+            opcionesDeJuegoView.setVisible(true);  // Mostrar la vista
+        } else {
+            System.out.println("OpcionesDeJuegoView no está inicializado.");
+        }
+    }
+
     public void usuarioCreado(Jugador jugador) {
         System.out.println("Usuario creado: " + jugador);
 
         if (server != null) {
             boolean usuarioExistente = server.contieneJugador(jugador.getNombre());
             System.out.println("¿Usuario existe? " + usuarioExistente);
-
         } else {
             JOptionPane.showMessageDialog(null,
                     "El servidor no está disponible.",
@@ -90,7 +107,8 @@ public class Mediador {
 
         // Cambiar de vista si el usuario no existe
         crearUsuarioController.ocultarVista();
-        mostrarCrearSala(jugador);
+        // Aquí, en lugar de mostrar CrearSalaView, mostramos OpcionesDeJuegoView
+        mostrarOpcionesDeJuego(jugador);  // Llamamos al método que muestra OpcionesDeJuegoView
     }
 
     public void mostrarCrearSala(Jugador jugador) {
@@ -105,6 +123,11 @@ public class Mediador {
             System.out.println("Vista de crear sala es null.");
         }
     }
+//         Método para mostrar UnirseAlaSala después de OpcionesDeJuego
+
+    public void mostrarUnirseAlaSala() {
+        unirseAlaSalaController.mostrarVista();  // Llamar al controlador para mostrar UnirseAlaSala
+    }
 
     public void salaCreada() {
         crearSalaView.setVisible(false);
@@ -112,7 +135,7 @@ public class Mediador {
         unirseAlaSalaController.mostrarVista();
 
         // Cargar las salas disponibles en la tabla al iniciar
-     unirseAlaSalaController.cargarSalasDisponibles();
+        unirseAlaSalaController.cargarSalasDisponibles();
 
     }
 

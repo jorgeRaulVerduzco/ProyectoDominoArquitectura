@@ -8,6 +8,7 @@ import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
 import Negocio.ServicioControlJuego;
+import Presenctacion.ConfiguracionSocket;
 import Presenctacion.Observer;
 import Server.Server;
 import ServerLocal.ServerComunicacion;
@@ -23,7 +24,6 @@ import javax.swing.SwingUtilities;
  *
  * @author INEGI
  */
-
 public class UnirseAlaSalaModel {
 
     private List<Observer> observers;
@@ -38,9 +38,6 @@ public class UnirseAlaSalaModel {
         this.observers = new ArrayList<>();
         this.servicioControlJuego = ServicioControlJuego.getInstance();  // Usar la instancia única
     }
-    
-    
-    
 
     /**
      * Establece la conexión con el servidor.
@@ -79,11 +76,17 @@ public class UnirseAlaSalaModel {
         System.out.println("UnirseAlaSalaModel: Solicitando salas al servidor...");
 
         // Obtener las salas disponibles desde ServicioControlJuego
-        List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
+        List<Sala> salasDisponibles = server.obtenerSalasActivas();
+        int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
+        Socket cliente = new Socket("localhost", puertoSocket);
+        Evento solicitudSalas = new Evento("RESPUESTA_SALAS");
 
+        ServerComunicacion servercito = new ServerComunicacion(server);
+        System.out.println("se ven al millon");
+        
         if (salasDisponibles != null) {
             System.out.println("UnirseAlaSalaModel: Salas recibidas. Total: " + salasDisponibles.size());
-            for (Sala sala : salasDisponibles) {
+            for (Sala sala : server.obtenerSalasActivas()) {
                 System.out.println("Sala ID: " + sala.getId() + ", Estado: " + sala.getEstado());
             }
         } else {
@@ -93,7 +96,6 @@ public class UnirseAlaSalaModel {
         return salasDisponibles;
     }
 
-    
     public void actualizarSalas(List<Sala> salas) {
         if (salas != null) {
             System.out.println("Modelo: Actualizando salas. Cantidad recibida: " + salas.size());

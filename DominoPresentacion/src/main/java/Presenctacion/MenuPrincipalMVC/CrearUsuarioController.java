@@ -67,8 +67,6 @@ public class CrearUsuarioController {
         view.setVisible(true);
     }
 
-   
-
     public void crearUsuario() throws IOException {
         // Verificar si el socket está conectado antes de registrar el jugador
 
@@ -91,8 +89,8 @@ public class CrearUsuarioController {
         Avatar avatar = new Avatar(avatarSeleccionado);
         Jugador jugador = new Jugador(nombre);
         jugador.setEstado("ACTIVO");
-    String textoPuerto = view.getPuertoSocket().getText().trim();
-        
+        String textoPuerto = view.getPuertoSocket().getText().trim();
+
         int puerto = Integer.parseInt(textoPuerto);
         ConfiguracionSocket.getInstance().setPuertoSocket(puerto);
         int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
@@ -101,10 +99,9 @@ public class CrearUsuarioController {
             Socket socket = new Socket("localhost", puertoSocket);
             Evento eventoRegistro = new Evento("REGISTRO_USUARIO");
             eventoRegistro.agregarDato("jugador", jugador);
-           
-            
+
             comunicacion.registrarUsuario(socket, eventoRegistro);  // Usar el nombre del jugador como clave
-             
+
             System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
         } else {
             JOptionPane.showMessageDialog(view, "Error: El servidor no está disponible.", "Error", JOptionPane.ERROR_MESSAGE);

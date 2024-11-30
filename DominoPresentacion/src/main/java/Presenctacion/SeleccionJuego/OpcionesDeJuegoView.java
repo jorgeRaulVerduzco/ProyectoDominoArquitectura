@@ -4,17 +4,64 @@
  */
 package Presenctacion.SeleccionJuego;
 
+import Dominio.Jugador;
+import Presenctacion.Mediador;
+import Server.Server;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author INEGI
  */
 public class OpcionesDeJuegoView extends javax.swing.JFrame {
 
+    private final Object lockConexion = new Object();
+    private volatile boolean conexionExitosa;
+    private Server server;
+    private Mediador mediador;
+    private Jugador jugador;
+
+    public OpcionesDeJuegoView(java.awt.Frame parent, boolean modal) {// Establecer el padre y la modalidad
+        this.server = server;  // Guardamos el servidor
+        initComponents();
+    }
+
     /**
      * Creates new form OpcionesDeJuegoView
      */
     public OpcionesDeJuegoView() {
         initComponents();
+    }
+
+    // Constructor sin parámetros
+    public OpcionesDeJuegoView(Server server) {
+        this.server = server;
+        initComponents();
+    }
+
+    public void setServer(Server server) {
+        if (server == null) {
+            throw new IllegalArgumentException("El servidor no puede ser nulo.");
+        }
+        this.server = server;
+        System.out.println("Servidor asignado correctamente.");
+    }
+
+    public void setMediator(Mediador mediador) {
+        this.mediador = mediador;
+    }
+
+    public void confirmarConexion() {
+        synchronized (lockConexion) {
+            conexionExitosa = true;
+            lockConexion.notifyAll();
+        }
+    }
+
+    // Método para recibir y mostrar el jugador
+    public void setJugador(Jugador jugador) {
+        this.jugador = jugador;
+        txtJugador.setText(jugador.getNombre());  // Mostrar el nombre del jugador
     }
 
     /**
@@ -44,6 +91,11 @@ public class OpcionesDeJuegoView extends javax.swing.JFrame {
         jButton1.setBackground(new java.awt.Color(204, 0, 0));
         jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton1.setText("Regresar");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel2.setText("Nombre del jugador:");
@@ -51,10 +103,20 @@ public class OpcionesDeJuegoView extends javax.swing.JFrame {
         btnCrearSala.setBackground(new java.awt.Color(255, 51, 0));
         btnCrearSala.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnCrearSala.setText("Crear Sala");
+        btnCrearSala.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCrearSalaActionPerformed(evt);
+            }
+        });
 
         btnJugarAhora.setBackground(new java.awt.Color(255, 51, 0));
         btnJugarAhora.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnJugarAhora.setText("Jugar Ahora");
+        btnJugarAhora.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnJugarAhoraActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -112,6 +174,46 @@ public class OpcionesDeJuegoView extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnCrearSalaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCrearSalaActionPerformed
+        // Usar el mediador para mostrar la vista de crear sala
+        if (mediador != null) {
+            mediador.mostrarCrearSala(jugador);
+            this.setVisible(false); // Ocultar la vista actual
+        } else {
+            System.out.println("Mediador no está inicializado");
+        }
+    }//GEN-LAST:event_btnCrearSalaActionPerformed
+
+    private void btnJugarAhoraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJugarAhoraActionPerformed
+        // Usar el mediador para mostrar la vista de unirse a sala
+        if (mediador != null) {
+            mediador.mostrarUnirseAlaSala();
+            this.setVisible(false); // Ocultar la vista actual
+        } else {
+            System.out.println("Mediador no está inicializado");
+        }
+    }//GEN-LAST:event_btnJugarAhoraActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+            // Verificar si el mediador está inicializado
+    if (mediador != null) {
+        // Ocultar la vista actual de opciones de juego
+        this.setVisible(false);
+        
+        // Mostrar la vista de creación de usuario a través del mediador
+        mediador.iniciarAplicacion();
+    } else {
+        // Si el mediador no está inicializado, mostrar un mensaje de error
+        System.out.println("Mediador no está inicializado");
+        
+        // Opcionalmente, puedes mostrar un mensaje de error al usuario
+        JOptionPane.showMessageDialog(this, 
+            "No se puede regresar en este momento", 
+            "Error", 
+            JOptionPane.ERROR_MESSAGE);
+    }
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
