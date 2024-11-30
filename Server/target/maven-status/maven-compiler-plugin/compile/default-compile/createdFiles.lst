@@ -1,6 +1,8 @@
-Server\Server.class
+Server\ConversorJSON.class
 Pruebas\PruebaDeConexion.class
+Server\Server$1.class
+Server\GestorSalas.class
+Server\Server.class
 Pruebas\IniciarServer.class
 ServerLocal\ServerComunicacion.class
 Pruebas\Main.class
-Server\Server$1.class

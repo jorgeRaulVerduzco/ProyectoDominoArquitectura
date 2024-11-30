@@ -6,6 +6,7 @@ package Pruebas;
 
 import Server.Server;
 import java.io.IOException;
+import java.util.Scanner;
 
 /**
  *
@@ -39,19 +40,23 @@ public class IniciarServer {
         }
 
         // Configurar la aplicación después de que el servidor esté listo
-        System.out.println("Servidor está listo para aceptar conexiones.");
+         System.out.println("Servidor está listo para aceptar conexiones.");
+       System.out.println("Teclee 'salir' para cerrar el servidor.");
 
-        // Configurar el look and feel
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error al configurar el look and feel: " + e.getMessage());
-        }
+       // Leer entrada del usuario para cerrar el servidor
+       try (Scanner scanner = new Scanner(System.in)) {
+           while (true) {
+               String entrada = scanner.nextLine();
+               if ("salir".equalsIgnoreCase(entrada)) {
+                   System.out.println("Cerrando servidor...");
+                   if (server != null) {
+                       server.cerrarServidor();
+                   }
+                   System.exit(0);
+               }
+           }
+       }
+     
     }
     
 }

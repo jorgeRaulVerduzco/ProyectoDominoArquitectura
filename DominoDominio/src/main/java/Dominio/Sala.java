@@ -4,6 +4,7 @@
  */
 package Dominio;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,14 +16,23 @@ import java.util.UUID;
  */
 public class Sala implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+     @JsonProperty("id")
+    private String id = UUID.randomUUID().toString();
 
-    String id = UUID.randomUUID().toString();
-    int cantJugadores;
-    int numeroFichas;
-    List<Jugador> jugador = new ArrayList<>();
-    String estado;
-    Partida partida;
+    @JsonProperty("cantJugadores")
+    private int cantJugadores;
+
+    @JsonProperty("numeroFichas")
+    private int numeroFichas;
+
+    @JsonProperty("jugadores")
+    private List<Jugador> jugador = new ArrayList<>();
+
+    @JsonProperty("estado")
+    private String estado;
+
+    @JsonProperty("partida")
+    private Partida partida;
 
     /**
      * Constructor por defecto de la clase Sala. Inicializa los atributos de la
