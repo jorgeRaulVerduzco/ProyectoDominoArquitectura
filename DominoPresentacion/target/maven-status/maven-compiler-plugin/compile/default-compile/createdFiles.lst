@@ -18,6 +18,7 @@ Main\Juego.class
 Presenctacion\CrearSalaMVC\CrearSalaController$NumeroJugadoresListener.class
 Presenctacion\UnirseAlaSalaMVC\UnirseAlaSalaView.class
 Presenctacion\ConfiguracionSocket.class
+Presenctacion\SeleccionJuego\OpcionesDeJuegoView$4.class
 Presentacion\EsperaMVC\EsperaModel.class
 Presenctacion\PozoMVC\PozoView.class
 Presenctacion\MenuPrincipalMVC\CrearUsuarioView.class
@@ -31,9 +32,11 @@ Presenctacion\CrearSalaMVC\CrearSalaController.class
 Presenctacion\MenuPrincipalMVC\CrearUsuarioController.class
 Presenctacion\MenuPrincipalMVC\CrearUsuarioView$2.class
 Presenctacion\Mediador.class
+Presenctacion\SeleccionJuego\OpcionesDeJuegoView$2.class
 Presenctacion\CrearSalaMVC\CrearSalaView$1.class
 PresentacionTableroMVC\TableroController.class
 PresentacionTableroMVC\TableroView.class
+Presenctacion\SeleccionJuego\OpcionesDeJuegoView$3.class
 Presenctacion\UnirseAlaSalaMVC\UnirseAlaSalaView$BotonEditor.class
 Presentacion\EsperaMVC\EsperaView.class
 Presenctacion\SeleccionJuego\OpcionesDeJuegoView.class

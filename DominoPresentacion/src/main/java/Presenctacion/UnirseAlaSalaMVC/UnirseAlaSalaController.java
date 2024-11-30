@@ -24,11 +24,11 @@ import javax.swing.SwingUtilities;
  * @author INEGI
  */
 public class UnirseAlaSalaController {
-  private UnirseAlaSalaModel model;
+
+    private UnirseAlaSalaModel model;
     private UnirseAlaSalaView view;
     private Mediador mediador;
     private Server server;
-
 
     // Constructor donde se inicializa el modelo y la vista
     public UnirseAlaSalaController(UnirseAlaSalaModel model, UnirseAlaSalaView view) {
@@ -42,6 +42,23 @@ public class UnirseAlaSalaController {
 
         // Aquí asignamos el listener al botón de actualizar
         this.view.addActualizarListener(e -> actualizarTabla());
+    }
+
+    public void unirseASala(Integer salaId) {
+        if (salaId == null) {
+            System.err.println("Error: No se proporcionó un ID válido para la sala.");
+            return;
+        }
+
+        System.out.println("Controlador: Intentando unirse a la sala con ID " + salaId);
+
+        try {
+            // Enviar el evento al servidor para unirse a la sala
+            model.unirseASala(salaId, null); // Supone que el modelo maneja la lógica
+        } catch (Exception e) {
+            System.err.println("Error al intentar unirse a la sala: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // Método para actualizar la tabla
@@ -92,16 +109,16 @@ public class UnirseAlaSalaController {
     public void cargarSalasDisponibles() {
         System.out.println("llegua al metodo de CARGARSDALAS EN UNIRSESALACONTROLLER");
         if (server != null && server.isServidorActivo()) {
-            
+
             try {
-            
+
                 int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
-            Socket cliente = new Socket("localhost", puertoSocket);
+                Socket cliente = new Socket("localhost", puertoSocket);
                 Evento solicitudSalas = new Evento("RESPUESTA_SALAS");
-                
-                  ServerComunicacion servercito = new ServerComunicacion(server);
-        System.out.println("se ven al millon");
-                 servercito.procesarEvento(cliente, solicitudSalas);
+
+                ServerComunicacion servercito = new ServerComunicacion(server);
+                System.out.println("se ven al millon");
+                servercito.procesarEvento(cliente, solicitudSalas);
             } catch (IOException ex) {
                 Logger.getLogger(UnirseAlaSalaController.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -110,8 +127,6 @@ public class UnirseAlaSalaController {
         }
     }
 
-    
-
     /**
      * Procesa la respuesta recibida del servidor. En particular, maneja eventos
      * de tipo "SOLICITAR_SALAS" y actualiza el modelo con las salas recibidas.
@@ -119,21 +134,18 @@ public class UnirseAlaSalaController {
      * @param evento el evento recibido del servidor.
      */
     public void actualizarTablaConSalas() {
-    try {
-        List<Sala> salas = model.getSalasDisponibles();
-        if (salas == null || salas.isEmpty()) {
-            System.out.println("No hay salas disponibles para mostrar.");
-            return;
+        try {
+            List<Sala> salas = model.getSalasDisponibles();
+            if (salas == null || salas.isEmpty()) {
+                System.out.println("No hay salas disponibles para mostrar.");
+                return;
+            }
+            // Agregar esta línea
+            view.actualizarTablaSalas();
+        } catch (Exception e) {
+            System.err.println("Error al actualizar la tabla con salas: " + e.getMessage());
+            e.printStackTrace();
         }
-        // Agregar esta línea
-        view.actualizarTablaSalas();
-    } catch (Exception e) {
-        System.err.println("Error al actualizar la tabla con salas: " + e.getMessage());
-        e.printStackTrace();
     }
-    }
-
-
-
 
 }

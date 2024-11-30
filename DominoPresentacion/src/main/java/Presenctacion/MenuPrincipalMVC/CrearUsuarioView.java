@@ -7,6 +7,7 @@ package Presenctacion.MenuPrincipalMVC;
 import Mediadores.CrearUsuarioMediador;
 import Presenctacion.CrearSalaMVC.CrearSalaView;
 import Presenctacion.Mediador;
+import Presenctacion.SeleccionJuego.OpcionesDeJuegoView;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.event.ActionListener;
@@ -86,9 +87,11 @@ public class CrearUsuarioView extends javax.swing.JFrame {
 
         getContentPane().add(comboBoxAvatares, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 290, 160, -1));
     }
- public void setMediator(Mediador mediador) {
+
+    public void setMediator(Mediador mediador) {
         this.mediador = mediador;
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -156,7 +159,7 @@ public class CrearUsuarioView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnJugarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnJugarActionPerformed
-     
+
     }//GEN-LAST:event_BtnJugarActionPerformed
     // Mostrar vista de Crear Sala
     private void mostrarCrearSala(CrearUsuarioModel usuario) {

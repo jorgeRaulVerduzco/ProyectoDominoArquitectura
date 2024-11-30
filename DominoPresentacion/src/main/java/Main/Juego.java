@@ -12,6 +12,7 @@ import Presenctacion.MenuPrincipalMVC.CrearUsuarioController;
 import Presenctacion.MenuPrincipalMVC.CrearUsuarioView;
 import Presenctacion.PozoMVC.PozoModel;
 import Presenctacion.PozoMVC.PozoView;
+import Presenctacion.SeleccionJuego.OpcionesDeJuegoView;
 import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaController;
 import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaModel;
 import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaView;
@@ -63,7 +64,7 @@ public class Juego {
         crearSalaModel.addObserver(crearSalaView);
         TableroModel tableroModel = new TableroModel();
         TableroView tableroView = new TableroView(new Frame(), true, tableroModel, pozoModel);
-
+        OpcionesDeJuegoView opcionesDeJuegoView = new OpcionesDeJuegoView(new Frame(), true); // Instancia del diálogo
         // Inicializar controladores
         CrearUsuarioController crearUsuarioController = new CrearUsuarioController(crearUsuarioView);
         CrearSalaController crearSalaController = new CrearSalaController(crearSalaModel, crearSalaView);
@@ -82,12 +83,14 @@ public class Juego {
                 crearSalaView,
                 tableroController,
                 tableroView,
-                unirseAlaSalaController
+                unirseAlaSalaController,
+                opcionesDeJuegoView 
         );
         crearUsuarioView.setMediator(mediador);
-
+        
         // Configurar el servidor en el mediador y controladores
         mediador.setServer(server);
+        opcionesDeJuegoView.setServer(server);
         crearSalaController.setServer(server);
 
         // Configurar el mediador en los controladores

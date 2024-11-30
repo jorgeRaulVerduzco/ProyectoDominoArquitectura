@@ -114,6 +114,9 @@
             </Property>
             <Property name="text" type="java.lang.String" value="Regresar"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel2">
           <Properties>
@@ -135,6 +138,9 @@
             </Property>
             <Property name="text" type="java.lang.String" value="Crear Sala"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCrearSalaActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JButton" name="btnJugarAhora">
           <Properties>
@@ -146,6 +152,9 @@
             </Property>
             <Property name="text" type="java.lang.String" value="Jugar Ahora"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnJugarAhoraActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>
