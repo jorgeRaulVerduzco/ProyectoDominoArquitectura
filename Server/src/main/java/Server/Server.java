@@ -20,6 +20,9 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Server {
 
-    private GestorSalas gestorSalas;
+   private GestorSalas gestorSalas;
     private ServerSocket servidor;
     private List<Socket> clientes;
     private Map<Socket, ObjectOutputStream> outputStreams;
@@ -69,17 +72,39 @@ public class Server {
         this.jugadoresRegistrados = new CopyOnWriteArrayList<>();
         // Initialize thread pool with core and max thread counts
         this.executorService = Executors.newCachedThreadPool(new ThreadFactory() {
-            private final AtomicInteger threadCounter = new AtomicInteger(1);
-
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r, "ServerThread-" + threadCounter.getAndIncrement());
-                thread.setDaemon(true);
-                return thread;
-            }
-        });
+        private final AtomicInteger threadCounter = new AtomicInteger(1);
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread thread = new Thread(r, "ServerThread-" + threadCounter.getAndIncrement());
+            thread.setDaemon(true);
+            return thread;
+        }
+    });
     }
+public static List<Sala> cargarSalas() {
+  try {
+        Path path = Paths.get("salas.json");
+        if (Files.exists(path)) {
+            String json = new String(Files.readAllBytes(path));
+            List<Sala> salas = ConversorJSON.convertirJsonASalas(json);
+            System.out.println("Salas cargadas correctamente desde salas.json: " + salas.size());
+            return salas;
+        }
+    } catch (IOException e) {
+        System.err.println("Error al cargar las salas: " + e.getMessage());
+    }
+    return new CopyOnWriteArrayList<>(); // Devuelve una lista vacía si no hay archivo o si ocurre un error
+}
 
+public void guardarSalas() {
+    try {
+        String json = ConversorJSON.convertirSalasAJson(salasActivas);
+        Files.write(Paths.get("salas.json"), json.getBytes());
+        System.out.println("Salas guardadas exitosamente: " + salasActivas.size());
+    } catch (IOException e) {
+        System.err.println("Error al guardar las salas: " + e.getMessage());
+    }
+}
     public void cerrarServidor() {
         try {
             // Detener el servidor
@@ -96,7 +121,7 @@ public class Server {
                 servidor.close();
             }
 
-         gestorSalas = GestorSalas.getInstance();
+            gestorSalas = GestorSalas.getInstance();
             gestorSalas.limpiarSalas();
 
             // Cerrar el executor service
@@ -110,6 +135,7 @@ public class Server {
         }
     }
 
+
     public static synchronized List<Sala> getSalas() {
         return new ArrayList<>(salasActivas); // Devuelve una copia para evitar modificaciones externas
     }
@@ -118,7 +144,9 @@ public class Server {
     /**
      * Devuelve la lista de salas activas en el servidor.
      *
+     * @param puerto
      * @return Una lista de salas disponibles.
+     * @throws java.io.IOException
      */
     public void iniciarServidor(int puerto) throws IOException {
         try {
@@ -182,10 +210,13 @@ public class Server {
     }
 
     public void agregarSala(Sala sala) {
-        gestorSalas.agregarSala(sala);
-        Evento evento = new Evento("NUEVA_SALA");
-        evento.agregarDato("sala", sala);
-        enviarEvento(evento);
+      gestorSalas.agregarSala(sala);
+    Evento evento = new Evento("NUEVA_SALA");
+    evento.agregarDato("sala", sala);
+    enviarEvento(evento);
+    
+    // Guardar salas después de agregar
+    guardarSalas();
     }
 
     public List<Sala> obtenerSalasActivas() {
