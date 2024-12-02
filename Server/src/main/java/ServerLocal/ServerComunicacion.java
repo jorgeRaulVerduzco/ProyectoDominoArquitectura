@@ -59,14 +59,7 @@ public class ServerComunicacion {
         System.out.println("Jugador extraído: " + jugador);
 
         // Verificar si el nombre de usuario ya existe
-        if (server.contieneJugador(jugador.getNombre())) {
-            // Si el nombre ya existe, enviar un evento de error
-            Evento errorEvento = new Evento("REGISTRO_USUARIO");
-            errorEvento.agregarDato("mensaje", "El nombre de usuario ya está en uso");
-            server.enviarMensajeACliente(cliente, errorEvento);
-            System.out.println("[REGISTRO] El nombre de usuario ya está en uso: " + jugador.getNombre());
-            return;
-        }
+  
 
         // Crear el jugador en el sistema
         servicioC.crearJugador(jugador);

@@ -87,6 +87,7 @@ public void crearUsuario() throws IOException {
     // Crear jugador
     Avatar avatar = new Avatar(avatarSeleccionado);
     Jugador jugador = new Jugador(nombre);
+    jugador.setNombre(nombre);
     jugador.setEstado("ACTIVO");
     String textoPuerto = view.getPuertoSocket().getText().trim();
 
