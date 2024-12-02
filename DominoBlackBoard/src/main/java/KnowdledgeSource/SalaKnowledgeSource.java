@@ -92,58 +92,63 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
      * @param evento Evento que contiene los datos necesarios para crear la
      * sala.
      */
-    private void crearNuevaSala(Socket cliente, Evento evento) {
-       try {
-        // Validate event data thoroughly
+private void crearNuevaSala(Socket cliente, Evento evento) {
+    try {
+        // Validar evento y datos
         if (evento == null || evento.getDatos() == null) {
             System.err.println("Error: Evento o datos nulos");
             return;
         }
 
-        // Safely extract and validate each required parameter
+        // Obtener y validar los datos
         Integer numJugadoresObj = (Integer) evento.obtenerDato("numJugadores");
         Integer numFichasObj = (Integer) evento.obtenerDato("numFichas");
-        Jugador jugadorObj = (Jugador) evento.obtenerDato("jugador");
 
-        if (!(numJugadoresObj instanceof Integer) || 
-            !(numFichasObj instanceof Integer) || 
-            !(jugadorObj instanceof Jugador)) {
-            System.err.println("Error: Tipos de datos inválidos");
+
+        // Verificar si los datos no son nulos
+        if (numJugadoresObj == null || numFichasObj == null) {
+            System.err.println("Error: Datos faltantes para crear la sala");
             return;
         }
 
+        // Validar el tipo de los datos
+        if (!(numJugadoresObj instanceof Integer) || !(numFichasObj instanceof Integer)) {
+            System.err.println("Error: Tipos de datos inválidos");
+            return;  // Si los tipos son incorrectos, no se procesa la creación de la sala
+        }
+
+        // Extraer los valores
         int numJugadores = numJugadoresObj;
         int numFichas = numFichasObj;
-        Jugador creador = (Jugador) jugadorObj;
 
-        // Existing validation
-        if (numJugadores <= 0 || numFichas <= 0 || creador == null) {
+        // Verificar si los valores son válidos
+        if (numJugadores <= 0 || numFichas <= 0) {
             System.err.println("Error: Datos inválidos para crear sala");
             return;
         }
 
+        // Crear y registrar la nueva sala
         Sala nuevaSala = new Sala();
         nuevaSala.setId(UUID.randomUUID().toString());
         nuevaSala.setCantJugadores(numJugadores);
         nuevaSala.setNumeroFichas(numFichas);
         nuevaSala.setEstado("ESPERANDO");
-        nuevaSala.getJugador().add(creador);
 
+        // Actualizar el Blackboard con la nueva sala
         blackboard.actualizarEstadoSala(nuevaSala.getId(), nuevaSala);
-        
+
+        // Crear el evento de respuesta y enviarlo
         Evento respuesta = new Evento("CREAR_SALA");
         respuesta.agregarDato("sala", nuevaSala);
-        
         server.enviarMensajeACliente(cliente, respuesta);
-           System.out.println("ENVIAR EVENTO");
-        server.enviarEvento(evento, cliente);
-        
+
         System.out.println("Sala creada con ID: " + nuevaSala.getId());
+
     } catch (Exception e) {
         System.err.println("Error crítico al crear sala: " + e.getMessage());
         e.printStackTrace();
     }
-    }
+}
 
     /**
      * Permite que un jugador se una a una sala existente. Si la sala está llena
