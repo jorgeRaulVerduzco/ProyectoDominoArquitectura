@@ -141,14 +141,13 @@ public class UnirseAlaSalaModel {
      * "UNIR_SALA" al servidor con los datos de la sala y el jugador.
      *
      * @param salaId el identificador de la sala a la que se desea unir.
-     * @param jugador el jugador que desea unirse.
      */
-    public void unirseASala(Integer salaId, Jugador jugador) {
+    public void unirseASala(Integer salaId, Socket socket) {
         if (server != null && server.isServidorActivo()) {
             Evento evento = new Evento("UNIR_SALA");
             evento.agregarDato("salaId", salaId);
-            evento.agregarDato("jugador", jugador);
-            server.enviarEvento(evento);
+            evento.agregarDato("jugador", socket);
+            server.enviarEvento(evento,socket);
         }
     }
 }

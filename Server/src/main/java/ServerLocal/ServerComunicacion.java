@@ -8,18 +8,11 @@ import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
 import Negocio.ServicioControlJuego;
-import Server.ConversorJSON;
 import Server.Server;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -56,33 +49,47 @@ public class ServerComunicacion {
     }
 
     public void registrarUsuario(Socket cliente, Evento eventoRegistro) {
-        try {
-            // Extraer el jugador del evento
-            Jugador jugador = (Jugador) eventoRegistro.obtenerDato("jugador");
+        System.out.println("SERVER C :LLegue registrarUsuario");
+    try {
+        System.out.println("SERVER C : pase el try");
+        // Extraer el jugador del evento
+        Jugador jugador = (Jugador) eventoRegistro.obtenerDato("jugador");
+ System.out.println("SERVER COMUNICACION: Socket del jugador actual"+cliente);
+        // Depuración: Verificar que el jugador está correctamente extraído
+        System.out.println("Jugador extraído: " + jugador);
 
-            // Verificar si el nombre de usuario ya existe
-            if (server.contieneJugador(jugador.getNombre())) {
-                // Si el nombre ya existe, enviar un evento de error
-                Evento errorEvento = new Evento("REGISTRO_USUARIO_ERROR");
-                errorEvento.agregarDato("mensaje", "El nombre de usuario ya está en uso");
-                server.enviarMensajeACliente(cliente, errorEvento);
-                return;
-            }
-     
-           
-            servicioC.crearJugador(jugador);
-            server.registrarJugador(cliente, jugador);
-
-        } catch (Exception e) {
-            // Manejar cualquier error durante el registro
-            System.err.println("Error al registrar usuario: " + e.getMessage());
-            enviarErrorRegistro(cliente, "Error interno al registrar usuario");
+        // Verificar si el nombre de usuario ya existe
+        if (server.contieneJugador(jugador.getNombre())) {
+            // Si el nombre ya existe, enviar un evento de error
+            Evento errorEvento = new Evento("REGISTRO_USUARIO");
+            errorEvento.agregarDato("mensaje", "El nombre de usuario ya está en uso");
+            server.enviarMensajeACliente(cliente, errorEvento);
+            System.out.println("[REGISTRO] El nombre de usuario ya está en uso: " + jugador.getNombre());
+            return;
         }
+
+        // Crear el jugador en el sistema
+        servicioC.crearJugador(jugador);
+        System.out.println("[REGISTRO] Jugador creado en el sistema: " + jugador);
+
+        // Registrar el jugador en el servidor
+        server.registrarJugador(cliente, jugador);
+        System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
+
+    } catch (Exception e) {
+        // Manejar cualquier error durante el registro
+        System.err.println("Error al registrar usuario: " + e.getMessage());
+        e.printStackTrace();  // Para obtener más información sobre el error
+
+        // Enviar un evento de error al cliente
+        enviarErrorRegistro(cliente, "Error interno al registrar usuario");
     }
+}
+
 
     private void enviarErrorRegistro(Socket cliente, String mensaje) {
         try {
-            Evento errorEvento = new Evento("REGISTRO_USUARIO_ERROR");
+            Evento errorEvento = new Evento("REGISTRO_USUARIO");
             errorEvento.agregarDato("mensaje", mensaje);
             server.enviarMensajeACliente(cliente, errorEvento);
         } catch (Exception e) {
@@ -168,7 +175,7 @@ public class ServerComunicacion {
             nuevaSala.setNumeroFichas(numFichas);
             nuevaSala.setEstado("ESPERANDO");
             nuevaSala.getJugador().add(creador);
-            server.agregarSala(nuevaSala);
+            server.agregarSala(nuevaSala,cliente);
 
             // Agregar sala al servicio
             servicioControlJuego.agregarSala(nuevaSala);
@@ -245,7 +252,7 @@ public class ServerComunicacion {
                 server.enviarMensajeACliente(cliente, respuesta);
             } else {
                 // If no specific client, send to all connected clients
-                server.enviarEvento(respuesta);
+                server.enviarEvento(respuesta,cliente);
             }
 
             // Log the rooms for debugging
@@ -368,16 +375,7 @@ public class ServerComunicacion {
         }
     }
 
-    /**
-     * Notifica a todos los clientes conectados que se ha creado una nueva sala.
-     *
-     * @param sala La sala que ha sido creada.
-     */
-    private void notificarNuevaSala(Sala sala) {
-        Evento evento = new Evento("NUEVA_SALA");
-        evento.agregarDato("sala", sala);
-        server.enviarEvento(evento);
-    }
+    
 
     private static void CrearElJugadorFinal(String nombreJugador, int socketNumero) {
         try (Socket socket = new Socket("localhost", socketNumero); ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream()); ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {

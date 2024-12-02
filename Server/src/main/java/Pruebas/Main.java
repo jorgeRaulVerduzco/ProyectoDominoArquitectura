@@ -25,7 +25,7 @@ public class Main {
             ServerComunicacion servercito = new ServerComunicacion(server);
             
             
-            Socket cliente = new Socket("localhost", 7680);
+            Socket cliente = new Socket("localhost", 51114);
             
             // Registrar jugador
             Evento eventoRegistro = new Evento("REGISTRO_USUARIO");

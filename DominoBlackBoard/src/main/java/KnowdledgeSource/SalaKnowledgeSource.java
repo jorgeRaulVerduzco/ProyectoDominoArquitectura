@@ -115,7 +115,7 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
         // Notificar a todos los clientes sobre la nueva sala
         Evento eventoNuevaSala = new Evento("NUEVA_SALA");
         eventoNuevaSala.agregarDato("sala", nuevaSala);
-        server.enviarEvento(eventoNuevaSala);
+        blackboard.respuestaFuenteC(cliente, respuesta);
  System.out.println("Sala creada en el servidor. Salas disponibles: " 
         + blackboard.getSalasDisponibles().size());
     }
@@ -173,7 +173,7 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
             Evento respuesta = new Evento("JUGADOR_ABANDONO");
             respuesta.agregarDato("jugador", jugador);
             respuesta.agregarDato("sala", sala);
-            server.enviarEvento(respuesta);
+            blackboard.respuestaFuenteC(cliente, respuesta);
         }
     }
 
@@ -217,6 +217,6 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
         Evento eventoInicio = new Evento("INICIAR_PARTIDA");
         eventoInicio.agregarDato("partida", partida);
         eventoInicio.agregarDato("sala", sala);
-        server.enviarEvento(eventoInicio);
+//        server.enviarEvento(eventoInicio);
     }
 }

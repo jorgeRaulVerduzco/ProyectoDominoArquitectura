@@ -12,17 +12,20 @@ import KnowdledgeSource.SalaKnowledgeSource;
 import Server.Server;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author INEGI
  */
-public class Controller {
+public class Controller implements KnowdledgeSource {
 
     private BlackBoard blackboard;
     private List<KnowdledgeSource> knowledgeSources;
     private Server server;
+    private Map<String, Jugador> jugadores;
 
     /**
      * Constructor de la clase Controller. Inicializa la pizarra, las fuentes de
@@ -32,46 +35,18 @@ public class Controller {
      * @param server El servidor que enviará los eventos.
      */
     public Controller(Server server) {
-        this.blackboard = new BlackBoard();
+        this.jugadores = new HashMap<>();
+        this.blackboard = new BlackBoard(server);
         this.knowledgeSources = new ArrayList<>();
         this.server = server;
-        this.blackboard.setController(this);
-        registrarKnowledgeSources();
+        
     }
 
     /**
      * Registra las fuentes de conocimiento que procesarán los eventos. En este
      * caso, se registra una fuente de conocimiento relacionada con las salas.
      */
-    private void registrarKnowledgeSources() {
-        knowledgeSources.add(new SalaKnowledgeSource(blackboard, server));
-
-    }
-
-    /**
-     * Procesa un evento que llega desde un cliente. Se verifica qué fuente de
-     * conocimiento puede procesar el evento, y se delega la tarea de procesarlo
-     * a esa fuente de conocimiento.
-     *
-     * @param cliente El cliente que envió el evento.
-     * @param evento El evento que se debe procesar.
-     */
-    public void procesarEvento(Socket cliente, Evento evento) {
-       System.out.println("Procesando evento: " + evento.getTipo());
-        boolean procesado = false;
-        
-        for (KnowdledgeSource ks : knowledgeSources) {
-            if (ks.puedeProcesar(evento)) {
-                ks.procesarEvento(cliente, evento);
-                procesado = true;
-                break;
-            }
-        }
-        
-        if (!procesado) {
-            System.out.println("Advertencia: Ningún KnowledgeSource pudo procesar el evento: " + evento.getTipo());
-        }
-    }
+    
 
     /**
      * Procesa la desconexión de un jugador. Se notifica a todas las salas donde
@@ -98,15 +73,75 @@ public class Controller {
     }
 
     /**
-     * Notifica un cambio al servidor. Crea un evento con el tipo de cambio y lo
-     * envía al servidor para que se notifique a los clientes.
+ * Notifica un cambio al servidor. Crea un evento con el tipo de cambio y lo
+ * envía al servidor para que se notifique a los clientes.
+ *
+ * @param tipoEvento El tipo de evento que describe el cambio.
+ */
+public void notificarCambio(String tipoEvento) {
+    System.out.println("Enviando mensaje a todos los clientes");
+    System.out.println("Tipo de evento es: " + tipoEvento);
+
+    // Convertir la lista de jugadores a un formato adecuado (por ejemplo, JSON o String)
+    String mensaje = tipoEvento; // Comienza con el tipo de evento
+
+    // Si el tipo de evento es 'REGISTRO_USUARIO', incluir la lista de jugadores
+    if (tipoEvento.equals("REGISTRO_USUARIO")) {
+        // Convertir la lista de jugadores a una representación de texto (por ejemplo, un String)
+        String listaJugadores = convertirListaDeJugadoresAString();
+
+        // Concatenar la lista de jugadores al mensaje
+        mensaje += ";" + listaJugadores;
+
+        // Agregar la lista de jugadores registrados al servidor
+        server.registrarJugadores(jugadores);  // Pasar la lista de jugadores de Blackboard al Server
+    }
+
+    // Enviar el mensaje a todos los clientes
+    server.enviarMensajeATodosLosClientes(mensaje);
+}
+
+private String convertirListaDeJugadoresAString() {
+    StringBuilder sb = new StringBuilder();
+
+    // Iterar sobre la lista de jugadores y agregar la información de cada uno al String
+    for (Jugador jugador : jugadores.values()) {
+        sb.append(jugador.getNombre()).append(":").append(jugador.getNombre()).append(",");
+    }
+
+    // Eliminar la última coma
+    if (sb.length() > 0) {
+        sb.deleteCharAt(sb.length() - 1);
+    }
+
+    return sb.toString();
+}
+
+
+
+    /**
+     * Implementación del método de la interfaz `KnowledgeSource` para que el
+     * controlador procese eventos finales generados en el `BlackBoard`.
      *
-     * @param tipoEvento El tipo de evento que describe el cambio.
-     * @param dato El dato relacionado con el evento.
+     * @param evento El evento que se debe procesar.
+     * @return 
      */
-    public void notificarCambio(String tipoEvento, Object dato) {
-        Evento notificacion = new Evento(tipoEvento);
-        notificacion.agregarDato("dato", dato);
-        server.enviarEvento(notificacion);
+    @Override
+    public boolean puedeProcesar(Evento evento) {
+        // Procesar solo eventos de tipo "RESULTADO"
+        return evento.getTipo().startsWith("");
+    }
+
+    /**
+     * Método que recibe eventos procesados desde el BlackBoard y los envía al servidor.
+     * 
+     * @param cliente El socket del cliente que ha generado el evento.
+     * @param evento El evento que ha sido procesado.
+     */
+    @Override
+    public void procesarEvento(Socket cliente, Evento evento) {
+        // Notificar al servidor sobre el resultado
+        System.out.println("Notificando resultado al servidor: " + evento.getTipo());
+        server.enviarEvento(evento, cliente);
     }
 }
