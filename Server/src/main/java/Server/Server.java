@@ -111,6 +111,7 @@ public class Server {
             String json = ConversorJSON.convertirSalasAJson(salasActivas);
             Files.write(Paths.get("salas.json"), json.getBytes());
             System.out.println("Salas guardadas exitosamente: " + salasActivas.size());
+
         } catch (IOException e) {
             System.err.println("Error al guardar las salas: " + e.getMessage());
         }
@@ -225,10 +226,14 @@ public class Server {
 
     public void agregarSala(Sala sala, Socket socket) {
         gestorSalas.agregarSala(sala);
-        Evento evento = new Evento("NUEVA_SALA");
+        Evento evento = new Evento("CREAR_SALA");
         evento.agregarDato("sala", sala);
-        enviarEvento(evento, socket);
+        System.out.println("PARA CALARLE AGREGAR SALA");
+        //enviarEvento(evento, socket);
+        Controller controller = new Controller(this);
+        blackBoard.setController(controller);
 
+        blackBoard.enviarEventoBlackBoard(socket, evento);
         // Guardar salas después de agregar
         guardarSalas();
     }

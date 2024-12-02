@@ -108,12 +108,14 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
         System.out.println("Sala creada en el servidor con ID: " + nuevaSala.getId());
         System.out.println("Cantidad de jugadores: " + nuevaSala.getCantJugadores());
         System.out.println("Número de fichas: " + nuevaSala.getNumeroFichas());
-        Evento respuesta = new Evento("SALA_CREADA");
+        Evento respuesta = new Evento("CREAR_SALA");
         respuesta.agregarDato("sala", nuevaSala);
+        System.out.println("SE ENVIA MENSAJE A CLIENTE");
         server.enviarMensajeACliente(cliente, respuesta);
-
+        System.out.println("SE ENVIA EL EVENTO");
+server.enviarEvento(evento, cliente);
         // Notificar a todos los clientes sobre la nueva sala
-        Evento eventoNuevaSala = new Evento("NUEVA_SALA");
+        Evento eventoNuevaSala = new Evento("CREAR_SALA");
         eventoNuevaSala.agregarDato("sala", nuevaSala);
         blackboard.respuestaFuenteC(cliente, respuesta);
  System.out.println("Sala creada en el servidor. Salas disponibles: " 

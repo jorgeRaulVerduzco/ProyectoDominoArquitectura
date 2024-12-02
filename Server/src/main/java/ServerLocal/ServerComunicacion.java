@@ -162,29 +162,25 @@ public class ServerComunicacion {
 
             ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
 
-            // Crear y configurar nueva sala
-            Sala nuevaSala = new Sala();
-            nuevaSala.setCantJugadores(numJugadores);
-            nuevaSala.setNumeroFichas(numFichas);
-            nuevaSala.setEstado("ESPERANDO");
-            nuevaSala.getJugador().add(creador);
-            server.agregarSala(nuevaSala,cliente);
+        // Crear y configurar nueva sala
+        Sala nuevaSala = new Sala();
+        nuevaSala.setCantJugadores(numJugadores);
+        nuevaSala.setNumeroFichas(numFichas);
+        nuevaSala.setEstado("ESPERANDO");
+        nuevaSala.getJugador().add(creador);
 
-            // Agregar sala al servicio
-            servicioControlJuego.agregarSala(nuevaSala);
+        servicioControlJuego.agregarSala(nuevaSala);
+        server.agregarSala(nuevaSala, cliente);
 
-            System.out.println("Servidor: Sala creada exitosamente:");
-            System.out.println("  - ID: " + nuevaSala.getId());
-            System.out.println("  - Jugadores: " + nuevaSala.getJugador().size() + "/" + nuevaSala.getCantJugadores());
-            System.out.println("  - Fichas: " + nuevaSala.getNumeroFichas());
+        // Notificar a todos los clientes
+        Evento respuestaSala = new Evento("CREAR_SALA");
+        respuestaSala.agregarDato("sala", nuevaSala);
+        server.enviarMensajeATodosLosClientes(respuestaSala);
 
-            // Verificar estado del sistema
-            verificarEstadoSalas();
-
-        } catch (Exception e) {
-            System.err.println("Error crítico creando sala: " + e.getMessage());
-            e.printStackTrace();
-        }
+    } catch (Exception e) {
+        System.err.println("Error creando sala: " + e.getMessage());
+        e.printStackTrace();
+    }
     }
 
     private void verificarEstadoSalas() {
