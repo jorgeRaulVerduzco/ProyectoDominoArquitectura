@@ -72,7 +72,7 @@ public class BlackBoard {
 
     // Métodos específicos usando el genérico anterior
     public void actualizarEstadoSala(String salaId, Sala sala) {
-        actualizarEstadoEntidad(salas, salaId, sala, "SALA");
+        actualizarEstadoEntidad(salas, salaId, sala, "sala");
     }
 
     public void actualizarEstadoJugador(String jugadorId, Jugador jugador) {

@@ -6,6 +6,7 @@ package Controller;
 
 import BlackBoard.BlackBoard;
 import Dominio.Jugador;
+import Dominio.Sala;
 import EventoJuego.Evento;
 import KnowdledgeSource.KnowdledgeSource;
 import KnowdledgeSource.SalaKnowledgeSource;
@@ -26,6 +27,7 @@ public class Controller implements KnowdledgeSource {
     private List<KnowdledgeSource> knowledgeSources;
     private Server server;
     private Map<String, Jugador> jugadores;
+    private Map<String, Sala> salas;
 
     /**
      * Constructor de la clase Controller. Inicializa la pizarra, las fuentes de
@@ -39,7 +41,7 @@ public class Controller implements KnowdledgeSource {
         this.blackboard = new BlackBoard(server);
         this.knowledgeSources = new ArrayList<>();
         this.server = server;
-        
+        salas= new HashMap<>();
     }
 
     /**
@@ -95,6 +97,10 @@ public void notificarCambio(String tipoEvento) {
 
         // Agregar la lista de jugadores registrados al servidor
         server.registrarJugadores(jugadores);  // Pasar la lista de jugadores de Blackboard al Server
+    }
+    else if(tipoEvento.equals("CREAR_SALA")){
+        //eSTE PUEDE QUE ESTE MAL
+        server.registrarSalas(salas);
     }
 
     // Enviar el mensaje a todos los clientes

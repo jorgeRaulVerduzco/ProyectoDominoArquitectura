@@ -106,6 +106,7 @@ public class CrearSalaModel {
             evento.agregarDato("jugador", jugadorActual);
             ServerComunicacion servercito = new ServerComunicacion(server);
             System.out.println("[DEBUG] Enviando evento CREAR_SALA al servidor");
+            System.out.println("Evento datos: " + evento.getDatos());
 
             Socket socketCliente = server.getSocketJugador(jugadorActual);
             if (socketCliente == null || !socketCliente.isConnected()) {

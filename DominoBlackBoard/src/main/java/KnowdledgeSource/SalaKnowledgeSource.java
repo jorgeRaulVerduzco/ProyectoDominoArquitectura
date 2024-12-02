@@ -93,9 +93,34 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
      * sala.
      */
     private void crearNuevaSala(Socket cliente, Evento evento) {
-        int numJugadores = (int) evento.obtenerDato("numJugadores");
-        int numFichas = (int) evento.obtenerDato("numFichas");
-        Jugador creador = (Jugador) evento.obtenerDato("jugador");
+       try {
+        // Validate event data thoroughly
+        if (evento == null || evento.getDatos() == null) {
+            System.err.println("Error: Evento o datos nulos");
+            return;
+        }
+
+        // Safely extract and validate each required parameter
+        Integer numJugadoresObj = (Integer) evento.obtenerDato("numJugadores");
+        Integer numFichasObj = (Integer) evento.obtenerDato("numFichas");
+        Jugador jugadorObj = (Jugador) evento.obtenerDato("jugador");
+
+        if (!(numJugadoresObj instanceof Integer) || 
+            !(numFichasObj instanceof Integer) || 
+            !(jugadorObj instanceof Jugador)) {
+            System.err.println("Error: Tipos de datos inválidos");
+            return;
+        }
+
+        int numJugadores = numJugadoresObj;
+        int numFichas = numFichasObj;
+        Jugador creador = (Jugador) jugadorObj;
+
+        // Existing validation
+        if (numJugadores <= 0 || numFichas <= 0 || creador == null) {
+            System.err.println("Error: Datos inválidos para crear sala");
+            return;
+        }
 
         Sala nuevaSala = new Sala();
         nuevaSala.setId(UUID.randomUUID().toString());
@@ -105,21 +130,19 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
         nuevaSala.getJugador().add(creador);
 
         blackboard.actualizarEstadoSala(nuevaSala.getId(), nuevaSala);
-        System.out.println("Sala creada en el servidor con ID: " + nuevaSala.getId());
-        System.out.println("Cantidad de jugadores: " + nuevaSala.getCantJugadores());
-        System.out.println("Número de fichas: " + nuevaSala.getNumeroFichas());
+        
         Evento respuesta = new Evento("CREAR_SALA");
         respuesta.agregarDato("sala", nuevaSala);
-        System.out.println("SE ENVIA MENSAJE A CLIENTE");
+        
         server.enviarMensajeACliente(cliente, respuesta);
-        System.out.println("SE ENVIA EL EVENTO");
-server.enviarEvento(evento, cliente);
-        // Notificar a todos los clientes sobre la nueva sala
-        Evento eventoNuevaSala = new Evento("CREAR_SALA");
-        eventoNuevaSala.agregarDato("sala", nuevaSala);
-        blackboard.respuestaFuenteC(cliente, respuesta);
- System.out.println("Sala creada en el servidor. Salas disponibles: " 
-        + blackboard.getSalasDisponibles().size());
+           System.out.println("ENVIAR EVENTO");
+        server.enviarEvento(evento, cliente);
+        
+        System.out.println("Sala creada con ID: " + nuevaSala.getId());
+    } catch (Exception e) {
+        System.err.println("Error crítico al crear sala: " + e.getMessage());
+        e.printStackTrace();
+    }
     }
 
     /**

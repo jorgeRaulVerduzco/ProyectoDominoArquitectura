@@ -50,35 +50,32 @@ public class ServerComunicacion {
 
     public void registrarUsuario(Socket cliente, Evento eventoRegistro) {
         System.out.println("SERVER C :LLegue registrarUsuario");
-    try {
-        System.out.println("SERVER C : pase el try");
-        // Extraer el jugador del evento
-        Jugador jugador = (Jugador) eventoRegistro.obtenerDato("jugador");
- System.out.println("SERVER COMUNICACION: Socket del jugador actual"+cliente);
-        // Depuración: Verificar que el jugador está correctamente extraído
-        System.out.println("Jugador extraído: " + jugador);
+        try {
+            System.out.println("SERVER C : pase el try");
+            // Extraer el jugador del evento
+            Jugador jugador = (Jugador) eventoRegistro.obtenerDato("jugador");
+            System.out.println("SERVER COMUNICACION: Socket del jugador actual" + cliente);
+            // Depuración: Verificar que el jugador está correctamente extraído
+            System.out.println("Jugador extraído: " + jugador);
 
-        // Verificar si el nombre de usuario ya existe
-  
+            // Verificar si el nombre de usuario ya existe
+            // Crear el jugador en el sistema
+            servicioC.crearJugador(jugador);
+            System.out.println("[REGISTRO] Jugador creado en el sistema: " + jugador);
 
-        // Crear el jugador en el sistema
-        servicioC.crearJugador(jugador);
-        System.out.println("[REGISTRO] Jugador creado en el sistema: " + jugador);
+            // Registrar el jugador en el servidor
+            server.registrarJugador(cliente, jugador);
+            System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
 
-        // Registrar el jugador en el servidor
-        server.registrarJugador(cliente, jugador);
-        System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
+        } catch (Exception e) {
+            // Manejar cualquier error durante el registro
+            System.err.println("Error al registrar usuario: " + e.getMessage());
+            e.printStackTrace();  // Para obtener más información sobre el error
 
-    } catch (Exception e) {
-        // Manejar cualquier error durante el registro
-        System.err.println("Error al registrar usuario: " + e.getMessage());
-        e.printStackTrace();  // Para obtener más información sobre el error
-
-        // Enviar un evento de error al cliente
-        enviarErrorRegistro(cliente, "Error interno al registrar usuario");
+            // Enviar un evento de error al cliente
+            enviarErrorRegistro(cliente, "Error interno al registrar usuario");
+        }
     }
-}
-
 
     private void enviarErrorRegistro(Socket cliente, String mensaje) {
         try {
@@ -149,38 +146,47 @@ public class ServerComunicacion {
                 System.err.println("Error: Datos incompletos para crear sala");
                 return;
             }
+            Object numJugadoresObj = evento.obtenerDato("numJugadores");
+            Object numFichasObj = evento.obtenerDato("numFichas");
+            Object jugadorObj = evento.obtenerDato("jugador");
 
-            int numJugadores = (int) evento.obtenerDato("numJugadores");
-            int numFichas = (int) evento.obtenerDato("numFichas");
-            Jugador creador = (Jugador) evento.obtenerDato("jugador");
-
-            // Validaciones adicionales
-            if (numJugadores <= 0 || numFichas <= 0 || creador == null) {
-                System.err.println("Error: Datos inválidos para crear sala");
+            if (numJugadoresObj == null) {
+                System.err.println("Error: numJugadores is null");
+                return;
+            }
+            if (numFichasObj == null) {
+                System.err.println("Error: numFichas is null");
+                return;
+            }
+            if (jugadorObj == null) {
+                System.err.println("Error: jugador is null");
                 return;
             }
 
+            int numJugadores = (int) numJugadoresObj;
+            int numFichas = (int) numFichasObj;
+            Jugador creador = (Jugador) jugadorObj;
             ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
 
-        // Crear y configurar nueva sala
-        Sala nuevaSala = new Sala();
-        nuevaSala.setCantJugadores(numJugadores);
-        nuevaSala.setNumeroFichas(numFichas);
-        nuevaSala.setEstado("ESPERANDO");
-        nuevaSala.getJugador().add(creador);
+            // Crear y configurar nueva sala
+            Sala nuevaSala = new Sala();
+            nuevaSala.setCantJugadores(numJugadores);
+            nuevaSala.setNumeroFichas(numFichas);
+            nuevaSala.setEstado("ESPERANDO");
+            nuevaSala.getJugador().add(creador);
 
-        servicioControlJuego.agregarSala(nuevaSala);
-        server.agregarSala(nuevaSala, cliente);
+            servicioControlJuego.agregarSala(nuevaSala);
+            server.agregarSala(nuevaSala, cliente);
 
-        // Notificar a todos los clientes
-        Evento respuestaSala = new Evento("CREAR_SALA");
-        respuestaSala.agregarDato("sala", nuevaSala);
-        server.enviarMensajeATodosLosClientes(respuestaSala);
+            // Notificar a todos los clientes
+            Evento respuestaSala = new Evento("CREAR_SALA");
+            respuestaSala.agregarDato("sala", nuevaSala);
+            server.enviarMensajeATodosLosClientes(respuestaSala);
 
-    } catch (Exception e) {
-        System.err.println("Error creando sala: " + e.getMessage());
-        e.printStackTrace();
-    }
+        } catch (Exception e) {
+            System.err.println("Error creando sala: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void verificarEstadoSalas() {
@@ -241,7 +247,7 @@ public class ServerComunicacion {
                 server.enviarMensajeACliente(cliente, respuesta);
             } else {
                 // If no specific client, send to all connected clients
-                server.enviarEvento(respuesta,cliente);
+                server.enviarEvento(respuesta, cliente);
             }
 
             // Log the rooms for debugging
@@ -363,8 +369,6 @@ public class ServerComunicacion {
             e.printStackTrace();
         }
     }
-
-    
 
     private static void CrearElJugadorFinal(String nombreJugador, int socketNumero) {
         try (Socket socket = new Socket("localhost", socketNumero); ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream()); ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {

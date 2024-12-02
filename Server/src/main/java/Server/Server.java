@@ -61,7 +61,7 @@ public class Server {
         this.clientes = new CopyOnWriteArrayList<>();
         this.outputStreams = new ConcurrentHashMap<>();
         this.jugadoresPorSocket = new ConcurrentHashMap<>();
-
+salas=  new CopyOnWriteArrayList<>();
         this.blackBoard = new BlackBoard(this);
         this.serverComunicacion = new ServerComunicacion(this);
         this.running = false;
@@ -89,6 +89,13 @@ public class Server {
 
         // Imprimir el número de jugadores registrados
         System.out.println("Jugadores registrados en el servidor: " + jugadoresRegistrados.size());
+    }
+
+      public void registrarSalas(Map<String, Sala> salasBlackBoard) {
+        System.out.println("SERBER  : Socket del jugador actual" + salasBlackBoard);
+        salas.addAll(salasBlackBoard.values());
+
+        System.out.println("salas registrados en el servidor: " + salas.size());
     }
 
     public static List<Sala> cargarSalas() {
@@ -228,6 +235,9 @@ public class Server {
         gestorSalas.agregarSala(sala);
         Evento evento = new Evento("CREAR_SALA");
         evento.agregarDato("sala", sala);
+        System.out.println("DATOS DEL EVENTO DE AGREGAR SALAS");
+        System.out.println(evento.getDatos());
+        System.out.println("SI SE GUARDAN LOS DATOS DEL EVENTO");
         System.out.println("PARA CALARLE AGREGAR SALA");
         //enviarEvento(evento, socket);
         Controller controller = new Controller(this);
