@@ -144,46 +144,24 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
      * sala.
      */
     private void unirseASala(Socket cliente, Evento evento) { 
-    try {
+     try {
         // Obtener datos del evento
-        String salaId = (String) evento.obtenerDato("id"); // Cambié la clave a "id"
+        Sala sala = (Sala) evento.obtenerDato("sala");
         Jugador jugador = (Jugador) evento.obtenerDato("jugador");
 
         // Validar datos del evento
-        if (salaId == null || salaId.isEmpty()) {
+        if (sala == null || sala.getId() == null || sala.getId().isEmpty()) {
             throw new IllegalArgumentException("El ID de la sala no puede ser nulo o vacío.");
         }
         if (jugador == null) {
             throw new IllegalArgumentException("El jugador no puede ser nulo.");
         }
-
-        // Obtener la sala desde el Blackboard
-        Sala sala = blackboard.getSala(salaId);
-        if (sala == null) {
-            throw new IllegalStateException("La sala con ID " + salaId + " no existe.");
-        }
-
-        // Validar si la sala tiene espacio disponible
-        if (sala.getJugador().size() >= sala.getCantJugadores()) {
-            throw new IllegalStateException("La sala con ID " + salaId + " está llena.");
-        }
-
-        // Agregar al jugador a la sala
-        sala.getJugador().add(jugador);
-        blackboard.actualizarEstadoSala(salaId, sala);
-
-        // Verificar si la sala está completa para iniciar la partida
-        if (sala.getJugador().size() == sala.getCantJugadores()) {
-            iniciarPartida(sala);
-        }
-
         // Enviar evento de respuesta
         Evento respuesta = new Evento("UNIR_SALA");
         respuesta.agregarDato("jugador", jugador);
         respuesta.agregarDato("sala", sala);
-        System.out.println("RESpUESTA DE LA FUENTE DE CONOCIMIENTO DE UNIRSE SALA: "+respuesta.getDatos());
-        
-        blackboard.respuestaFuenteC(cliente,respuesta);
+         System.out.println("-----------------------------------------IMPORTANTE: "+respuesta.getDatos());
+        blackboard.respuestaFuenteC(cliente, respuesta);
 
     } catch (Exception e) {
         System.err.println("Error en unirseASala: " + e.getMessage());

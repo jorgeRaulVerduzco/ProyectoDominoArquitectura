@@ -8,10 +8,16 @@ import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
 import Negocio.ServicioControlJuego;
+import Server.ConversorJSON;
 import Server.Server;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -21,10 +27,10 @@ import java.util.UUID;
  * @author INEGI
  */
 public class ServerComunicacion {
-    
+
     ServicioControlJuego servicioC;
     private Server server;
-    
+
     public ServerComunicacion(Server server) {
         this.server = server;
         servicioC = new ServicioControlJuego();
@@ -43,12 +49,12 @@ public class ServerComunicacion {
             // Enviar el evento a todos los clientes
             server.enviarMensajeATodosLosClientes(respuesta);
             System.out.println("Salas enviadas correctamente: " + salasServidor.size());
-            
+
         } catch (Exception e) {
             System.err.println("Error al enviar salas disponibles: " + e.getMessage());
         }
     }
-    
+
     public void registrarUsuario(Socket cliente, Evento eventoRegistro) {
         System.out.println("SERVER C :LLegue registrarUsuario");
         try {
@@ -67,7 +73,7 @@ public class ServerComunicacion {
             // Registrar el jugador en el servidor
             server.registrarJugador(cliente, jugador);
             System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
-            
+
         } catch (Exception e) {
             // Manejar cualquier error durante el registro
             System.err.println("Error al registrar usuario: " + e.getMessage());
@@ -77,7 +83,7 @@ public class ServerComunicacion {
             enviarErrorRegistro(cliente, "Error interno al registrar usuario");
         }
     }
-    
+
     private void enviarErrorRegistro(Socket cliente, String mensaje) {
         try {
             Evento errorEvento = new Evento("REGISTRO_USUARIO");
@@ -118,9 +124,9 @@ public class ServerComunicacion {
                     break;
                 case "REGISTRO_USUARIO":
                     registrarUsuario(cliente, evento);
-                    
+
                     break;
-                
+
                 default:
                     System.out.println("Evento no reconocido: " + evento.getTipo());
             }
@@ -179,10 +185,10 @@ public class ServerComunicacion {
             Evento respuestaSala = new Evento("CREAR_SALA");
             respuestaSala.agregarDato("sala", nuevaSala);
             // SALE QUE NO TIENE ID
-            System.out.println("RESPUESTA SALA"+ respuestaSala);
+            System.out.println("RESPUESTA SALA" + respuestaSala);
             server.agregarSala(nuevaSala, cliente);
             System.out.println("[DEBUG] Sala creada correctamente con ID: " + nuevaSala.getId());
-            
+
         } catch (Exception e) {
             System.err.println("[ERROR] Error creando sala: " + e.getMessage());
             e.printStackTrace();
@@ -213,14 +219,14 @@ public class ServerComunicacion {
                 return (Jugador) lista.get(0);
             }
         }
-        
+
         System.err.println("[ERROR] Jugador inválido: " + value);
         return null;
     }
-    
+
     private void verificarEstadoSalas() {
         ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
-        
+
         List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
         System.out.println("Estado actual del sistema:");
         System.out.println("Total de salas: " + salasDisponibles.size());
@@ -264,7 +270,7 @@ public class ServerComunicacion {
 
             // Get available rooms from the server
             List<Sala> salasServidor = servicioControlJuego.getSalasDisponibles();
-            
+
             System.out.println("Salas disponibles: " + salasServidor.size());
 
             // Create an event with available rooms
@@ -297,7 +303,7 @@ public class ServerComunicacion {
     public List<Sala> convertirSalasDesdeEvento(Evento evento) {
         List<Sala> salas = new ArrayList<>();
         Object datosSalas = evento.getDatos().get("salas");
-        
+
         if (datosSalas instanceof List<?>) {
             for (Object obj : (List<?>) datosSalas) {
                 if (obj instanceof Sala) {
@@ -309,7 +315,7 @@ public class ServerComunicacion {
         } else {
             System.err.println("Error: 'salas' no es una lista.");
         }
-        
+
         return salas;
     }
 
@@ -322,46 +328,64 @@ public class ServerComunicacion {
      * que se va a unir.
      */
     private void unirseASala(Socket cliente, Evento evento) {
-    Sala sala = (Sala) evento.obtenerDato("sala");
-        System.out.println("UNIRSE SALA METODO : SALA ES:"+sala); 
-    Jugador jugador = (Jugador) evento.obtenerDato("jugador");
-    System.out.println("UNIRSE SALA METODO : JUGADOR ES:"+jugador); 
-    
-    // Verificar que la sala no sea null
-    if (sala == null) {
-        System.err.println("Error: Sala no válida");
-        return;
-    }
+        Sala sala = (Sala) evento.obtenerDato("sala");
+        System.out.println("UNIRSE SALA METODO : SALA ES:" + sala);
+        Jugador jugador = (Jugador) evento.obtenerDato("jugador");
+        System.out.println("UNIRSE SALA METODO : JUGADOR ES:" + jugador);
 
-    ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
-    
-    // Verificar que el jugador no sea null
-    if (jugador == null) {
-        System.err.println("Error: Jugador no válido");
-        return;
-    }
+        // Verificar que la sala no sea null
+        if (sala == null) {
+            System.err.println("Error: Sala no válida");
+            return;
+        }
 
-    if (servicioControlJuego.agregarJugador(sala, jugador)) {
+        // Verificar que el jugador no sea null
+        if (jugador == null) {
+            System.err.println("Error: Jugador no válido");
+            return;
+        }
+
         Evento respuesta = new Evento("UNIR_SALA");
         respuesta.agregarDato("jugador", jugador);
         respuesta.agregarDato("sala", sala);
-        
-        System.out.println(" SERVER COMUNICACION: CLUENTE ES:"+cliente);
-            Socket socketJugador =  cliente;
-            
-            System.out.println("SERVER COMUNICACION : "+jugador  +"Se esta enviadno"+ respuesta.getDatos());
-            if (socketJugador != null) {
-                server.unirseSala(respuesta, socketJugador);
-            }
-       
+
+        System.out.println(" SERVER COMUNICACION: CLUENTE ES:" + cliente);
+        Socket socketJugador = cliente;
+
+        System.out.println("SERVER COMUNICACION : " + jugador + "Se esta enviadno" + respuesta.getDatos());
+        if (socketJugador != null) {
+            server.unirseSala(respuesta, socketJugador);
+        }
 
         // Si la sala está llena, iniciar la partida
         if (sala.getJugador().size() == sala.getCantJugadores()) {
             iniciarPartida(sala);
         }
     }
-}
 
+    public Sala obtenerSalaPorId(String id) {
+        try {
+            Path salasPath = Paths.get("salas_multijugador.json");
+            if (Files.exists(salasPath)) {
+                // Leer el contenido del archivo JSON
+                String json = new String(Files.readAllBytes(salasPath), StandardCharsets.UTF_8);
+
+                // Convertir el JSON a lista de salas
+                List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(json);
+
+                // Buscar la sala por ID
+                return salasCargadas.stream()
+                        .filter(sala -> id.equals(sala.getId()))
+                        .findFirst()
+                        .orElse(null);
+            }
+        } catch (IOException e) {
+            System.err.println("Error al buscar sala por ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 
     /**
      * Inicia una nueva partida cuando se cumplen las condiciones necesarias
@@ -391,18 +415,18 @@ public class ServerComunicacion {
         System.out.println("Error en la comunicación");
         server.manejarErrorComunicacion();
     }
-    
+
     private void responderSolicitudSalas(Socket clienteSocket) {
         try {
             ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
-            
+
             List<Sala> salasDisponibles = servicioControlJuego.getSalasDisponibles();
             System.out.println("Servidor: Preparando respuesta de salas disponibles");
 
             // Crear evento de respuesta
             Evento respuesta = new Evento("RESPUESTA_SALAS");
             respuesta.agregarDato("salas", salasDisponibles);
-            
+
             System.out.println("Servidor: Enviando "
                     + (salasDisponibles != null ? salasDisponibles.size() : "0")
                     + " salas al cliente");
@@ -410,16 +434,16 @@ public class ServerComunicacion {
             // Enviar la respuesta
             Evento enviarEventoACliente = new Evento("SOLICITAR_SALAS");
             enviarEventoACliente.equals(respuesta);
-            
+
         } catch (Exception e) {
             System.err.println("Servidor: Error al responder solicitud de salas: " + e.getMessage());
             e.printStackTrace();
         }
     }
-    
+
     private static void CrearElJugadorFinal(String nombreJugador, int socketNumero) {
         try (Socket socket = new Socket("localhost", socketNumero); ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream()); ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
-            
+
             System.out.println("[CLIENTE] Conectado al servidor.");
 
             // Enviar un evento de registro de usuario
@@ -427,7 +451,7 @@ public class ServerComunicacion {
             eventoRegistro.agregarDato("jugador", new Jugador(nombreJugador));
             out.writeObject(eventoRegistro);
             out.flush();
-            
+
             System.out.println("[CLIENTE] Evento de registro enviado: " + eventoRegistro);
 
             // Leer la respuesta del servidor

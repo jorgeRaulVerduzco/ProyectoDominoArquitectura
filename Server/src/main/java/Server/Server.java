@@ -915,4 +915,35 @@ public class Server {
         Evento solicitud = new Evento("RESPUESTA_SALAS");
         enviarEvento(solicitud, socket);
     }
+    
+    public void agregarSocketAJugador(Socket socket, Jugador jugador) {
+    // Verificación de parámetros nulos
+    if (socket == null || jugador == null) {
+        System.err.println("[ERROR] Socket o jugador nulo");
+        return;
+    }
+
+    try {
+        // Sincronización para operaciones concurrentes seguras
+        synchronized (jugadoresPorSocket) {
+            // Añadir el socket al mapa de jugadores por socket
+            jugadoresPorSocket.put(socket, jugador);
+            
+            // Opcional: añadir a la lista de clientes si no está ya presente
+            if (!clientes.contains(socket)) {
+                clientes.add(socket);
+            }
+
+            // Configurar stream de salida para este socket
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            outputStreams.put(socket, out);
+
+            System.out.println("[REGISTRO] Socket agregado para jugador: " + jugador.getNombre());
+        }
+
+
+    } catch (IOException e) {
+        System.err.println("[ERROR] No se pudo agregar socket para jugador " + jugador.getNombre() + ": " + e.getMessage());
+    }
+}
 }

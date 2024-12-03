@@ -43,9 +43,8 @@ public class UnirseAlaSalaModel {
         this.observers = new ArrayList<>();
         this.servicioControlJuego = ServicioControlJuego.getInstance();  // Usar la instancia única
     }
-    
-    
-        public void setJugadorActual(Jugador jugador) {
+
+    public void setJugadorActual(Jugador jugador) {
         this.jugadorActual = jugador;
     }
 
@@ -93,7 +92,7 @@ public class UnirseAlaSalaModel {
 
         ServerComunicacion servercito = new ServerComunicacion(server);
         System.out.println("se ven al millon");
-        
+
         if (salasDisponibles != null) {
             System.out.println("UnirseAlaSalaModel: Salas recibidas. Total: " + salasDisponibles.size());
             for (Sala sala : server.obtenerSalasActivas()) {
@@ -145,8 +144,8 @@ public class UnirseAlaSalaModel {
             }
         }
     }
-    
-     public Jugador obtenerJugadorConectado() {
+
+    public Jugador obtenerJugadorConectado() {
         Jugador jugador = server.getJugadorConectado(); // Obtiene un solo jugador
         if (jugador != null) {
             System.out.println("Jugador conectado: " + jugador.getNombre());
@@ -165,28 +164,32 @@ public class UnirseAlaSalaModel {
      * @param jugador
      */
     public void unirseASala(String id, Jugador jugador) {
-    try {
-        jugador = obtenerJugadorConectado();
-        System.out.println("Jugador conectado es: " + jugador);
-        
-        Sala sala = servicioControlJuego.buscarSalaPorId(id); // Recupera la sala desde ServicioControlJuego
-        if (sala == null) {
-            System.out.println("Error: Sala con ID " + id + " no encontrada.");
-            return;
-        }
-        
-        int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
-        Socket socket = new Socket("localhost", puertoSocket);
-        System.out.println("Socket del jugador actual: " + puertoSocket);
-        
-        Evento evento = new Evento("UNIR_SALA");
-        evento.agregarDato("sala", sala); // Enviar el objeto completo de Sala
-        evento.agregarDato("jugador", jugador); // Enviar el objeto Jugador
-        serverComunicacion.procesarEvento(socket, evento); // Procesar el evento
-    } catch (IOException ex) {
-        Logger.getLogger(UnirseAlaSalaModel.class.getName()).log(Level.SEVERE, null, ex);
-    }
-}
+        try {
+            serverComunicacion = new ServerComunicacion(server);
 
+            jugador = obtenerJugadorConectado();
+            System.out.println("Jugador conectado es: " + jugador);
+
+            Sala sala = serverComunicacion.obtenerSalaPorId(id);
+            System.out.println("SALA :" + sala);
+            int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
+            Socket socket = new Socket("localhost", puertoSocket);
+            server.agregarSocketAJugador(socket, jugador);
+            System.out.println("Socket del jugador actual: " + puertoSocket);
+            // Verificar conexión del socket
+            Socket socketCliente = server.getSocketJugador(jugador);
+            if (socketCliente == null || !socketCliente.isConnected()) {
+                System.err.println("[ERROR] Socket no válido");
+                return;
+            }
+
+            Evento evento = new Evento("UNIR_SALA");
+            evento.agregarDato("sala", sala); // Enviar el objeto completo de Sala
+            evento.agregarDato("jugador", jugador); // Enviar el objeto Jugador
+            serverComunicacion.procesarEvento(socket, evento); // Procesar el evento
+        } catch (IOException ex) {
+            Logger.getLogger(UnirseAlaSalaModel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
 }
