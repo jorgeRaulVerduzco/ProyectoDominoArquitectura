@@ -1,8 +1,12 @@
 Server\ConversorJSON.class
+Server\ConversorJSON$2.class
 Pruebas\PruebaDeConexion.class
 Server\Server$1.class
 Server\GestorSalas.class
+Server\ConversorJSON$3.class
 Server\Server.class
+Server\ConversorJSON$1.class
 Pruebas\IniciarServer.class
+Server\ClienteInfo.class
 ServerLocal\ServerComunicacion.class
 Pruebas\Main.class

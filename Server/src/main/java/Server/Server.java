@@ -4,27 +4,24 @@
  */
 package Server;
 
+import BlackBoard.BlackBoard;
 import Controller.Controller;
 import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
-import Negocio.ServicioControlJuego;
 import ServerLocal.ServerComunicacion;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +39,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Server {
 
-   private GestorSalas gestorSalas;
+    private GestorSalas gestorSalas;
     private ServerSocket servidor;
     private List<Socket> clientes;
     private Map<Socket, ObjectOutputStream> outputStreams;
     private Map<Socket, Jugador> jugadoresPorSocket;
-    private Controller blackboardController;
+    private BlackBoard blackBoard;
     private ServerComunicacion serverComunicacion;
     private volatile boolean running;
     private boolean isRunning;
@@ -64,7 +61,8 @@ public class Server {
         this.clientes = new CopyOnWriteArrayList<>();
         this.outputStreams = new ConcurrentHashMap<>();
         this.jugadoresPorSocket = new ConcurrentHashMap<>();
-        this.blackboardController = new Controller(this);
+salas=  new CopyOnWriteArrayList<>();
+        this.blackBoard = new BlackBoard(this);
         this.serverComunicacion = new ServerComunicacion(this);
         this.running = false;
         this.isConnected = false;
@@ -72,39 +70,60 @@ public class Server {
         this.jugadoresRegistrados = new CopyOnWriteArrayList<>();
         // Initialize thread pool with core and max thread counts
         this.executorService = Executors.newCachedThreadPool(new ThreadFactory() {
-        private final AtomicInteger threadCounter = new AtomicInteger(1);
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r, "ServerThread-" + threadCounter.getAndIncrement());
-            thread.setDaemon(true);
-            return thread;
-        }
-    });
-    }
-public static List<Sala> cargarSalas() {
-  try {
-        Path path = Paths.get("salas.json");
-        if (Files.exists(path)) {
-            String json = new String(Files.readAllBytes(path));
-            List<Sala> salas = ConversorJSON.convertirJsonASalas(json);
-            System.out.println("Salas cargadas correctamente desde salas.json: " + salas.size());
-            return salas;
-        }
-    } catch (IOException e) {
-        System.err.println("Error al cargar las salas: " + e.getMessage());
-    }
-    return new CopyOnWriteArrayList<>(); // Devuelve una lista vacía si no hay archivo o si ocurre un error
-}
+            private final AtomicInteger threadCounter = new AtomicInteger(1);
 
-public void guardarSalas() {
-    try {
-        String json = ConversorJSON.convertirSalasAJson(salasActivas);
-        Files.write(Paths.get("salas.json"), json.getBytes());
-        System.out.println("Salas guardadas exitosamente: " + salasActivas.size());
-    } catch (IOException e) {
-        System.err.println("Error al guardar las salas: " + e.getMessage());
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r, "ServerThread-" + threadCounter.getAndIncrement());
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
     }
-}
+
+    // Método para registrar jugadores en el servidor desde BlackBoard
+    public void registrarJugadores(Map<String, Jugador> jugadoresBlackBoard) {
+        System.out.println("SERBER  : Socket del jugador actual" + jugadoresBlackBoard);
+        // Agregar los jugadores de BlackBoard a la lista de jugadores del servidor
+        jugadoresRegistrados.addAll(jugadoresBlackBoard.values());
+
+        // Imprimir el número de jugadores registrados
+        System.out.println("Jugadores registrados en el servidor: " + jugadoresRegistrados.size());
+    }
+
+      public void registrarSalas(Map<String, Sala> salasBlackBoard) {
+        System.out.println("SERBER  : Socket del jugador actual" + salasBlackBoard);
+        salas.addAll(salasBlackBoard.values());
+
+        System.out.println("salas registrados en el servidor: " + salas.size());
+    }
+
+    public static List<Sala> cargarSalas() {
+        try {
+            Path path = Paths.get("salas.json");
+            if (Files.exists(path)) {
+                String json = new String(Files.readAllBytes(path));
+                List<Sala> salas = ConversorJSON.convertirJsonASalas(json);
+                System.out.println("Salas cargadas correctamente desde salas.json: " + salas.size());
+                return salas;
+            }
+        } catch (IOException e) {
+            System.err.println("Error al cargar las salas: " + e.getMessage());
+        }
+        return new CopyOnWriteArrayList<>(); // Devuelve una lista vacía si no hay archivo o si ocurre un error
+    }
+
+    public void guardarSalas() {
+        try {
+            String json = ConversorJSON.convertirSalasAJson(salasActivas);
+            Files.write(Paths.get("salas.json"), json.getBytes());
+            System.out.println("Salas guardadas exitosamente: " + salasActivas.size());
+
+        } catch (IOException e) {
+            System.err.println("Error al guardar las salas: " + e.getMessage());
+        }
+    }
+
     public void cerrarServidor() {
         try {
             // Detener el servidor
@@ -113,7 +132,7 @@ public void guardarSalas() {
 
             // Cerrar todos los sockets de clientes
             for (Socket socket : clientes) {
-                cerrarConexion(socket);
+//                cerrarConexion(socket);
             }
 
             // Cerrar el ServerSocket
@@ -134,7 +153,6 @@ public void guardarSalas() {
             System.err.println("Error cerrando el servidor: " + e.getMessage());
         }
     }
-
 
     public static synchronized List<Sala> getSalas() {
         return new ArrayList<>(salasActivas); // Devuelve una copia para evitar modificaciones externas
@@ -179,6 +197,10 @@ public void guardarSalas() {
         }
     }
 
+    public Map<Socket, Jugador> getJugadoresPorSocket() {
+        return jugadoresPorSocket;
+    }
+
     private void aceptarConexiones() {
         while (running) {
             try {
@@ -209,14 +231,21 @@ public void guardarSalas() {
         }
     }
 
-    public void agregarSala(Sala sala) {
-      gestorSalas.agregarSala(sala);
-    Evento evento = new Evento("NUEVA_SALA");
-    evento.agregarDato("sala", sala);
-    enviarEvento(evento);
-    
-    // Guardar salas después de agregar
-    guardarSalas();
+    public void agregarSala(Sala sala, Socket socket) {
+        gestorSalas.agregarSala(sala);
+        Evento evento = new Evento("CREAR_SALA");
+        evento.agregarDato("sala", sala);
+        System.out.println("DATOS DEL EVENTO DE AGREGAR SALAS");
+        System.out.println(evento.getDatos());
+        System.out.println("SI SE GUARDAN LOS DATOS DEL EVENTO");
+        System.out.println("PARA CALARLE AGREGAR SALA");
+        //enviarEvento(evento, socket);
+        Controller controller = new Controller(this);
+        blackBoard.setController(controller);
+
+        blackBoard.enviarEventoBlackBoard(socket, evento);
+        // Guardar salas después de agregar
+        guardarSalas();
     }
 
     public List<Sala> obtenerSalasActivas() {
@@ -259,20 +288,73 @@ public void guardarSalas() {
 
         } catch (IOException e) {
             System.err.println("[ERROR] Error estableciendo conexión: " + e.getMessage());
-            cerrarConexion(clienteSocket);
+//            cerrarConexion(clienteSocket);
             isConnected = false;
         }
     }
 
+    public void persistirClientes() {
+        // Cargar clientes existentes desde el archivo
+        List<Jugador> clientesExistentes = cargarClientesExistentes();
+
+        // Agregar nuevos clientes a la lista si no están ya presentes
+        for (Jugador jugador : jugadoresRegistrados) {
+            if (!clientesExistentes.contains(jugador)) {
+                clientesExistentes.add(jugador);
+            }
+        }
+
+        // Imprimir la lista de clientes antes de guardar
+        System.out.println("[PERSISTENCIA] Lista de clientes a guardar: " + clientesExistentes);
+
+        // Convertir la lista a JSON y guardarla en el archivo
+        String json = ConversorJSON.convertirJugadoresAJson(clientesExistentes);
+        try {
+            Files.write(Path.of("clientes.json"), json.getBytes(StandardCharsets.UTF_8));
+            System.out.println("[PERSISTENCIA] Clientes guardados correctamente.");
+        } catch (IOException e) {
+            System.err.println("[ERROR] No se pudo guardar el archivo de clientes: " + e.getMessage());
+        }
+    }
+
+    public List<Jugador> cargarClientesExistentes() {
+        List<Jugador> clientes = new ArrayList<>();
+
+        try {
+            Path filePath = Path.of("clientes.json");
+            if (Files.exists(filePath)) {
+                // Lee el contenido del archivo JSON
+                String json = Files.readString(filePath, StandardCharsets.UTF_8);
+
+                // Convierte el JSON en una lista de jugadores
+                clientes = ConversorJSON.convertirJsonAJugadores(json);
+
+                // Add null check
+                if (clientes == null) {
+                    clientes = new ArrayList<>();
+                    System.out.println("[CARGA] No se pudieron cargar los clientes. Inicializando lista vacía.");
+                } else {
+                    System.out.println("[CARGA] Clientes cargados correctamente: " + clientes.size());
+                }
+            } else {
+                System.out.println("[CARGA] No se encontró el archivo de clientes. Se creará uno nuevo.");
+            }
+        } catch (IOException e) {
+            System.err.println("[ERROR] No se pudo cargar el archivo de clientes: " + e.getMessage());
+            clientes = new ArrayList<>();
+        }
+
+        return clientes;
+    }
+
     public void registrarJugador(Socket socket, Jugador jugador) {
         synchronized (jugadoresPorSocket) {
-            // Verifica si ya existe un jugador con el mismo nombre en el servidor
-            for (Jugador j : jugadoresPorSocket.values()) {
-                if (j.getNombre().equalsIgnoreCase(jugador.getNombre())) {
-                    System.err.println("[REGISTRO] Jugador ya registrado: " + jugador.getNombre());
-                    return;  // Si el jugador ya está registrado, no lo vuelvas a registrar
-                }
-            }
+            // Verifica si el cliente ya está registrado
+
+            clientes.add(socket);
+            jugadoresPorSocket.put(socket, jugador);
+
+            System.out.println("[REGISTRO] Nuevo cliente registrado: " + socket);
 
             // Si no existe, registra el jugador con su socket
             jugadoresPorSocket.put(socket, jugador);
@@ -290,12 +372,49 @@ public void guardarSalas() {
             } catch (IOException e) {
                 System.err.println("[REGISTRO] Error al crear el stream de salida para: " + jugador.getNombre());
                 e.printStackTrace();
+                return; // Si falla aquí, no intentamos persistir
             }
 
-            // Notificar sobre el registro del nuevo jugador
-            Evento nuevoJugadorEvento = new Evento("NUEVO_JUGADOR_REGISTRADO");
+            // Persistir la lista de clientes después de un registro exitoso
+            persistirClientes();
+
+            // Enviar evento al BlackBoard
+            System.out.println("[BLACKBOARD] Enviando evento de registro.");
+            Evento nuevoJugadorEvento = new Evento("REGISTRO_USUARIO");
             nuevoJugadorEvento.agregarDato("jugador", jugador);
-            enviarEvento(nuevoJugadorEvento);
+
+            Controller controller = new Controller(this);
+            blackBoard.setController(controller);
+
+            blackBoard.enviarEventoBlackBoard(socket, nuevoJugadorEvento);
+        }
+    }
+
+    public void debugJugadoresCargados() {
+        System.out.println("=== Jugadores Recuperados ===");
+        for (Map.Entry<Socket, Jugador> entry : jugadoresPorSocket.entrySet()) {
+            System.out.println("Socket: " + entry.getKey() + " -> Jugador: " + entry.getValue().getNombre());
+        }
+        System.out.println("=============================");
+    }
+
+    public void cargarClientesPersistidos() {
+        try {
+            Path filePath = Path.of("clientes.json");
+
+            // Log para verificar la ubicación de lectura
+            System.out.println("[CARGA] Intentando cargar clientes desde: " + filePath.toAbsolutePath());
+
+            if (Files.exists(filePath)) {
+                String json = Files.readString(filePath);
+                List<Socket> clientesCargados = ConversorJSON.convertirJsonASockets(json);
+                clientes.addAll(clientesCargados);
+                System.out.println("[CARGA] Clientes cargados correctamente.");
+            } else {
+                System.out.println("[CARGA] No se encontró el archivo de clientes persistidos.");
+            }
+        } catch (IOException e) {
+            System.err.println("[ERROR] Error al cargar los clientes persistidos: " + e.getMessage());
         }
     }
 
@@ -349,7 +468,7 @@ public void guardarSalas() {
 
             // Limpiar clientes desconectados
             for (Socket socket : clientesDesconectados) {
-                cerrarConexion(socket);
+//                cerrarConexion(socket);
             }
         }
 
@@ -373,7 +492,7 @@ public void guardarSalas() {
             }
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error leyendo evento del cliente: " + e.getMessage());
-            cerrarConexion(cliente);
+//            cerrarConexion(cliente);
         }
     }
 
@@ -388,10 +507,9 @@ public void guardarSalas() {
      *
      * @return El controlador blackboardController.
      */
-    public Controller getController() {
-        return this.blackboardController;
-    }
-
+//    public Controller getController() {
+//        return this.blackboardController;
+//    }
     /**
      * Obtiene el socket asociado a un jugador dado.
      *
@@ -422,47 +540,62 @@ public void guardarSalas() {
         }
     }
 
+    public void enviarMensajeATodosLosClientes(String mensaje) {
+        System.out.println("Se envio el mensaje a todos los clientes");
+        // Iterar sobre todos los clientes conectados (suponiendo que 'clientes' es una lista de sockets)
+        System.out.println("cliente socket:" + clientes);
+        for (Socket clienteSocket : clientes) {
+            try {
+                // Obtener el OutputStream del socket del cliente
+                PrintWriter out = new PrintWriter(clienteSocket.getOutputStream(), true);
+                // Enviar el mensaje como texto
+                out.println(mensaje);
+
+                System.out.println("Clientes conectados" + clientes.size());
+            } catch (IOException e) {
+                System.err.println("Error al enviar mensaje al cliente: " + e.getMessage());
+            }
+        }
+    }
+
     /**
      * Envía un evento a todos los clientes conectados.
      *
      * @param evento El evento a enviar.
+     * @param socketCliente
      */
-    public void enviarEvento(Evento evento) {
+    public void enviarEvento(Evento evento, Socket socketCliente) {
         System.out.println("Iniciando envío de evento: " + evento.getTipo());
 
         List<Socket> clientesDesconectados = new ArrayList<>();
 
         synchronized (outputStreams) {
-            System.out.println("synchronized (outputStreams)");
+            System.out.println("synchronized (outputStreams)" + outputStreams);
 
-            for (Map.Entry<Socket, ObjectOutputStream> entry : outputStreams.entrySet()) {
-                System.out.println("llegue al for");
-                Socket cliente = entry.getKey();
-                ObjectOutputStream out = entry.getValue();
-                ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
+            // Si el socket proporcionado está en el mapa de outputStreams, solo enviamos el evento a ese cliente
+            if (outputStreams.containsKey(socketCliente)) {
+                System.out.println("Enviando evento al cliente: " + socketCliente.getInetAddress());
+                ObjectOutputStream out = outputStreams.get(socketCliente);
 
                 try {
                     synchronized (out) {
-                        System.out.println("Preparando para escribir en el cliente: " + cliente.getInetAddress());
+                        System.out.println("Preparando para escribir en el cliente: " + socketCliente.getInetAddress());
 
+                        // Enviamos el evento al cliente específico
                         out.writeObject(evento);
 
                         System.out.println("out.flush();");
                         out.flush();
                     }
 
-                    System.out.println("Evento enviado exitosamente a: " + cliente.getInetAddress());
+                    System.out.println("Evento enviado exitosamente a: " + socketCliente.getInetAddress());
                 } catch (IOException e) {
-                    System.err.println("Error enviando evento a " + cliente.getInetAddress() + ": " + e.getMessage());
-                    clientesDesconectados.add(cliente);
+                    System.err.println("Error enviando evento a " + socketCliente.getInetAddress() + ": " + e.getMessage());
+                    clientesDesconectados.add(socketCliente);
                 }
+            } else {
+                System.err.println("El cliente no está conectado: " + socketCliente.getInetAddress());
             }
-
-        }
-        System.out.println("SALTO DE CERRAR CONEXION");
-//        // Limpiar clientes desconectados
-        for (Socket socket : clientesDesconectados) {
-            cerrarConexion(socket);
         }
     }
 
@@ -510,7 +643,7 @@ public void guardarSalas() {
             }
         } catch (IOException e) {
             System.err.println("Error enviando mensaje: " + e.getMessage());
-            cerrarConexion(cliente);
+//            cerrarConexion(cliente);
         }
     }
 
@@ -534,7 +667,7 @@ public void guardarSalas() {
                 }
             } catch (IOException e) {
                 System.err.println("Error enviando mensaje al cliente " + cliente.getInetAddress() + ": " + e.getMessage());
-                cerrarConexion(cliente);
+//                cerrarConexion(cliente);
             }
         }
     }
@@ -554,20 +687,19 @@ public void guardarSalas() {
      *
      * @param cliente El socket del cliente a desconectar.
      */
-    public void cerrarConexion(Socket cliente) {
-        try {
-            cliente.close();
-            clientes.remove(cliente);
-            outputStreams.remove(cliente);
-            Jugador jugador = jugadoresPorSocket.remove(cliente);
-            if (jugador != null) {
-                blackboardController.procesarDesconexion(jugador);
-            }
-        } catch (IOException e) {
-            System.err.println("Error al cerrar la conexión: " + e.getMessage());
-        }
-    }
-
+//    public void cerrarConexion(Socket cliente) {
+//        try {
+//            cliente.close();
+//            clientes.remove(cliente);
+//            outputStreams.remove(cliente);
+//            Jugador jugador = jugadoresPorSocket.remove(cliente);
+//            if (jugador != null) {
+//                blackboardController.procesarDesconexion(jugador);
+//            }
+//        } catch (IOException e) {
+//            System.err.println("Error al cerrar la conexión: " + e.getMessage());
+//        }
+//    }
     /**
      * Procesa un evento recibido desde un cliente y lo delega al componente
      * correspondiente según el tipo de evento. Este método actúa como un
@@ -596,7 +728,7 @@ public void guardarSalas() {
                 case "UNIRSE_SALA":
                 case "ABANDONAR_SALA":
                 case "JUGADA":
-                    blackboardController.procesarEvento(cliente, evento);
+//                    blackboardController.procesarEvento(cliente, evento);
                     break;
                 case "REGISTRO_USUARIO":
                     System.out.println("[DEBUG] Recibido evento REGISTRO_USUARIO");
@@ -612,8 +744,23 @@ public void guardarSalas() {
         }
     }
 
-    public void solicitarSalas() {
+    public List<Jugador> getUsuariosConectados() {
+        // Devolver una lista con los jugadores actualmente conectados
+        synchronized (jugadoresPorSocket) {
+            return new ArrayList<>(jugadoresPorSocket.values());
+        }
+    }
+
+    public List<Socket> getClientes() {
+        return clientes;
+    }
+
+    public void setClientes(List<Socket> clientes) {
+        this.clientes = clientes;
+    }
+
+    public void solicitarSalas(Socket socket) {
         Evento solicitud = new Evento("RESPUESTA_SALAS");
-        enviarEvento(solicitud);
+        enviarEvento(solicitud, socket);
     }
 }

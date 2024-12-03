@@ -46,12 +46,11 @@ public class CrearSalaModel {
     }
 
     public void setServer(Server server) {
-        this.server = server;
-        if (server != null && server.isServidorActivo()) {
-            confirmarConexion();
-        } else {
-            System.err.println("No se pudo establecer conexión con el servidor");
+        if (server == null) {
+            throw new IllegalArgumentException("El servidor no puede ser nulo.");
         }
+        this.server = server;
+        System.out.println("Servidor asignado correctamente.");
     }
 
     public void addObserver(Observer observer) {
@@ -92,33 +91,31 @@ public class CrearSalaModel {
                 System.err.println("[ERROR] Servidor no configurado");
                 return;
             }
-            
+
             ServicioControlJuego.getInstance().getSalasDisponibles();
-            System.out.println("Salas antes de agregar"+ServicioControlJuego.getInstance().getSalasDisponibles());
-            
+            System.out.println("Salas antes de agregar" + ServicioControlJuego.getInstance().getSalasDisponibles());
 
-
-  // Asegúrate de que el estado sea correcto
-
-
-Sala sala = new Sala();
-sala.setCantJugadores(numeroJugadores);
-sala.setNumeroFichas(numeroFichas);
-sala.setEstado("ESPERANDO");
+            // Asegúrate de que el estado sea correcto
+            Sala sala = new Sala();
+            sala.setCantJugadores(numeroJugadores);
+            sala.setNumeroFichas(numeroFichas);
+            sala.setEstado("ESPERANDO");
             Evento evento = new Evento("CREAR_SALA");
             evento.agregarDato("numJugadores", numeroJugadores);
             evento.agregarDato("numFichas", numeroFichas);
             evento.agregarDato("jugador", jugadorActual);
             ServerComunicacion servercito = new ServerComunicacion(server);
             System.out.println("[DEBUG] Enviando evento CREAR_SALA al servidor");
-            
-            int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
-            Socket cliente = new Socket("localhost", puertoSocket);
-            
-            
-            
-           servercito.procesarEvento(cliente, evento);
- //  server.enviarEvento(evento);
+            System.out.println("Evento datos: " + evento.getDatos());
+
+            Socket socketCliente = server.getSocketJugador(jugadorActual);
+            if (socketCliente == null || !socketCliente.isConnected()) {
+                System.err.println("[ERROR] Socket no válido");
+                return;
+            }
+
+            servercito.procesarEvento(socketCliente, evento);
+            //  server.enviarEvento(evento);
         } catch (Exception e) {
             System.err.println("[ERROR] Error creando sala: " + e.getMessage());
             e.printStackTrace();

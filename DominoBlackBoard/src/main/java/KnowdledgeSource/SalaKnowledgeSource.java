@@ -92,33 +92,63 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
      * @param evento Evento que contiene los datos necesarios para crear la
      * sala.
      */
-    private void crearNuevaSala(Socket cliente, Evento evento) {
-        int numJugadores = (int) evento.obtenerDato("numJugadores");
-        int numFichas = (int) evento.obtenerDato("numFichas");
-        Jugador creador = (Jugador) evento.obtenerDato("jugador");
+private void crearNuevaSala(Socket cliente, Evento evento) {
+    try {
+        // Validar evento y datos
+        if (evento == null || evento.getDatos() == null) {
+            System.err.println("Error: Evento o datos nulos");
+            return;
+        }
 
+        // Obtener y validar los datos
+        Integer numJugadoresObj = (Integer) evento.obtenerDato("numJugadores");
+        Integer numFichasObj = (Integer) evento.obtenerDato("numFichas");
+
+
+        // Verificar si los datos no son nulos
+        if (numJugadoresObj == null || numFichasObj == null) {
+            System.err.println("Error: Datos faltantes para crear la sala");
+            return;
+        }
+
+        // Validar el tipo de los datos
+        if (!(numJugadoresObj instanceof Integer) || !(numFichasObj instanceof Integer)) {
+            System.err.println("Error: Tipos de datos inválidos");
+            return;  // Si los tipos son incorrectos, no se procesa la creación de la sala
+        }
+
+        // Extraer los valores
+        int numJugadores = numJugadoresObj;
+        int numFichas = numFichasObj;
+
+        // Verificar si los valores son válidos
+        if (numJugadores <= 0 || numFichas <= 0) {
+            System.err.println("Error: Datos inválidos para crear sala");
+            return;
+        }
+
+        // Crear y registrar la nueva sala
         Sala nuevaSala = new Sala();
         nuevaSala.setId(UUID.randomUUID().toString());
         nuevaSala.setCantJugadores(numJugadores);
         nuevaSala.setNumeroFichas(numFichas);
         nuevaSala.setEstado("ESPERANDO");
-        nuevaSala.getJugador().add(creador);
 
+        // Actualizar el Blackboard con la nueva sala
         blackboard.actualizarEstadoSala(nuevaSala.getId(), nuevaSala);
-        System.out.println("Sala creada en el servidor con ID: " + nuevaSala.getId());
-        System.out.println("Cantidad de jugadores: " + nuevaSala.getCantJugadores());
-        System.out.println("Número de fichas: " + nuevaSala.getNumeroFichas());
-        Evento respuesta = new Evento("SALA_CREADA");
+
+        // Crear el evento de respuesta y enviarlo
+        Evento respuesta = new Evento("CREAR_SALA");
         respuesta.agregarDato("sala", nuevaSala);
         server.enviarMensajeACliente(cliente, respuesta);
 
-        // Notificar a todos los clientes sobre la nueva sala
-        Evento eventoNuevaSala = new Evento("NUEVA_SALA");
-        eventoNuevaSala.agregarDato("sala", nuevaSala);
-        server.enviarEvento(eventoNuevaSala);
- System.out.println("Sala creada en el servidor. Salas disponibles: " 
-        + blackboard.getSalasDisponibles().size());
+        System.out.println("Sala creada con ID: " + nuevaSala.getId());
+
+    } catch (Exception e) {
+        System.err.println("Error crítico al crear sala: " + e.getMessage());
+        e.printStackTrace();
     }
+}
 
     /**
      * Permite que un jugador se una a una sala existente. Si la sala está llena
@@ -173,7 +203,7 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
             Evento respuesta = new Evento("JUGADOR_ABANDONO");
             respuesta.agregarDato("jugador", jugador);
             respuesta.agregarDato("sala", sala);
-            server.enviarEvento(respuesta);
+            blackboard.respuestaFuenteC(cliente, respuesta);
         }
     }
 
@@ -217,6 +247,6 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
         Evento eventoInicio = new Evento("INICIAR_PARTIDA");
         eventoInicio.agregarDato("partida", partida);
         eventoInicio.agregarDato("sala", sala);
-        server.enviarEvento(eventoInicio);
+//        server.enviarEvento(eventoInicio);
     }
 }

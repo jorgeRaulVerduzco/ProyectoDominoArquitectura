@@ -67,9 +67,11 @@ public class CrearSalaController {
 
             // Configurar datos en el modelo
             model.setNumeroFichas(numFichas);
-            
+
             
             model.setNumeroJugadores(numJugadores);
+            
+            model.setServer(server);
             
             
             model.crearSala(); // Enviar el evento al servidor

@@ -8,6 +8,13 @@ import Controller.Controller;
 import Dominio.Jugador;
 import Dominio.Partida;
 import Dominio.Sala;
+import EventoJuego.Evento;
+import KnowdledgeSource.JugadorKnowledgeSource;
+import KnowdledgeSource.KnowdledgeSource;
+import KnowdledgeSource.SalaKnowledgeSource;
+import Server.Server;
+import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,135 +30,147 @@ public class BlackBoard {
     private Map<String, Jugador> jugadores;
     private Map<String, Partida> partidas;
     private Controller controller;
+    private List<KnowdledgeSource> observers;
+    private Server server;  // Asegúrate de tener una referencia al Server
 
-    /**
-     * Constructor de la clase BlackBoard. Inicializa los mapas de salas,
-     * jugadores y partidas.
-     */
-    public BlackBoard() {
+    public BlackBoard(Server server) {
+       
+        this.server = server;  // Inicializa el server
         this.salas = new HashMap<>();
         this.jugadores = new HashMap<>();
         this.partidas = new HashMap<>();
+        this.observers = new ArrayList<>();
+        registrarFuentesDeConocimiento();  // Crear y registrar fuentes de conocimiento
+    
     }
-
-    /**
-     * Establece el controlador que manejará las notificaciones de cambios.
-     *
-     * @param controller El controlador a establecer.
-     */
+    
+    // Método setter para asignar el controller después de la creación del objeto
     public void setController(Controller controller) {
         this.controller = controller;
     }
-
-    /**
-     * Actualiza el estado de una sala. Guarda la nueva información de la sala
-     * en el mapa de salas y notifica al controlador que el estado de la sala ha
-     * cambiado.
-     *
-     * @param salaId El ID de la sala a actualizar.
-     * @param sala La nueva instancia de sala con el estado actualizado.
-     */
-    public void actualizarEstadoSala(String salaId, Sala sala) {
-        salas.put(salaId, sala);
-        controller.notificarCambio("SALA_ACTUALIZADA", sala);
-    }
     
-    public void agregarJugador(Jugador jugador) {
-    jugadores.put(jugador.getNombre(), jugador); // Usando el nombre como clave o también podría ser el ID
-    controller.notificarCambio("JUGADOR_REGISTRADO", jugador); // Notificación al controlador
-}
+    
 
-    /**
-     * Actualiza el estado de un jugador. Guarda la nueva información del
-     * jugador en el mapa de jugadores y notifica al controlador que el estado
-     * del jugador ha cambiado.
-     *
-     * @param jugadorId El ID del jugador a actualizar.
-     * @param jugador La nueva instancia de jugador con el estado actualizado.
-     */
+    // Método para registrar las fuentes de conocimiento
+    private void registrarFuentesDeConocimiento() {
+        // Crear las fuentes de conocimiento necesarias, ahora pasamos el Server también
+        KnowdledgeSource fuenteSala = new SalaKnowledgeSource(this, server);  // Pasar tanto BlackBoard como Server
+        KnowdledgeSource fuenteJugador = new JugadorKnowledgeSource(this, server);
+        
+        // Agregar las fuentes al Blackboard
+        observers.add(fuenteSala);
+        observers.add(fuenteJugador);
+
+        // Aquí puedes registrar más fuentes de conocimiento si es necesario
+        System.out.println("Fuentes de conocimiento registradas.");
+    }
+    // Método genérico para actualizar el estado de una entidad
+    public <T> void actualizarEstadoEntidad(Map<String, T> mapa, String id, T entidad, String tipoEntidad) {
+        mapa.put(id, entidad);
+        controller.notificarCambio(tipoEntidad + "_ACTUALIZADO");
+    }
+
+    // Métodos específicos usando el genérico anterior
+    public void actualizarEstadoSala(String salaId, Sala sala) {
+        actualizarEstadoEntidad(salas, salaId, sala, "sala");
+    }
+
     public void actualizarEstadoJugador(String jugadorId, Jugador jugador) {
-        jugadores.put(jugadorId, jugador);
-        controller.notificarCambio("JUGADOR_ACTUALIZADO", jugador);
+        actualizarEstadoEntidad(jugadores, jugadorId, jugador, "JUGADOR");
     }
 
-    /**
-     * Actualiza el estado de una partida. Guarda la nueva información de la
-     * partida en el mapa de partidas y notifica al controlador que el estado de
-     * la partida ha cambiado.
-     *
-     * @param partidaId El ID de la partida a actualizar.
-     * @param partida La nueva instancia de partida con el estado actualizado.
-     */
     public void actualizarEstadoPartida(String partidaId, Partida partida) {
-        partidas.put(partidaId, partida);
-        controller.notificarCambio("PARTIDA_ACTUALIZADA", partida);
+        actualizarEstadoEntidad(partidas, partidaId, partida, "PARTIDA");
     }
 
-    /**
-     * Remueve a un jugador del sistema. Elimina al jugador del mapa de
-     * jugadores y notifica al controlador que el jugador se ha desconectado.
-     *
-     * @param jugadorId El ID del jugador a remover.
-     */
+   // Método para agregar un jugador
+    public void agregarJugador(Jugador jugador) {
+        if (controller != null) {
+            // Verificamos si el jugador tiene un ID válido
+            if (jugador != null && jugador.getNombre() != null) {
+                // Agregamos el jugador al mapa usando su ID como clave
+                jugadores.put(jugador.getNombre(), jugador);  // Usa el ID del jugador como clave para el mapa
+
+                // Notificamos el cambio al controlador después de agregar el jugador
+                controller.notificarCambio("REGISTRO_USUARIO");
+            } else {
+                System.err.println("Error: El jugador o su ID es nulo.");
+            }
+        } else {
+            System.err.println("Error: El controlador es null.");
+        }
+    }
+
+
+
     public void removerJugador(String jugadorId) {
         Jugador jugador = jugadores.remove(jugadorId);
         if (jugador != null) {
-            controller.notificarCambio("JUGADOR_DESCONECTADO", jugador);
+            controller.notificarCambio("JUGADOR_DESCONECTADO");
         }
     }
 
-    /**
-     * Remueve una sala del sistema. Elimina la sala del mapa de salas y
-     * notifica al controlador que la sala ha sido eliminada.
-     *
-     * @param salaId El ID de la sala a remover.
-     */
     public void removerSala(String salaId) {
         Sala sala = salas.remove(salaId);
         if (sala != null) {
-            controller.notificarCambio("SALA_ELIMINADA", sala);
+            controller.notificarCambio("SALA_ELIMINADA");
         }
     }
 
-    /**
-     * Obtiene una sala por su ID.
-     *
-     * @param salaId El ID de la sala a obtener.
-     * @return La sala asociada al ID proporcionado, o null si no existe.
-     */
     public Sala getSala(String salaId) {
         return salas.get(salaId);
     }
 
-    /**
-     * Obtiene un jugador por su ID.
-     *
-     * @param jugadorId El ID del jugador a obtener.
-     * @return El jugador asociado al ID proporcionado, o null si no existe.
-     */
     public Jugador getJugador(String jugadorId) {
         return jugadores.get(jugadorId);
     }
 
-    /**
-     * Obtiene una partida por su ID.
-     *
-     * @param partidaId El ID de la partida a obtener.
-     * @return La partida asociada al ID proporcionado, o null si no existe.
-     */
     public Partida getPartida(String partidaId) {
         return partidas.get(partidaId);
     }
 
-    /**
-     * Obtiene una lista de las salas disponibles que están en estado
-     * "ESPERANDO".
-     *
-     * @return Una lista de salas disponibles.
-     */
     public List<Sala> getSalasDisponibles() {
         return salas.values().stream()
                 .filter(sala -> "ESPERANDO".equals(sala.getEstado()))
                 .collect(Collectors.toList());
+    }
+
+    public void enviarEventoBlackBoard(Socket cliente, Evento evento) {
+        System.out.println("LLEGUE A BLACKBOARD");
+ System.out.println("BLACKBOARD 1  : Socket del jugador actual"+cliente);
+        if (evento == null) {
+            throw new IllegalArgumentException("El evento no puede ser nulo.");
+        }
+
+        System.out.println("NOTIFICANDO A LAS FUENTES");
+
+        boolean eventoProcesado = false;  // Variable para verificar si alguna fuente procesó el evento
+
+        // Notificar solo a las fuentes que pueden procesar este evento
+        for (KnowdledgeSource observer : observers) {
+            if (observer.puedeProcesar(evento)) {
+                System.out.println("BLACKBOARD 2  : Socket del jugador actual"+cliente);
+                observer.procesarEvento(cliente, evento);
+                eventoProcesado = true;  // Marcar que al menos una fuente procesó el evento
+            }
+        }
+
+        if (!eventoProcesado) {
+            throw new IllegalStateException("Ninguna fuente de conocimiento pudo procesar el evento: " + evento.getTipo());
+        }
+
+        System.out.println("Evento procesado por las fuentes de conocimiento.");
+    }
+
+
+
+    public void respuestaFuenteC(Socket cliente, Evento eventoRespuesta) {
+        System.out.println("Fuente de conocimiento coloco respuesta en blackboard");
+        
+        if (eventoRespuesta == null) {
+            throw new IllegalArgumentException("El evento de respuesta no puede ser nulo.");
+        }
+         System.out.println("BLACKBOARD 3  : Socket del jugador actual"+cliente);
+        System.out.println("Recibiendo respuesta de una fuente de conocimiento: " + eventoRespuesta.getDatos());
     }
 }

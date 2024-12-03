@@ -8,18 +8,11 @@ import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
 import Negocio.ServicioControlJuego;
-import Server.ConversorJSON;
 import Server.Server;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -56,33 +49,37 @@ public class ServerComunicacion {
     }
 
     public void registrarUsuario(Socket cliente, Evento eventoRegistro) {
+        System.out.println("SERVER C :LLegue registrarUsuario");
         try {
+            System.out.println("SERVER C : pase el try");
             // Extraer el jugador del evento
             Jugador jugador = (Jugador) eventoRegistro.obtenerDato("jugador");
+            System.out.println("SERVER COMUNICACION: Socket del jugador actual" + cliente);
+            // Depuración: Verificar que el jugador está correctamente extraído
+            System.out.println("Jugador extraído: " + jugador);
 
             // Verificar si el nombre de usuario ya existe
-            if (server.contieneJugador(jugador.getNombre())) {
-                // Si el nombre ya existe, enviar un evento de error
-                Evento errorEvento = new Evento("REGISTRO_USUARIO_ERROR");
-                errorEvento.agregarDato("mensaje", "El nombre de usuario ya está en uso");
-                server.enviarMensajeACliente(cliente, errorEvento);
-                return;
-            }
-     
-           
+            // Crear el jugador en el sistema
             servicioC.crearJugador(jugador);
+            System.out.println("[REGISTRO] Jugador creado en el sistema: " + jugador);
+
+            // Registrar el jugador en el servidor
             server.registrarJugador(cliente, jugador);
+            System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
 
         } catch (Exception e) {
             // Manejar cualquier error durante el registro
             System.err.println("Error al registrar usuario: " + e.getMessage());
+            e.printStackTrace();  // Para obtener más información sobre el error
+
+            // Enviar un evento de error al cliente
             enviarErrorRegistro(cliente, "Error interno al registrar usuario");
         }
     }
 
     private void enviarErrorRegistro(Socket cliente, String mensaje) {
         try {
-            Evento errorEvento = new Evento("REGISTRO_USUARIO_ERROR");
+            Evento errorEvento = new Evento("REGISTRO_USUARIO");
             errorEvento.agregarDato("mensaje", mensaje);
             server.enviarMensajeACliente(cliente, errorEvento);
         } catch (Exception e) {
@@ -149,17 +146,26 @@ public class ServerComunicacion {
                 System.err.println("Error: Datos incompletos para crear sala");
                 return;
             }
+            Object numJugadoresObj = evento.obtenerDato("numJugadores");
+            Object numFichasObj = evento.obtenerDato("numFichas");
+            Object jugadorObj = evento.obtenerDato("jugador");
 
-            int numJugadores = (int) evento.obtenerDato("numJugadores");
-            int numFichas = (int) evento.obtenerDato("numFichas");
-            Jugador creador = (Jugador) evento.obtenerDato("jugador");
-
-            // Validaciones adicionales
-            if (numJugadores <= 0 || numFichas <= 0 || creador == null) {
-                System.err.println("Error: Datos inválidos para crear sala");
+            if (numJugadoresObj == null) {
+                System.err.println("Error: numJugadores is null");
+                return;
+            }
+            if (numFichasObj == null) {
+                System.err.println("Error: numFichas is null");
+                return;
+            }
+            if (jugadorObj == null) {
+                System.err.println("Error: jugador is null");
                 return;
             }
 
+            int numJugadores = (int) numJugadoresObj;
+            int numFichas = (int) numFichasObj;
+            Jugador creador = (Jugador) jugadorObj;
             ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
 
             // Crear y configurar nueva sala
@@ -168,21 +174,17 @@ public class ServerComunicacion {
             nuevaSala.setNumeroFichas(numFichas);
             nuevaSala.setEstado("ESPERANDO");
             nuevaSala.getJugador().add(creador);
-            server.agregarSala(nuevaSala);
 
-            // Agregar sala al servicio
             servicioControlJuego.agregarSala(nuevaSala);
+            server.agregarSala(nuevaSala, cliente);
 
-            System.out.println("Servidor: Sala creada exitosamente:");
-            System.out.println("  - ID: " + nuevaSala.getId());
-            System.out.println("  - Jugadores: " + nuevaSala.getJugador().size() + "/" + nuevaSala.getCantJugadores());
-            System.out.println("  - Fichas: " + nuevaSala.getNumeroFichas());
-
-            // Verificar estado del sistema
-            verificarEstadoSalas();
+            // Notificar a todos los clientes
+            Evento respuestaSala = new Evento("CREAR_SALA");
+            respuestaSala.agregarDato("sala", nuevaSala);
+            server.enviarMensajeATodosLosClientes(respuestaSala);
 
         } catch (Exception e) {
-            System.err.println("Error crítico creando sala: " + e.getMessage());
+            System.err.println("Error creando sala: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -245,7 +247,7 @@ public class ServerComunicacion {
                 server.enviarMensajeACliente(cliente, respuesta);
             } else {
                 // If no specific client, send to all connected clients
-                server.enviarEvento(respuesta);
+                server.enviarEvento(respuesta, cliente);
             }
 
             // Log the rooms for debugging
@@ -366,17 +368,6 @@ public class ServerComunicacion {
             System.err.println("Servidor: Error al responder solicitud de salas: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Notifica a todos los clientes conectados que se ha creado una nueva sala.
-     *
-     * @param sala La sala que ha sido creada.
-     */
-    private void notificarNuevaSala(Sala sala) {
-        Evento evento = new Evento("NUEVA_SALA");
-        evento.agregarDato("sala", sala);
-        server.enviarEvento(evento);
     }
 
     private static void CrearElJugadorFinal(String nombreJugador, int socketNumero) {
