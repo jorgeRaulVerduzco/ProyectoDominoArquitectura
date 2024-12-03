@@ -322,28 +322,46 @@ public class ServerComunicacion {
      * que se va a unir.
      */
     private void unirseASala(Socket cliente, Evento evento) {
-        Sala sala = (Sala) evento.obtenerDato("sala");
-        Jugador jugador = (Jugador) evento.obtenerDato("jugador");
-        ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
-        
-        if (servicioControlJuego.agregarJugador(sala, jugador)) {
-            Evento respuesta = new Evento("JUGADOR_UNIDO");
-            respuesta.agregarDato("jugador", jugador);
-            respuesta.agregarDato("sala", sala);
-            
-            for (Jugador j : sala.getJugador()) {
-                Socket socketJugador = server.getSocketJugador(j);
-                if (socketJugador != null) {
-                    server.enviarMensajeACliente(socketJugador, respuesta);
-                }
-            }
+    Sala sala = (Sala) evento.obtenerDato("sala");
+        System.out.println("UNIRSE SALA METODO : SALA ES:"+sala); 
+    Jugador jugador = (Jugador) evento.obtenerDato("jugador");
+    System.out.println("UNIRSE SALA METODO : JUGADOR ES:"+jugador); 
+    
+    // Verificar que la sala no sea null
+    if (sala == null) {
+        System.err.println("Error: Sala no válida");
+        return;
+    }
 
-            // Si la sala está llena, iniciar la partida
-            if (sala.getJugador().size() == sala.getCantJugadores()) {
-                iniciarPartida(sala);
+    ServicioControlJuego servicioControlJuego = ServicioControlJuego.getInstance();
+    
+    // Verificar que el jugador no sea null
+    if (jugador == null) {
+        System.err.println("Error: Jugador no válido");
+        return;
+    }
+
+    if (servicioControlJuego.agregarJugador(sala, jugador)) {
+        Evento respuesta = new Evento("UNIR_SALA");
+        respuesta.agregarDato("jugador", jugador);
+        respuesta.agregarDato("sala", sala);
+        
+        System.out.println(" SERVER COMUNICACION: CLUENTE ES:"+cliente);
+            Socket socketJugador =  cliente;
+            
+            System.out.println("SERVER COMUNICACION : "+jugador  +"Se esta enviadno"+ respuesta.getDatos());
+            if (socketJugador != null) {
+                server.unirseSala(respuesta, socketJugador);
             }
+       
+
+        // Si la sala está llena, iniciar la partida
+        if (sala.getJugador().size() == sala.getCantJugadores()) {
+            iniciarPartida(sala);
         }
     }
+}
+
 
     /**
      * Inicia una nueva partida cuando se cumplen las condiciones necesarias

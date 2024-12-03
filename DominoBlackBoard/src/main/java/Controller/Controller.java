@@ -96,6 +96,9 @@ public class Controller implements KnowdledgeSource {
                 System.out.println("Salas en BlackBoard antes de registrar en el servidor: " + blackboard.getSalas());
 
                 server.registrarSalas(blackboard.getSalas());  // Usar método getter para salas
+            }else if(tipoEvento.equals("UNIR_SALA")){
+                 System.out.println("LLegue al notificarCambio");
+                
             }
             System.out.println("ALV ESTOY LLEGANDO AQUI");
             server.enviarMensajeATodosLosClientes(mensaje);

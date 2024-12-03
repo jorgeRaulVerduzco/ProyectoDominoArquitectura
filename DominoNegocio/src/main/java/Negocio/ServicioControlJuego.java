@@ -181,6 +181,14 @@ public class ServicioControlJuego {
     public void crearJugador(Jugador jugador) {
         Jugadores.add(jugador);
     }
+    public Sala buscarSalaPorId(String id) {
+    return getSalasDisponibles().stream()
+        .filter(sala -> sala.getId().equals(id))
+        .findFirst()
+        .orElse(null);
+}
+
+    
 
     /**
      * Verifica si un jugador ha ganado el juego o si el juego está bloqueado.

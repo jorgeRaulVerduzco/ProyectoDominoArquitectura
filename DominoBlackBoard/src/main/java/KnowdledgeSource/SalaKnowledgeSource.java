@@ -143,25 +143,53 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
      * @param evento Evento que contiene los datos necesarios para unirse a la
      * sala.
      */
-    private void unirseASala(Socket cliente, Evento evento) {
-        String salaId = (String) evento.obtenerDato("salaId");
+    private void unirseASala(Socket cliente, Evento evento) { 
+    try {
+        // Obtener datos del evento
+        String salaId = (String) evento.obtenerDato("id"); // Cambié la clave a "id"
         Jugador jugador = (Jugador) evento.obtenerDato("jugador");
-        Sala sala = blackboard.getSala(salaId);
 
-        if (sala != null && sala.getJugador().size() < sala.getCantJugadores()) {
-            sala.getJugador().add(jugador);
-            blackboard.actualizarEstadoSala(salaId, sala);
-
-            if (sala.getJugador().size() == sala.getCantJugadores()) {
-                iniciarPartida(sala);
-            }
-
-            Evento respuesta = new Evento("JUGADOR_UNIDO");
-            respuesta.agregarDato("jugador", jugador);
-            respuesta.agregarDato("sala", sala);
-            server.enviarEventoATodos(respuesta);
+        // Validar datos del evento
+        if (salaId == null || salaId.isEmpty()) {
+            throw new IllegalArgumentException("El ID de la sala no puede ser nulo o vacío.");
         }
+        if (jugador == null) {
+            throw new IllegalArgumentException("El jugador no puede ser nulo.");
+        }
+
+        // Obtener la sala desde el Blackboard
+        Sala sala = blackboard.getSala(salaId);
+        if (sala == null) {
+            throw new IllegalStateException("La sala con ID " + salaId + " no existe.");
+        }
+
+        // Validar si la sala tiene espacio disponible
+        if (sala.getJugador().size() >= sala.getCantJugadores()) {
+            throw new IllegalStateException("La sala con ID " + salaId + " está llena.");
+        }
+
+        // Agregar al jugador a la sala
+        sala.getJugador().add(jugador);
+        blackboard.actualizarEstadoSala(salaId, sala);
+
+        // Verificar si la sala está completa para iniciar la partida
+        if (sala.getJugador().size() == sala.getCantJugadores()) {
+            iniciarPartida(sala);
+        }
+
+        // Enviar evento de respuesta
+        Evento respuesta = new Evento("UNIR_SALA");
+        respuesta.agregarDato("jugador", jugador);
+        respuesta.agregarDato("sala", sala);
+        System.out.println("RESpUESTA DE LA FUENTE DE CONOCIMIENTO DE UNIRSE SALA: "+respuesta.getDatos());
+        
+        blackboard.respuestaFuenteC(cliente,respuesta);
+
+    } catch (Exception e) {
+        System.err.println("Error en unirseASala: " + e.getMessage());
+        e.printStackTrace();
     }
+}
 
     /**
      * Permite que un jugador abandone una sala. Si la sala queda vacía, se

@@ -99,6 +99,16 @@ public class CrearSalaModel {
         evento.agregarDato("numFichas", numeroFichas);
         evento.agregarDato("jugador", jugadorActual);
 
+        
+        Sala sala= new Sala();
+        sala.setCantJugadores(numeroJugadores);
+        sala.setNumeroFichas(numeroFichas);
+        List <Jugador> jugadores = new ArrayList<>();
+        jugadores.add(jugadorActual);
+        sala.setJugador(jugadores);
+        
+        servicioControlJuego.agregarSala(sala);
+        
         // Validación de datos antes de enviarlos
         if (evento.obtenerDato("numJugadores") == null || evento.obtenerDato("numFichas") == null || evento.obtenerDato("jugador") == null) {
             System.err.println("[ERROR] Datos nulos en el evento.");

@@ -299,6 +299,51 @@ public class Server {
             System.err.println("Error: No se pudo conectar al servidor.");
         }
     }
+    
+    public void unirseSala(Evento evento, Socket clienteSocket) {
+    try {
+        // Verificar si la sala fue enviada en el evento
+        Sala sala = (Sala) evento.obtenerDato("sala");
+        if (sala == null) {
+            // Intentar recuperar la sala desde el archivo JSON usando el ID
+            String salaId = (String) evento.obtenerDato("id");
+            if (salaId == null || salaId.isEmpty()) {
+                throw new IllegalArgumentException("El ID de la sala no puede ser nulo o vacío.");
+            }
+
+            Path salasPath = Paths.get("salas_multijugador.json");
+            if (Files.exists(salasPath)) {
+                String jsonSalas = Files.readString(salasPath, StandardCharsets.UTF_8);
+                List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(jsonSalas);
+                sala = salasCargadas.stream()
+                    .filter(s -> salaId.equals(s.getId()))
+                    .findFirst()
+                    .orElse(null);
+            }
+        }
+
+        if (sala == null) {
+            throw new IllegalArgumentException("La sala no es válida o no existe.");
+        }
+
+        // Validar el jugador
+        Jugador jugador = jugadoresPorSocket.get(clienteSocket);
+        if (jugador == null) {
+            throw new IllegalStateException("No se encontró un jugador asociado al socket.");
+        }
+
+        // Enviar evento al BlackBoard
+        System.out.println("Sala encontrada: " + sala.getId() + ". Enviando evento al BlackBoard.");
+        evento.agregarDato("sala", sala);
+        evento.agregarDato("jugador", jugador);
+        blackBoard.enviarEventoBlackBoard(clienteSocket, evento);
+    } catch (Exception e) {
+        System.err.println("Error en unirseSala: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+
+
 
     public void agregarSala(Sala sala, Socket socket) {
         gestorSalas.agregarSala(sala);
@@ -846,6 +891,17 @@ public class Server {
             return new ArrayList<>(jugadoresPorSocket.values());
         }
     }
+    
+    public Jugador getJugadorConectado() {
+    // Devolver un solo jugador (puedes elegir el primero o el que desees)
+    synchronized (jugadoresPorSocket) {
+        if (!jugadoresPorSocket.isEmpty()) {
+            return jugadoresPorSocket.values().iterator().next(); // Obtiene el primer jugador
+        }
+    }
+    return null; // Retorna null si no hay jugadores conectados
+}
+
 
     public List<Socket> getClientes() {
         return clientes;

@@ -18,6 +18,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -29,14 +31,22 @@ public class UnirseAlaSalaModel {
     private List<Observer> observers;
     private Server server;
     private ServicioControlJuego servicioControlJuego;
+    private ServerComunicacion serverComunicacion;
+    private Jugador jugadorActual;
 
     /**
      * Constructor por defecto que inicializa las listas de salas disponibles y
      * observadores.
      */
     public UnirseAlaSalaModel() {
+        this.serverComunicacion = new ServerComunicacion(server);
         this.observers = new ArrayList<>();
         this.servicioControlJuego = ServicioControlJuego.getInstance();  // Usar la instancia única
+    }
+    
+    
+        public void setJugadorActual(Jugador jugador) {
+        this.jugadorActual = jugador;
     }
 
     /**
@@ -135,19 +145,48 @@ public class UnirseAlaSalaModel {
             }
         }
     }
+    
+     public Jugador obtenerJugadorConectado() {
+        Jugador jugador = server.getJugadorConectado(); // Obtiene un solo jugador
+        if (jugador != null) {
+            System.out.println("Jugador conectado: " + jugador.getNombre());
+            // Puedes hacer lo que desees con el jugador aquí
+        } else {
+            System.out.println("No hay jugadores conectados.");
+        }
+        return jugador;
+    }
 
     /**
      * Intenta unir a un jugador a una sala específica. Envia un evento
      * "UNIR_SALA" al servidor con los datos de la sala y el jugador.
      *
-     * @param salaId el identificador de la sala a la que se desea unir.
+     * @param id
+     * @param jugador
      */
-    public void unirseASala(Integer salaId, Socket socket) {
-        if (server != null && server.isServidorActivo()) {
-            Evento evento = new Evento("UNIR_SALA");
-            evento.agregarDato("salaId", salaId);
-            evento.agregarDato("jugador", socket);
-            server.enviarEvento(evento,socket);
+    public void unirseASala(String id, Jugador jugador) {
+    try {
+        jugador = obtenerJugadorConectado();
+        System.out.println("Jugador conectado es: " + jugador);
+        
+        Sala sala = servicioControlJuego.buscarSalaPorId(id); // Recupera la sala desde ServicioControlJuego
+        if (sala == null) {
+            System.out.println("Error: Sala con ID " + id + " no encontrada.");
+            return;
         }
+        
+        int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
+        Socket socket = new Socket("localhost", puertoSocket);
+        System.out.println("Socket del jugador actual: " + puertoSocket);
+        
+        Evento evento = new Evento("UNIR_SALA");
+        evento.agregarDato("sala", sala); // Enviar el objeto completo de Sala
+        evento.agregarDato("jugador", jugador); // Enviar el objeto Jugador
+        serverComunicacion.procesarEvento(socket, evento); // Procesar el evento
+    } catch (IOException ex) {
+        Logger.getLogger(UnirseAlaSalaModel.class.getName()).log(Level.SEVERE, null, ex);
     }
+}
+
+
 }
