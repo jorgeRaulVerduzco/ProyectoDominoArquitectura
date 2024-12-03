@@ -61,7 +61,7 @@ public class Server {
         this.clientes = new CopyOnWriteArrayList<>();
         this.outputStreams = new ConcurrentHashMap<>();
         this.jugadoresPorSocket = new ConcurrentHashMap<>();
-salas=  new CopyOnWriteArrayList<>();
+        salas = new CopyOnWriteArrayList<>();
         this.blackBoard = new BlackBoard(this);
         this.serverComunicacion = new ServerComunicacion(this);
         this.running = false;
@@ -91,11 +91,17 @@ salas=  new CopyOnWriteArrayList<>();
         System.out.println("Jugadores registrados en el servidor: " + jugadoresRegistrados.size());
     }
 
-      public void registrarSalas(Map<String, Sala> salasBlackBoard) {
-        System.out.println("SERBER  : Socket del jugador actual" + salasBlackBoard);
-        salas.addAll(salasBlackBoard.values());
+    public void registrarSalas(Map<String, Sala> salasBlackBoard) {
+   System.out.println("SERBER  : Socket del jugador actual" + salasBlackBoard);
+    
+    // Opción 1: Limpiar la lista antes de agregar
+    salas.clear();
+    salas.addAll(salasBlackBoard.values());
 
-        System.out.println("salas registrados en el servidor: " + salas.size());
+    // Opción 2 (alternativa): Reemplazar completamente la lista
+    // salas = new ArrayList<>(salasBlackBoard.values());
+
+    System.out.println("salas registrados en el servidor: " + salas.size());
     }
 
     public static List<Sala> cargarSalas() {
@@ -242,9 +248,7 @@ salas=  new CopyOnWriteArrayList<>();
         //enviarEvento(evento, socket);
         Controller controller = new Controller(this);
         blackBoard.setController(controller);
-
         blackBoard.enviarEventoBlackBoard(socket, evento);
-        // Guardar salas después de agregar
         guardarSalas();
     }
 

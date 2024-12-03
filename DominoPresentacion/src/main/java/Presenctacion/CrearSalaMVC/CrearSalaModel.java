@@ -75,51 +75,54 @@ public class CrearSalaModel {
     }
 
     public void crearSala() {
-        System.out.println("[DEBUG] Iniciando creación de sala en el modelo");
-        try {
-            if (numeroJugadores <= 0 || numeroFichas <= 0) {
-                System.err.println("[ERROR] Números inválidos");
-                return;
-            }
-
-            if (jugadorActual == null) {
-                System.err.println("[ERROR] No hay jugador actual");
-                return;
-            }
-
-            if (server == null) {
-                System.err.println("[ERROR] Servidor no configurado");
-                return;
-            }
-
-            ServicioControlJuego.getInstance().getSalasDisponibles();
-            System.out.println("Salas antes de agregar" + ServicioControlJuego.getInstance().getSalasDisponibles());
-
-            // Asegúrate de que el estado sea correcto
-            Sala sala = new Sala();
-            sala.setCantJugadores(numeroJugadores);
-            sala.setNumeroFichas(numeroFichas);
-            sala.setEstado("ESPERANDO");
-            Evento evento = new Evento("CREAR_SALA");
-            evento.agregarDato("numJugadores", numeroJugadores);
-            evento.agregarDato("numFichas", numeroFichas);
-            evento.agregarDato("jugador", jugadorActual);
-            ServerComunicacion servercito = new ServerComunicacion(server);
-            System.out.println("[DEBUG] Enviando evento CREAR_SALA al servidor");
-            System.out.println("Evento datos: " + evento.getDatos());
-
-            Socket socketCliente = server.getSocketJugador(jugadorActual);
-            if (socketCliente == null || !socketCliente.isConnected()) {
-                System.err.println("[ERROR] Socket no válido");
-                return;
-            }
-
-            servercito.procesarEvento(socketCliente, evento);
-            //  server.enviarEvento(evento);
-        } catch (Exception e) {
-            System.err.println("[ERROR] Error creando sala: " + e.getMessage());
-            e.printStackTrace();
+ System.out.println("[DEBUG] Iniciando creación de sala en el modelo");
+    try {
+        // Validación de números
+        if (numeroJugadores <= 0 || numeroFichas <= 0) {
+            System.err.println("[ERROR] Números inválidos");
+            return;
         }
+
+        if (jugadorActual == null) {
+            System.err.println("[ERROR] No hay jugador actual");
+            return;
+        }
+
+        if (server == null) {
+            System.err.println("[ERROR] Servidor no configurado");
+            return;
+        }
+
+        // Crear evento para enviar al servidor
+        Evento evento = new Evento("CREAR_SALA");
+        evento.agregarDato("numJugadores", numeroJugadores);
+        evento.agregarDato("numFichas", numeroFichas);
+        evento.agregarDato("jugador", jugadorActual);
+
+        // Validación de datos antes de enviarlos
+        if (evento.obtenerDato("numJugadores") == null || evento.obtenerDato("numFichas") == null || evento.obtenerDato("jugador") == null) {
+            System.err.println("[ERROR] Datos nulos en el evento.");
+            return;
+        }
+
+        ServerComunicacion servercito = new ServerComunicacion(server);
+        System.out.println("[DEBUG] Enviando evento CREAR_SALA al servidor");
+        System.out.println("Evento datos: " + evento.getDatos());
+
+        // Verificar conexión del socket
+        Socket socketCliente = server.getSocketJugador(jugadorActual);
+        if (socketCliente == null || !socketCliente.isConnected()) {
+            System.err.println("[ERROR] Socket no válido");
+            return;
+        }
+
+        // Enviar el evento al servidor para procesarlo
+        servercito.procesarEvento(socketCliente, evento);
+
+    } catch (Exception e) {
+        System.err.println("[ERROR] Error creando sala: " + e.getMessage());
+        e.printStackTrace();
+    }
     }
 
     public void esperarServidor() throws InterruptedException {

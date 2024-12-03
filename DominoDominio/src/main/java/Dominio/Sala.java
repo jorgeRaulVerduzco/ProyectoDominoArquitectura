@@ -16,7 +16,7 @@ import java.util.UUID;
  */
 public class Sala implements Serializable {
 
-     @JsonProperty("id")
+    @JsonProperty("id")
     private String id = UUID.randomUUID().toString();
 
     @JsonProperty("cantJugadores")
@@ -147,9 +147,17 @@ public class Sala implements Serializable {
      * jugadores, el número de fichas, el estado de la sala y la partida
      * asociada.
      */
-    @Override
+   @Override
     public String toString() {
-        return "Sala{" + "cantJugadores=" + cantJugadores + ", numeroFichas=" + numeroFichas + ", jugador=" + jugador + ", estado=" + estado + ", partida=" + partida + '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append("Sala{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", cantJugadores=").append(cantJugadores);
+        sb.append(", numeroFichas=").append(numeroFichas);
+        sb.append(", estado='").append(estado).append('\'');
+        sb.append(", jugadores=").append(jugador);  // Aquí se imprimirá la lista de jugadores
+        sb.append('}');
+        return sb.toString();
     }
 
 }
