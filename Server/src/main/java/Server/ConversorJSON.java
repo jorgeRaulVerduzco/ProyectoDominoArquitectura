@@ -15,11 +15,14 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -35,11 +38,64 @@ public class ConversorJSON {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static String convertirSalasAJson(List<Sala> salas) throws IOException {
-        return objectMapper.writeValueAsString(salas);
+     Gson gson = new Gson();
+        return gson.toJson(salas);
     }
 
     public static List<Sala> convertirJsonASalas(String json) throws IOException {
-        return objectMapper.readValue(json, objectMapper.getTypeFactory().constructCollectionType(List.class, Sala.class));
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Sala.class, new JsonDeserializer<Sala>() {
+                    @Override
+                    public Sala deserialize(JsonElement json, Type typeOfT,
+                            JsonDeserializationContext context) throws JsonParseException {
+                        JsonObject jsonObject = json.getAsJsonObject();
+
+                        Sala sala = new Sala(); // Asume constructor vacío
+
+                        // Deserializar campos básicos
+                        if (jsonObject.has("id")) {
+                            sala.setId(jsonObject.get("id").getAsString());
+                        }
+                        if (jsonObject.has("cantJugadores")) {
+                            sala.setCantJugadores(jsonObject.get("cantJugadores").getAsInt());
+                        }
+                        if (jsonObject.has("numeroFichas")) {
+                            sala.setNumeroFichas(jsonObject.get("numeroFichas").getAsInt());
+                        }
+                        if (jsonObject.has("estado")) {
+                            sala.setEstado(jsonObject.get("estado").getAsString());
+                        }
+
+                        // Deserializar jugadores
+                        if (jsonObject.has("jugadores")) {
+                            JsonArray jugadoresArray = jsonObject.getAsJsonArray("jugadores");
+                            List<Jugador> jugadores = new ArrayList<>();
+                            for (JsonElement jugadorElement : jugadoresArray) {
+                                JsonObject jugadorObj = jugadorElement.getAsJsonObject();
+                                Jugador jugador = new Jugador();
+                                if (jugadorObj.has("nombre")) {
+                                    jugador.setNombre(jugadorObj.get("nombre").getAsString());
+                                }
+                                // Agrega más propiedades de Jugador si es necesario
+                                jugadores.add(jugador);
+                            }
+                            sala.setJugador(jugadores);
+                        }
+
+                        // Opcional: deserializar partida si es necesario
+                        // if (jsonObject.has("partida")) {
+                        //     Partida partida = new Partida();
+                        //     // Mapear propiedades de partida
+                        //     sala.setPartida(partida);
+                        // }
+                        return sala;
+                    }
+                })
+                .create();
+
+        Type listType = new TypeToken<List<Sala>>() {
+        }.getType();
+        return gson.fromJson(json, listType);
     }
 
     public static String convertirSocketsAJson(List<Socket> sockets) throws IOException {
@@ -112,4 +168,4 @@ public class ConversorJSON {
             return new ArrayList<>();
         }
     }
-    }
+}

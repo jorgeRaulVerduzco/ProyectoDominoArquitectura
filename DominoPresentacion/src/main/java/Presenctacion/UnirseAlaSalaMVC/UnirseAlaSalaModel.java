@@ -76,7 +76,7 @@ public class UnirseAlaSalaModel {
         System.out.println("UnirseAlaSalaModel: Solicitando salas al servidor...");
 
         // Obtener las salas disponibles desde ServicioControlJuego
-        List<Sala> salasDisponibles = server.obtenerSalasActivas();
+        List<Sala> salasDisponibles = server.cargarSalasMultijugador();
         int puertoSocket = ConfiguracionSocket.getInstance().getPuertoSocket();
         Socket cliente = new Socket("localhost", puertoSocket);
         Evento solicitudSalas = new Evento("RESPUESTA_SALAS");

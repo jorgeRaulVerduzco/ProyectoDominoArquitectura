@@ -118,7 +118,7 @@ public class CrearSalaModel {
 
         // Enviar el evento al servidor para procesarlo
         servercito.procesarEvento(socketCliente, evento);
-
+        System.out.println(server.cargarSalasMultijugador());
     } catch (Exception e) {
         System.err.println("[ERROR] Error creando sala: " + e.getMessage());
         e.printStackTrace();

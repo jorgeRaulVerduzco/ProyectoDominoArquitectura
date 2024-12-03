@@ -129,6 +129,7 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
 
     private void registrarSala(Sala sala) {
         blackboard.agregarSala(sala);
+        server.registrarSalas(blackboard.getSalas()); 
         System.out.println("--------------- PORFAVOR QUE NO SEAN 0--------------------------------");
         System.out.println(blackboard.getSalas());
     }

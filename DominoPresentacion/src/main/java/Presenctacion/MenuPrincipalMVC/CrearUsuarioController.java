@@ -124,7 +124,7 @@ public void crearUsuario() throws IOException {
         comunicacion.registrarUsuario(socket, eventoRegistro); // Registrar usuario en el servidor
         System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
         
-        server.persistirClientes();
+        server.persistirDatosMultijugador();
         server.cargarClientesPersistidos();
 
         int cantidadUsuariosConectados = server.getUsuariosConectados().size();
