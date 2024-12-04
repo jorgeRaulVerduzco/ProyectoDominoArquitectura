@@ -90,7 +90,19 @@ public class BlackBoard {
     public void actualizarEstadoPartida(String partidaId, Partida partida) {
         actualizarEstadoEntidad(partidas, partidaId, partida, "PARTIDA");
     }
+public Map<String, List<String>> obtenerJugadoresPorSala() {
+    Map<String, List<String>> jugadoresPorSala = new HashMap<>();
 
+    for (Sala sala : salas.values()) {
+        List<String> nombresJugadores = sala.getJugador().stream()
+            .map(Jugador::getNombre)
+            .collect(Collectors.toList());
+        
+        jugadoresPorSala.put(sala.getId(), nombresJugadores);
+    }
+
+    return jugadoresPorSala;
+}
     // Método para agregar un jugador
     public void agregarJugador(Jugador jugador) {
         if (controller != null) {
@@ -212,4 +224,5 @@ public class BlackBoard {
         System.out.println("BLACKBOARD 3  : Socket del jugador actual" + cliente);
         System.out.println("Recibiendo respuesta de una fuente de conocimiento: " + eventoRespuesta.getDatos());
     }
+    
 }

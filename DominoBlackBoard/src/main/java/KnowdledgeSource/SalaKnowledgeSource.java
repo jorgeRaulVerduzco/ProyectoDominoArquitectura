@@ -20,9 +20,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -56,12 +58,13 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
      * @return true si el evento puede ser procesado, false en caso contrario.
      */
     @Override
-    public boolean puedeProcesar(Evento evento) {
-        return evento.getTipo().equals("CREAR_SALA")
-                || evento.getTipo().equals("UNIR_SALA")
-                || evento.getTipo().equals("ABANDONAR_SALA")
-                || evento.getTipo().equals("SOLICITAR_SALAS");  // Añadir este caso
-    }
+public boolean puedeProcesar(Evento evento) {
+    return evento.getTipo().equals("CREAR_SALA")
+            || evento.getTipo().equals("UNIR_SALA")
+            || evento.getTipo().equals("ABANDONAR_SALA")
+            || evento.getTipo().equals("SOLICITAR_SALAS")
+            || evento.getTipo().equals("JUGADORES_ESPERA");
+}
 
     /**
      * Procesa el evento proporcionado dependiendo de su tipo. Los tipos de
@@ -91,6 +94,9 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
             case "SOLICITAR_SALAS":
                 enviarSalasDisponibles(cliente);
                 break;
+                case "JUGADORES_ESPERA":
+//            obtenerJugadoresPorSala(cliente, evento);
+            break;
         }
     }
 
@@ -293,4 +299,13 @@ private Sala cargarSalaExistente(String id) {
         eventoInicio.agregarDato("sala", sala);
 //        server.enviarEvento(eventoInicio);
     }
+//    
+//   private void obtenerJugadoresPorSala(Socket cliente, Evento evento) {
+//     Map<String, List<String>> jugadoresPorSala = server.obtenerJugadoresPorSala();
+//    
+//    Evento respuesta = new Evento("JUGADORES_ESPERA");
+//    respuesta.agregarDato("jugadoresPorSala", jugadoresPorSala);
+//    
+//    server.enviarMensajeACliente(cliente, respuesta);
+//}
 }

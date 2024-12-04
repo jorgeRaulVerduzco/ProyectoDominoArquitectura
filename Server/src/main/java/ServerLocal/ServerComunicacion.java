@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -126,7 +127,9 @@ public class ServerComunicacion {
                     registrarUsuario(cliente, evento);
 
                     break;
-
+               case "JUGADORES_ESPERA":
+//                obtenerJugadoresPorSala(cliente, evento);
+                break;
                 default:
                     System.out.println("Evento no reconocido: " + evento.getTipo());
             }
@@ -136,6 +139,17 @@ public class ServerComunicacion {
         }
     }
 
+//    private void obtenerJugadoresPorSala(Socket cliente, Evento evento) {
+//    // Delegar al servidor para obtener los jugadores por sala
+//    Map<String, List<String>> jugadoresPorSala = server.obtenerJugadoresPorSala();
+//    
+//    // Crear un nuevo evento de respuesta
+//    Evento respuesta = new Evento("JUGADORES_ESPERA");
+//    respuesta.agregarDato("jugadoresPorSala", jugadoresPorSala);
+//    
+//    // Enviar la respuesta al cliente
+//    server.enviarMensajeACliente(cliente, respuesta);
+//}
     /**
      * Crea una nueva sala de juego en respuesta a un evento de creación de sala
      * enviado por un cliente.

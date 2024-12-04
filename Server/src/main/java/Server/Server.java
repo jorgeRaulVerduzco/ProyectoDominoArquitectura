@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -938,30 +940,65 @@ public class Server {
         }
     }
 
-public void actualizarSala(Sala salaActualizada) {
-    try {
-        Path salasPath = Paths.get("salas_multijugador.json");
-        List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(Files.readString(salasPath, StandardCharsets.UTF_8));
+    public void actualizarSala(Sala salaActualizada) {
+        try {
+            Path salasPath = Paths.get("salas_multijugador.json");
+            List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(Files.readString(salasPath, StandardCharsets.UTF_8));
 
-        boolean salaEncontrada = false;
-        for (int i = 0; i < salasCargadas.size(); i++) {
-            if (salasCargadas.get(i).getId().equals(salaActualizada.getId())) {
-                salasCargadas.set(i, salaActualizada);
-                salaEncontrada = true;
-                break;
+            boolean salaEncontrada = false;
+            for (int i = 0; i < salasCargadas.size(); i++) {
+                if (salasCargadas.get(i).getId().equals(salaActualizada.getId())) {
+                    salasCargadas.set(i, salaActualizada);
+                    salaEncontrada = true;
+                    break;
+                }
             }
-        }
 
-        if (salaEncontrada) {
-            String jsonActualizado = ConversorJSON.convertirSalasAJson(salasCargadas);
-            Files.writeString(salasPath, jsonActualizado, StandardCharsets.UTF_8);
-            System.out.println("JSON actualizado correctamente: " + jsonActualizado);
+            if (salaEncontrada) {
+                String jsonActualizado = ConversorJSON.convertirSalasAJson(salasCargadas);
+                Files.writeString(salasPath, jsonActualizado, StandardCharsets.UTF_8);
+                System.out.println("JSON actualizado correctamente: " + jsonActualizado);
+            } else {
+                System.err.println("No se encontró la sala con ID: " + salaActualizada.getId());
+            }
+        } catch (IOException e) {
+            System.err.println("Error al actualizar la sala: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+ public List<String> obtenerJugadoresPorIdSala(String idSala) {
+    try {
+        // Ruta del archivo JSON que contiene las salas
+        Path salasPath = Paths.get("salas_multijugador.json");
+
+        // Verificar que el archivo exista
+        if (Files.exists(salasPath)) {
+            // Leer el contenido del archivo
+            String json = Files.readString(salasPath, StandardCharsets.UTF_8);
+
+            // Convertir el JSON a una lista de objetos Sala
+            List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(json);
+
+            // Buscar la sala por ID
+            for (Sala sala : salasCargadas) {
+                if (sala.getId().equals(idSala)) {
+                    // Retornar los nombres de los jugadores en la sala
+                    return sala.getJugador().stream()
+                            .map(Jugador::getNombre)
+                            .collect(Collectors.toList());
+                }
+            }
         } else {
-            System.err.println("No se encontró la sala con ID: " + salaActualizada.getId());
+            System.err.println("El archivo salas_multijugador.json no existe.");
         }
     } catch (IOException e) {
-        System.err.println("Error al actualizar la sala: " + e.getMessage());
-        e.printStackTrace();
+        System.err.println("Error al leer el archivo JSON: " + e.getMessage());
+    } catch (Exception e) {
+        System.err.println("Error al procesar las salas: " + e.getMessage());
     }
+
+    // Si no se encuentra la sala, retornar una lista vacía
+    return new ArrayList<>();
 }
 }
