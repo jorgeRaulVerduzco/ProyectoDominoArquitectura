@@ -472,5 +472,25 @@
       }
     ],
     "estado": "ESPERANDO"
+  },
+  {
+    "id": "1c06f074-ea65-49cd-8c69-958d91e75fe0",
+    "cantJugadores": 2,
+    "numeroFichas": 23,
+    "jugador": [
+      {
+        "nombre": "49682",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      },
+      {
+        "nombre": "49667",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      }
+    ],
+    "estado": "ESPERANDO"
   }
 ]
