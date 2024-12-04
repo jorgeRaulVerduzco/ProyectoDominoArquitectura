@@ -169,6 +169,8 @@ public class ServerComunicacion {
             }
 
             // Extract data safely
+            String id  = (String)evento.obtenerDato("id");
+            System.out.println("CREARNUEVA SALA ID ES:"+ id);
             Integer numJugadores = extractIntegerSafely(evento, "numJugadores");
             Integer numFichas = extractIntegerSafely(evento, "numFichas");
             Jugador jugador = extractJugadorSafely(evento);
@@ -181,7 +183,7 @@ public class ServerComunicacion {
 
             // Create and configure new room
             Sala nuevaSala = new Sala();
-            nuevaSala.setId(UUID.randomUUID().toString());
+            nuevaSala.setId(id);
             nuevaSala.setCantJugadores(numJugadores);
             nuevaSala.setNumeroFichas(numFichas);
             nuevaSala.setEstado("ESPERANDO");

@@ -15,8 +15,10 @@ import java.awt.*;
 
 import Dominio.Sala;
 import Presenctacion.Observer;
+import Presentacion.EsperaMVC.EsperaController;
 import Presentacion.EsperaMVC.EsperaModel;
 import Presentacion.EsperaMVC.EsperaView;
+import Server.Server;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
 import java.awt.event.ActionListener;
@@ -25,18 +27,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
-
     private UnirseAlaSalaController controller;
     private UnirseAlaSalaModel model;
     private DefaultTableModel tableModel;
+    private Server server; // Agregar el servidor
 
-    public UnirseAlaSalaView(UnirseAlaSalaModel model) {
+    public UnirseAlaSalaView(UnirseAlaSalaModel model, Server server) { // Recibir el servidor como argumento
         this.model = model;
+        this.server = server; // Asignar el servidor
         this.controller = new UnirseAlaSalaController(model, this);
         initComponents();
         configurarTabla();
         System.out.println("Tabla configurada. Columnas: " + tableModel.getColumnCount());
     }
+
 
     @Override
     public void update() {
@@ -127,61 +131,70 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
     
          // Modify how the button column is set up
         tblUnirseSala.getColumnModel().getColumn(3).setCellRenderer(new ButtonRenderer());
-        tblUnirseSala.getColumnModel().getColumn(3).setCellEditor(new ButtonEditor(controller));
+        tblUnirseSala.getColumnModel().getColumn(3).setCellEditor(new ButtonEditor(controller, server));
+
     }
 
-    // Custom ButtonEditor
-    class ButtonEditor extends DefaultCellEditor {
-        private final JButton button;
-        private int selectedRow;
-        private final UnirseAlaSalaController controller;
-        private boolean isPushed = false;
+class ButtonEditor extends DefaultCellEditor {
+    private final JButton button;
+    private int selectedRow;
+    private final UnirseAlaSalaController controller;
+    private final Server server; // Variable para el servidor
+    private boolean isPushed = false;
 
-        public ButtonEditor(UnirseAlaSalaController controller) {
-            super(new JCheckBox());
-            this.controller = controller;
+    public ButtonEditor(UnirseAlaSalaController controller, Server server) {
+        super(new JCheckBox());
+        this.controller = controller;
+        this.server = server; // Asigna el servidor al editor
+        
+        button = new JButton("Unirse");
+        button.setOpaque(true);
+        button.addActionListener(e -> {
+            System.out.println("Button clicked for row: " + selectedRow);
+            isPushed = true;
+            fireEditingStopped();
+        });
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        selectedRow = row;
+        button.setText("Unirse");
+        return button;
+    }
+        @Override
+public Object getCellEditorValue() {
+    if (isPushed) {
+        try {
+            // Obtener el ID de la sala desde la primera columna
+            String salaId = String.valueOf(tblUnirseSala.getValueAt(selectedRow, 0));
+            System.out.println("Attempting to join sala with ID: " + salaId);
+
             
-            button = new JButton("Unirse");
-            button.setOpaque(true);
-            button.addActionListener(e -> {
-                System.out.println("Button clicked for row: " + selectedRow);
-                isPushed = true;
-                fireEditingStopped();
-            });
+            
+            // Crear o pasar el objeto Jugador actual si es necesario
+            Jugador jugadorActual = new Jugador(); // Reemplazar con el Jugador real
+            controller.unirseASala(salaId, jugadorActual);
+
+             // Crear el modelo, vista y controlador del frame de espera con el ID de la sala
+                EsperaModel esperaModel = new EsperaModel();
+                EsperaView esperaView = new EsperaView(esperaModel);
+                EsperaController esperaController = new EsperaController(esperaModel, esperaView, server, salaId);
+
+                // Mostrar la vista de espera
+                esperaView.setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Error processing 'Unirse' button: " + e.getMessage());
         }
+        isPushed = false;
+    }
+    return "Unirse";
+}
 
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, 
-                boolean isSelected, int row, int column) {
-            selectedRow = row;
-            button.setText("Unirse");
-            return button;
-        }
 
-        @Override
-        public Object getCellEditorValue() {
-            if (isPushed) {
-                try {
-                    // Get sala ID from the first column
-                    String salaId = String.valueOf(tblUnirseSala.getValueAt(selectedRow, 0));
-                    System.out.println("Attempting to join sala with ID: " + salaId);
 
-                    // Call unirseASala method directly with a dummy Jugador if needed
-                    // You'll need to replace this with your actual Jugador object
-                    Jugador jugadorActual = new Jugador(); // Create or pass actual Jugador
-                    controller.unirseASala(salaId, jugadorActual);
 
-                    // Open waiting room or next view
-                    EsperaView esperaView = new EsperaView(new EsperaModel());
-                    esperaView.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.err.println("Error processing 'Unirse' button: " + e.getMessage());
-                }
-                isPushed = false;
-            }
-            return "Unirse";
-        }
 
         @Override
         public boolean stopCellEditing() {

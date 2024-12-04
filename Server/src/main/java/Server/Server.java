@@ -863,6 +863,7 @@ public class Server {
                     break;
                 case "UNIRSE_SALA":
                 case "ABANDONAR_SALA":
+                    
                 case "JUGADA":
 //                    blackboardController.procesarEvento(cliente, evento);
                     break;
@@ -870,6 +871,8 @@ public class Server {
                     System.out.println("[DEBUG] Recibido evento REGISTRO_USUARIO");
                     serverComunicacion.procesarEvento(cliente, evento);
                     break;
+                    
+                    
 
                 default:
                     System.out.println("Evento no reconocido: " + evento.getTipo());

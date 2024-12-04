@@ -197,6 +197,12 @@
         "estado": "ACTIVO",
         "puntuacion": 0,
         "fichasJugador": []
+      },
+      {
+        "nombre": "asd",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
       }
     ],
     "estado": "ESPERANDO"
@@ -330,6 +336,136 @@
       },
       {
         "nombre": "49682",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      }
+    ],
+    "estado": "ESPERANDO"
+  },
+  {
+    "id": "bc278628-1c7e-4fe6-a41f-7168e832de8d",
+    "cantJugadores": 2,
+    "numeroFichas": 9899,
+    "jugador": [
+      {
+        "nombre": "CarlosDamian",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      },
+      {
+        "nombre": "Roberto",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      }
+    ],
+    "estado": "ESPERANDO"
+  },
+  {
+    "id": "953ca08a-2451-45b9-9a25-2c2832abb02f",
+    "cantJugadores": 2,
+    "numeroFichas": 123,
+    "jugador": [
+      {
+        "nombre": "asd1",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      }
+    ],
+    "estado": "ESPERANDO"
+  },
+  {
+    "id": "029dce23-c48b-478f-85ce-357db6ea4911",
+    "cantJugadores": 2,
+    "numeroFichas": 123,
+    "jugador": [
+      {
+        "nombre": "51114",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      }
+    ],
+    "estado": "ESPERANDO"
+  },
+  {
+    "id": "667e4a2b-99ca-49e6-8560-d59627e1ea87",
+    "cantJugadores": 2,
+    "numeroFichas": 1,
+    "jugador": [
+      {
+        "nombre": "asd",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      }
+    ],
+    "estado": "ESPERANDO"
+  },
+  {
+    "id": "667e4a2b-99ca-49e6-8560-d59627e1ea87",
+    "cantJugadores": 2,
+    "numeroFichas": 1,
+    "jugador": [
+      {
+        "nombre": "asd",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      }
+    ],
+    "estado": "ESPERANDO"
+  },
+  {
+    "id": "141eab96-81a3-45cf-9192-7d8219d61f60",
+    "cantJugadores": 2,
+    "numeroFichas": 1,
+    "jugador": [
+      {
+        "nombre": "asd",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      }
+    ],
+    "estado": "ESPERANDO"
+  },
+  {
+    "id": "a6e0dae4-a551-4ca4-acbe-401925f69b51",
+    "cantJugadores": 2,
+    "numeroFichas": 1,
+    "jugador": [
+      {
+        "nombre": "asd",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      },
+      {
+        "nombre": "asd22222",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      }
+    ],
+    "estado": "ESPERANDO"
+  },
+  {
+    "id": "e5ea85c6-a9c2-43d2-bd4a-bb88053ddc65",
+    "cantJugadores": 2,
+    "numeroFichas": 12,
+    "jugador": [
+      {
+        "nombre": "asd",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      },
+      {
+        "nombre": "57621",
         "estado": "ACTIVO",
         "puntuacion": 0,
         "fichasJugador": []

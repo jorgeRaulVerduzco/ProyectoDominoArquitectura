@@ -15,6 +15,7 @@ import ServerLocal.ServerComunicacion;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -74,66 +75,68 @@ public class CrearSalaModel {
         }
     }
 
-    public void crearSala() {
- System.out.println("[DEBUG] Iniciando creación de sala en el modelo");
+    public String crearSala() {
+    System.out.println("[DEBUG] Iniciando creación de sala en el modelo");
     try {
-        // Validación de números
         if (numeroJugadores <= 0 || numeroFichas <= 0) {
             System.err.println("[ERROR] Números inválidos");
-            return;
+            return null;
         }
 
         if (jugadorActual == null) {
             System.err.println("[ERROR] No hay jugador actual");
-            return;
+            return null;
         }
 
         if (server == null) {
             System.err.println("[ERROR] Servidor no configurado");
-            return;
+            return null;
         }
 
-        // Crear evento para enviar al servidor
         Evento evento = new Evento("CREAR_SALA");
         evento.agregarDato("numJugadores", numeroJugadores);
         evento.agregarDato("numFichas", numeroFichas);
         evento.agregarDato("jugador", jugadorActual);
 
-        
-        Sala sala= new Sala();
+        Sala sala = new Sala();
+        sala.setId(UUID.randomUUID().toString());
+        String id = sala.getId();
+        evento.agregarDato("id", id);
+        System.out.println("[DEBUG] ID de la sala creada: " + id);
         sala.setCantJugadores(numeroJugadores);
         sala.setNumeroFichas(numeroFichas);
-        List <Jugador> jugadores = new ArrayList<>();
+        List<Jugador> jugadores = new ArrayList<>();
         jugadores.add(jugadorActual);
         sala.setJugador(jugadores);
-        
+
         servicioControlJuego.agregarSala(sala);
-        
-        // Validación de datos antes de enviarlos
+
         if (evento.obtenerDato("numJugadores") == null || evento.obtenerDato("numFichas") == null || evento.obtenerDato("jugador") == null) {
             System.err.println("[ERROR] Datos nulos en el evento.");
-            return;
+            return null;
         }
 
         ServerComunicacion servercito = new ServerComunicacion(server);
         System.out.println("[DEBUG] Enviando evento CREAR_SALA al servidor");
         System.out.println("Evento datos: " + evento.getDatos());
 
-        // Verificar conexión del socket
         Socket socketCliente = server.getSocketJugador(jugadorActual);
         if (socketCliente == null || !socketCliente.isConnected()) {
             System.err.println("[ERROR] Socket no válido");
-            return;
+            return null;
         }
 
-        // Enviar el evento al servidor para procesarlo
         servercito.procesarEvento(socketCliente, evento);
         System.out.println(server.cargarSalasMultijugador());
+
+        return id; // Devuelve el ID de la sala creada
     } catch (Exception e) {
         System.err.println("[ERROR] Error creando sala: " + e.getMessage());
         e.printStackTrace();
+        return null;
     }
-    }
+}
+
 
     public void esperarServidor() throws InterruptedException {
         latch.await();  // Espera hasta que el servidor esté inicializado

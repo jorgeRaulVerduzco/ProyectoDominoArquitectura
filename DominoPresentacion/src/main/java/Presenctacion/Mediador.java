@@ -14,6 +14,7 @@ import Presenctacion.CrearSalaMVC.CrearSalaController;
 import Presenctacion.CrearSalaMVC.CrearSalaModel;
 import Presenctacion.SeleccionJuego.OpcionesDeJuegoView;
 import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaController;
+import Presentacion.EsperaMVC.EsperaController;
 import PresentacionTableroMVC.TableroController;
 import PresentacionTableroMVC.TableroView;
 import Server.Server;
@@ -26,7 +27,7 @@ import javax.swing.JOptionPane;
 public class Mediador {
 
     private UnirseAlaSalaController unirseAlaSalaController;
-
+private EsperaController esperaController;
     private CrearUsuarioController crearUsuarioController;
     private CrearSalaController crearSalaController;
     private CrearSalaView crearSalaView;
@@ -43,7 +44,8 @@ public class Mediador {
             TableroController tableroController,
             TableroView tableroView,
             UnirseAlaSalaController unirseAlaSalaController,
-            OpcionesDeJuegoView opcionesDeJuegoView) {
+            OpcionesDeJuegoView opcionesDeJuegoView, EsperaController esperaController) {
+        this.esperaController  = esperaController;
         this.crearUsuarioController = crearUsuarioController;
         this.crearSalaController = crearSalaController;
         this.crearSalaView = crearSalaView;
@@ -131,11 +133,10 @@ public class Mediador {
 
     public void salaCreada() {
         crearSalaView.setVisible(false);
-        // Mostrar la vista principal (puedes configurar cuál es la principal)
-        unirseAlaSalaController.mostrarVista();
+        
+        esperaController.mostrarVista();
 
-        // Cargar las salas disponibles en la tabla al iniciar
-        unirseAlaSalaController.cargarSalasDisponibles();
+       
 
     }
 
