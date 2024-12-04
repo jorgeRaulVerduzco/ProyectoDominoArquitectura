@@ -148,12 +148,7 @@ public class Server {
 
 // Método para obtener salas como lista JSON para enviar a clientes
     public String obtenerSalasComoJSON() {
-        try {
-            return ConversorJSON.convertirSalasAJson(salas);
-        } catch (IOException e) {
-            System.err.println("Error convirtiendo salas a JSON: " + e.getMessage());
-            return "[]";
-        }
+        return ConversorJSON.convertirSalasAJson(salas);
     }
 
     // Método para registrar jugadores en el servidor desde BlackBoard
@@ -299,51 +294,49 @@ public class Server {
             System.err.println("Error: No se pudo conectar al servidor.");
         }
     }
-    
+
     public void unirseSala(Evento evento, Socket clienteSocket) {
-    try {
-        // Verificar si la sala fue enviada en el evento
-        Sala sala = (Sala) evento.obtenerDato("sala");
-        if (sala == null) {
-            // Intentar recuperar la sala desde el archivo JSON usando el ID
-            String salaId = (String) evento.obtenerDato("id");
-            if (salaId == null || salaId.isEmpty()) {
-                throw new IllegalArgumentException("El ID de la sala no puede ser nulo o vacío.");
+        try {
+            // Verificar si la sala fue enviada en el evento
+            Sala sala = (Sala) evento.obtenerDato("sala");
+            if (sala == null) {
+                // Intentar recuperar la sala desde el archivo JSON usando el ID
+                String salaId = (String) evento.obtenerDato("id");
+                if (salaId == null || salaId.isEmpty()) {
+                    throw new IllegalArgumentException("El ID de la sala no puede ser nulo o vacío.");
+                }
+
+                Path salasPath = Paths.get("salas_multijugador.json");
+                if (Files.exists(salasPath)) {
+                    String jsonSalas = Files.readString(salasPath, StandardCharsets.UTF_8);
+                    List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(jsonSalas);
+                    sala = salasCargadas.stream()
+                            .filter(s -> salaId.equals(s.getId()))
+                            .findFirst()
+                            .orElse(null);
+                }
             }
 
-            Path salasPath = Paths.get("salas_multijugador.json");
-            if (Files.exists(salasPath)) {
-                String jsonSalas = Files.readString(salasPath, StandardCharsets.UTF_8);
-                List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(jsonSalas);
-                sala = salasCargadas.stream()
-                    .filter(s -> salaId.equals(s.getId()))
-                    .findFirst()
-                    .orElse(null);
+            if (sala == null) {
+                throw new IllegalArgumentException("La sala no es válida o no existe.");
             }
-        }
 
-        if (sala == null) {
-            throw new IllegalArgumentException("La sala no es válida o no existe.");
-        }
+            // Validar el jugador
+            Jugador jugador = jugadoresPorSocket.get(clienteSocket);
+            if (jugador == null) {
+                throw new IllegalStateException("No se encontró un jugador asociado al socket.");
+            }
 
-        // Validar el jugador
-        Jugador jugador = jugadoresPorSocket.get(clienteSocket);
-        if (jugador == null) {
-            throw new IllegalStateException("No se encontró un jugador asociado al socket.");
+            // Enviar evento al BlackBoard
+            System.out.println("Sala encontrada: " + sala.getId() + ". Enviando evento al BlackBoard.");
+            evento.agregarDato("sala", sala);
+            evento.agregarDato("jugador", jugador);
+            blackBoard.enviarEventoBlackBoard(clienteSocket, evento);
+        } catch (Exception e) {
+            System.err.println("Error en unirseSala: " + e.getMessage());
+            e.printStackTrace();
         }
-
-        // Enviar evento al BlackBoard
-        System.out.println("Sala encontrada: " + sala.getId() + ". Enviando evento al BlackBoard.");
-        evento.agregarDato("sala", sala);
-        evento.agregarDato("jugador", jugador);
-        blackBoard.enviarEventoBlackBoard(clienteSocket, evento);
-    } catch (Exception e) {
-        System.err.println("Error en unirseSala: " + e.getMessage());
-        e.printStackTrace();
     }
-}
-
-
 
     public void agregarSala(Sala sala, Socket socket) {
         gestorSalas.agregarSala(sala);
@@ -891,17 +884,16 @@ public class Server {
             return new ArrayList<>(jugadoresPorSocket.values());
         }
     }
-    
-    public Jugador getJugadorConectado() {
-    // Devolver un solo jugador (puedes elegir el primero o el que desees)
-    synchronized (jugadoresPorSocket) {
-        if (!jugadoresPorSocket.isEmpty()) {
-            return jugadoresPorSocket.values().iterator().next(); // Obtiene el primer jugador
-        }
-    }
-    return null; // Retorna null si no hay jugadores conectados
-}
 
+    public Jugador getJugadorConectado() {
+        // Devolver un solo jugador (puedes elegir el primero o el que desees)
+        synchronized (jugadoresPorSocket) {
+            if (!jugadoresPorSocket.isEmpty()) {
+                return jugadoresPorSocket.values().iterator().next(); // Obtiene el primer jugador
+            }
+        }
+        return null; // Retorna null si no hay jugadores conectados
+    }
 
     public List<Socket> getClientes() {
         return clientes;
@@ -915,35 +907,61 @@ public class Server {
         Evento solicitud = new Evento("RESPUESTA_SALAS");
         enviarEvento(solicitud, socket);
     }
-    
+
     public void agregarSocketAJugador(Socket socket, Jugador jugador) {
-    // Verificación de parámetros nulos
-    if (socket == null || jugador == null) {
-        System.err.println("[ERROR] Socket o jugador nulo");
-        return;
-    }
-
-    try {
-        // Sincronización para operaciones concurrentes seguras
-        synchronized (jugadoresPorSocket) {
-            // Añadir el socket al mapa de jugadores por socket
-            jugadoresPorSocket.put(socket, jugador);
-            
-            // Opcional: añadir a la lista de clientes si no está ya presente
-            if (!clientes.contains(socket)) {
-                clientes.add(socket);
-            }
-
-            // Configurar stream de salida para este socket
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            outputStreams.put(socket, out);
-
-            System.out.println("[REGISTRO] Socket agregado para jugador: " + jugador.getNombre());
+        // Verificación de parámetros nulos
+        if (socket == null || jugador == null) {
+            System.err.println("[ERROR] Socket o jugador nulo");
+            return;
         }
 
+        try {
+            // Sincronización para operaciones concurrentes seguras
+            synchronized (jugadoresPorSocket) {
+                // Añadir el socket al mapa de jugadores por socket
+                jugadoresPorSocket.put(socket, jugador);
 
+                // Opcional: añadir a la lista de clientes si no está ya presente
+                if (!clientes.contains(socket)) {
+                    clientes.add(socket);
+                }
+
+                // Configurar stream de salida para este socket
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                outputStreams.put(socket, out);
+
+                System.out.println("[REGISTRO] Socket agregado para jugador: " + jugador.getNombre());
+            }
+
+        } catch (IOException e) {
+            System.err.println("[ERROR] No se pudo agregar socket para jugador " + jugador.getNombre() + ": " + e.getMessage());
+        }
+    }
+
+public void actualizarSala(Sala salaActualizada) {
+    try {
+        Path salasPath = Paths.get("salas_multijugador.json");
+        List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(Files.readString(salasPath, StandardCharsets.UTF_8));
+
+        boolean salaEncontrada = false;
+        for (int i = 0; i < salasCargadas.size(); i++) {
+            if (salasCargadas.get(i).getId().equals(salaActualizada.getId())) {
+                salasCargadas.set(i, salaActualizada);
+                salaEncontrada = true;
+                break;
+            }
+        }
+
+        if (salaEncontrada) {
+            String jsonActualizado = ConversorJSON.convertirSalasAJson(salasCargadas);
+            Files.writeString(salasPath, jsonActualizado, StandardCharsets.UTF_8);
+            System.out.println("JSON actualizado correctamente: " + jsonActualizado);
+        } else {
+            System.err.println("No se encontró la sala con ID: " + salaActualizada.getId());
+        }
     } catch (IOException e) {
-        System.err.println("[ERROR] No se pudo agregar socket para jugador " + jugador.getNombre() + ": " + e.getMessage());
+        System.err.println("Error al actualizar la sala: " + e.getMessage());
+        e.printStackTrace();
     }
 }
 }

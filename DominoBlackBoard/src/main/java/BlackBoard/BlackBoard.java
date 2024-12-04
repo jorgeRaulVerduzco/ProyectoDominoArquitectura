@@ -27,18 +27,20 @@ import java.util.stream.Collectors;
 public class BlackBoard {
 
     private Map<String, Sala> salas;
-   private Map<String, Jugador> jugadores;
+    private Map<String, Jugador> jugadores;
     private Map<String, Partida> partidas;
     private Controller controller;
     private List<KnowdledgeSource> observers;
     private Server server;  // Asegúrate de tener una referencia al Server
-public Map<String, Jugador> getJugadores() {
-    return new HashMap<>(jugadores);  // Devolver una copia para evitar modificaciones externas
-}
 
-public Map<String, Sala> getSalas() {
-    return new HashMap<>(salas);  // Devolver una copia para evitar modificaciones externas
-}
+    public Map<String, Jugador> getJugadores() {
+        return new HashMap<>(jugadores);  // Devolver una copia para evitar modificaciones externas
+    }
+
+    public Map<String, Sala> getSalas() {
+        return new HashMap<>(salas);  // Devolver una copia para evitar modificaciones externas
+    }
+
     public BlackBoard(Server server) {
 
         this.server = server;  // Inicializa el server
@@ -107,27 +109,41 @@ public Map<String, Sala> getSalas() {
         }
     }
 
-  public void agregarSala(Sala sala) {
-     if (sala == null || sala.getId() == null) {
-        System.err.println("Error: Sala inválida o sin ID");
-        return;
+    public void ActualizarSala(Sala sala) {
+        if (controller != null) {
+            // Verificamos si el jugador tiene un ID válido
+            // Agregamos el jugador al mapa usando su ID como clave
+            salas.put(sala.getId(), sala);  // Usa el ID del jugador como clave para el mapa
+
+            // Notificamos el cambio al controlador después de agregar el jugador
+            controller.notificarCambio("UNIR_SALA");
+        } else {
+            System.err.println("Error: El jugador o su ID es nulo.");
+        }
     }
-    
-    if (controller != null) {
-        // Log detallado
-        System.out.println("Agregando sala: " + sala.getId());
-        System.out.println("Detalles de la sala: " + 
-            "Jugadores=" + (sala.getJugador() != null ? sala.getJugador().size() : "0") + 
-            ", Estado=" + sala.getEstado());
-        
-        salas.put(sala.getId(), sala);
-        
-        System.out.println("Total de salas después de agregar: " + salas.size());
-        controller.notificarCambio("CREAR_SALA");
-    } else {
-        System.err.println("Error: El controlador es nulo.");
+
+    public void agregarSala(Sala sala) {
+        if (sala == null || sala.getId() == null) {
+            System.err.println("Error: Sala inválida o sin ID");
+            return;
+        }
+
+        if (controller != null) {
+            // Log detallado
+            System.out.println("Agregando sala: " + sala.getId());
+            System.out.println("Detalles de la sala: "
+                    + "Jugadores=" + (sala.getJugador() != null ? sala.getJugador().size() : "0")
+                    + ", Estado=" + sala.getEstado());
+
+            salas.put(sala.getId(), sala);
+
+            System.out.println("Total de salas después de agregar: " + salas.size());
+            controller.notificarCambio("CREAR_SALA");
+        } else {
+            System.err.println("Error: El controlador es nulo.");
+        }
     }
-}
+
     public void removerJugador(String jugadorId) {
         Jugador jugador = jugadores.remove(jugadorId);
         if (jugador != null) {

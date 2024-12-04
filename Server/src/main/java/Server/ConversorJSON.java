@@ -37,52 +37,17 @@ public class ConversorJSON {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static String convertirSalasAJson(List<Sala> salas) throws IOException {
-     Gson gson = new Gson();
+public static String convertirSalasAJson(List<Sala> salas) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(salas);
     }
 
-public static List<Sala> convertirJsonASalas(String json) throws IOException {
-    Gson gson = new GsonBuilder()
-        .registerTypeAdapter(Sala.class, new JsonDeserializer<Sala>() {
-            @Override
-            public Sala deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-                JsonObject jsonObject = json.getAsJsonObject();
-                Sala sala = new Sala();
-                
-                // Preserve existing fields
-                if (jsonObject.has("id")) {
-                    sala.setId(jsonObject.get("id").getAsString());
-                }
-                if (jsonObject.has("cantJugadores")) {
-                    sala.setCantJugadores(jsonObject.get("cantJugadores").getAsInt());
-                }
-                if (jsonObject.has("numeroFichas")) {
-                    sala.setNumeroFichas(jsonObject.get("numeroFichas").getAsInt());
-                }
-                if (jsonObject.has("estado")) {
-                    sala.setEstado(jsonObject.get("estado").getAsString());
-                }
-                
-                // Ensure jugadores are properly deserialized and set
-                if (jsonObject.has("jugador")) {
-                    JsonArray jugadoresArray = jsonObject.getAsJsonArray("jugador");
-                    List<Jugador> jugadores = new ArrayList<>();
-                    for (JsonElement jugadorElement : jugadoresArray) {
-                        Jugador jugador = context.deserialize(jugadorElement, Jugador.class);
-                        jugadores.add(jugador);
-                    }
-                    sala.setJugador(jugadores);
-                }
-                
-                return sala;
-            }
-        })
-        .create();
-    
-    Type listType = new TypeToken<List<Sala>>() {}.getType();
-    return gson.fromJson(json, listType);
-}
+    // Convertir JSON a lista de salas
+    public static List<Sala> convertirJsonASalas(String json) {
+        Gson gson = new Gson();
+        Type tipoListaSalas = new TypeToken<List<Sala>>(){}.getType();
+        return gson.fromJson(json, tipoListaSalas);
+    }
 
     public static String convertirSocketsAJson(List<Socket> sockets) throws IOException {
         // Serializar los datos esenciales de cada socket (ejemplo: host y puerto)
@@ -154,4 +119,6 @@ public static List<Sala> convertirJsonASalas(String json) throws IOException {
             return new ArrayList<>();
         }
     }
+    
+    
 }
