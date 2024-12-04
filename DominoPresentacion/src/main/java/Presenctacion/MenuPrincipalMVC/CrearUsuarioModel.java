@@ -5,6 +5,7 @@
 package Presenctacion.MenuPrincipalMVC;
 
 import Dominio.Jugador;
+import Negocio.ServicioControlJuego;
 
 /**
  *
@@ -63,5 +64,8 @@ public class CrearUsuarioModel {
     public int hashCode() {
         return nombre != null ? nombre.toLowerCase().hashCode() : 0; // Generar hashCode basado en el nombre
     }
-    
+    public void crearUsuario(){
+     //   ServicioControlJuego control = new ServicioControlJuego();
+        
+    }
 }

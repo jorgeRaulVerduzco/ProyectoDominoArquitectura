@@ -140,7 +140,7 @@ private EsperaController esperaController;
 
     }
 
-    private void iniciarJuego() {
+    public void iniciarJuego() {
         tableroView.setVisible(true);
     }
 

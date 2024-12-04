@@ -41,6 +41,10 @@ public class ServicioControlJuego {
         Jugadores = new ArrayList<>();
     }
 
+    public void agregarJugadores(Jugador jugador) {
+        Jugadores.add(jugador);
+    }
+
     public synchronized boolean agregarJugador(Sala sala, Jugador jugador) {
         if (sala.getJugador().size() < sala.getCantJugadores()) {
             sala.getJugador().add(jugador);
@@ -181,14 +185,13 @@ public class ServicioControlJuego {
     public void crearJugador(Jugador jugador) {
         Jugadores.add(jugador);
     }
-    public Sala buscarSalaPorId(String id) {
-    return getSalasDisponibles().stream()
-        .filter(sala -> sala.getId().equals(id))
-        .findFirst()
-        .orElse(null);
-}
 
-    
+    public Sala buscarSalaPorId(String id) {
+        return getSalasDisponibles().stream()
+                .filter(sala -> sala.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
 
     /**
      * Verifica si un jugador ha ganado el juego o si el juego está bloqueado.

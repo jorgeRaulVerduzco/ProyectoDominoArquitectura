@@ -35,6 +35,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -192,7 +194,7 @@ public class Server {
 
     public void cerrarServidor() {
         try {
-            // Detener el servidor
+            borrarArchivosJSON();
             running = false;
             isConnected = false;
 
@@ -863,7 +865,7 @@ public class Server {
                     break;
                 case "UNIRSE_SALA":
                 case "ABANDONAR_SALA":
-                    
+
                 case "JUGADA":
 //                    blackboardController.procesarEvento(cliente, evento);
                     break;
@@ -871,8 +873,6 @@ public class Server {
                     System.out.println("[DEBUG] Recibido evento REGISTRO_USUARIO");
                     serverComunicacion.procesarEvento(cliente, evento);
                     break;
-                    
-                    
 
                 default:
                     System.out.println("Evento no reconocido: " + evento.getTipo());
@@ -970,38 +970,72 @@ public class Server {
         }
     }
 
- public List<String> obtenerJugadoresPorIdSala(String idSala) {
-    try {
-        // Ruta del archivo JSON que contiene las salas
-        Path salasPath = Paths.get("salas_multijugador.json");
+    public List<String> obtenerJugadoresPorIdSala(String idSala) {
+        try {
+            // Ruta del archivo JSON que contiene las salas
+            Path salasPath = Paths.get("salas_multijugador.json");
 
-        // Verificar que el archivo exista
-        if (Files.exists(salasPath)) {
-            // Leer el contenido del archivo
-            String json = Files.readString(salasPath, StandardCharsets.UTF_8);
+            // Verificar que el archivo exista
+            if (Files.exists(salasPath)) {
+                // Leer el contenido del archivo
+                String json = Files.readString(salasPath, StandardCharsets.UTF_8);
 
-            // Convertir el JSON a una lista de objetos Sala
-            List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(json);
+                // Convertir el JSON a una lista de objetos Sala
+                List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(json);
 
-            // Buscar la sala por ID
-            for (Sala sala : salasCargadas) {
-                if (sala.getId().equals(idSala)) {
-                    // Retornar los nombres de los jugadores en la sala
-                    return sala.getJugador().stream()
-                            .map(Jugador::getNombre)
-                            .collect(Collectors.toList());
+                // Buscar la sala por ID
+                for (Sala sala : salasCargadas) {
+                    if (sala.getId().equals(idSala)) {
+                        // Retornar los nombres de los jugadores en la sala
+                        return sala.getJugador().stream()
+                                .map(Jugador::getNombre)
+                                .collect(Collectors.toList());
+                    }
                 }
+            } else {
+                System.err.println("El archivo salas_multijugador.json no existe.");
             }
-        } else {
-            System.err.println("El archivo salas_multijugador.json no existe.");
+        } catch (IOException e) {
+            System.err.println("Error al leer el archivo JSON: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Error al procesar las salas: " + e.getMessage());
         }
-    } catch (IOException e) {
-        System.err.println("Error al leer el archivo JSON: " + e.getMessage());
-    } catch (Exception e) {
-        System.err.println("Error al procesar las salas: " + e.getMessage());
+
+        // Si no se encuentra la sala, retornar una lista vacía
+        return new ArrayList<>();
     }
 
-    // Si no se encuentra la sala, retornar una lista vacía
-    return new ArrayList<>();
-}
+    private void borrarArchivosJSON() {
+        // Rutas de los archivos JSON
+        Path salaPath = Paths.get("C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\salas_multijugador.json");
+        Path jugadoresPath = Paths.get("C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\jugadores_multijugador.json");
+
+        // Log the absolute paths to verify
+        System.out.println("Intentando borrar: " + salaPath);
+        System.out.println("Intentando borrar: " + jugadoresPath);
+
+        // Check if files exist before attempting to delete
+        if (Files.exists(salaPath)) {
+            try {
+                Files.delete(salaPath);
+                System.out.println("Archivo de salas borrado: " + salaPath);
+            } catch (IOException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("Archivo de salas no existe: " + salaPath);
+        }
+
+        if (Files.exists(jugadoresPath)) {
+            try {
+                Files.delete(jugadoresPath);
+                System.out.println("Archivo de jugadores borrado: " + jugadoresPath);
+            } catch (IOException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("Archivo de jugadores no existe: " + jugadoresPath);
+        }
+
+    }
 }
