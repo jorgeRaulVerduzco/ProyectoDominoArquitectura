@@ -284,5 +284,39 @@
       }
     ],
     "estado": "ESPERANDO"
+  },
+  {
+    "id": "100e773e-e2f9-4dde-a544-2420f37a3907",
+    "cantJugadores": 2,
+    "numeroFichas": 23,
+    "jugador": [
+      {
+        "nombre": "49664",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      }
+    ],
+    "estado": "ESPERANDO"
+  },
+  {
+    "id": "5550246a-4c34-4d5b-8333-57321baf8b39",
+    "cantJugadores": 2,
+    "numeroFichas": 100,
+    "jugador": [
+      {
+        "nombre": "3306",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      },
+      {
+        "nombre": "5040",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      }
+    ],
+    "estado": "ESPERANDO"
   }
 ]
