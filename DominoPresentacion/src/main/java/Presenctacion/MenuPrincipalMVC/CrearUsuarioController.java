@@ -14,8 +14,6 @@ import ServerLocal.ServerComunicacion;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -124,7 +122,7 @@ public void crearUsuario() throws IOException {
         comunicacion.registrarUsuario(socket, eventoRegistro); // Registrar usuario en el servidor
         System.out.println("[REGISTRO] Jugador registrado en el servidor: " + jugador);
         
-        server.persistirClientes();
+        server.persistirDatosMultijugador();
         server.cargarClientesPersistidos();
 
         int cantidadUsuariosConectados = server.getUsuariosConectados().size();

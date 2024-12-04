@@ -4,6 +4,7 @@
  */
 package Presenctacion.UnirseAlaSalaMVC;
 
+import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
 import Presenctacion.ConfiguracionSocket;
@@ -11,8 +12,6 @@ import Presenctacion.Mediador;
 import Server.Server;
 import ServerLocal.ServerComunicacion;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.List;
 import java.util.logging.Level;
@@ -42,24 +41,27 @@ public class UnirseAlaSalaController {
 
         // Aquí asignamos el listener al botón de actualizar
         this.view.addActualizarListener(e -> actualizarTabla());
+        
     }
 
-    public void unirseASala(Integer salaId) {
-        if (salaId == null) {
-            System.err.println("Error: No se proporcionó un ID válido para la sala.");
-            return;
-        }
-
-        System.out.println("Controlador: Intentando unirse a la sala con ID " + salaId);
-
-        try {
-            // Enviar el evento al servidor para unirse a la sala
-            model.unirseASala(salaId, null); // Supone que el modelo maneja la lógica
-        } catch (Exception e) {
-            System.err.println("Error al intentar unirse a la sala: " + e.getMessage());
-            e.printStackTrace();
-        }
+    public void unirseASala(String idSala, Jugador jugadorActual) {
+    if (idSala == null || idSala.isEmpty()) {
+        System.err.println("Error: No se proporcionó un ID válido para la sala.");
+        return;
     }
+        System.out.println("JUGADOR actual:"+ jugadorActual );
+
+    System.out.println("Controlador: Intentando unirse a la sala con ID " + idSala);
+
+    try {
+        // Enviar el evento al modelo para unirse a la sala
+        model.unirseASala(idSala, jugadorActual); // Se pasa el ID de la sala y el jugador actual
+    } catch (Exception e) {
+        System.err.println("Error al intentar unirse a la sala: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+
 
     // Método para actualizar la tabla
     private void actualizarTabla() {

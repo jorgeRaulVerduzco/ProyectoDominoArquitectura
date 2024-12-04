@@ -15,11 +15,14 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -34,12 +37,16 @@ public class ConversorJSON {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static String convertirSalasAJson(List<Sala> salas) throws IOException {
-        return objectMapper.writeValueAsString(salas);
+public static String convertirSalasAJson(List<Sala> salas) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(salas);
     }
 
-    public static List<Sala> convertirJsonASalas(String json) throws IOException {
-        return objectMapper.readValue(json, objectMapper.getTypeFactory().constructCollectionType(List.class, Sala.class));
+    // Convertir JSON a lista de salas
+    public static List<Sala> convertirJsonASalas(String json) {
+        Gson gson = new Gson();
+        Type tipoListaSalas = new TypeToken<List<Sala>>(){}.getType();
+        return gson.fromJson(json, tipoListaSalas);
     }
 
     public static String convertirSocketsAJson(List<Socket> sockets) throws IOException {
@@ -112,4 +119,6 @@ public class ConversorJSON {
             return new ArrayList<>();
         }
     }
-    }
+    
+    
+}

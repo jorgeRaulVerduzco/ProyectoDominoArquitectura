@@ -6,6 +6,9 @@ package Presenctacion.CrearSalaMVC;
 
 import EventoJuego.Evento;
 import Presenctacion.Mediador;
+import Presentacion.EsperaMVC.EsperaController;
+import Presentacion.EsperaMVC.EsperaModel;
+import Presentacion.EsperaMVC.EsperaView;
 import Server.Server;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -60,27 +63,28 @@ public class CrearSalaController {
                 return;
             }
 
-            // Mensajes de depuración
             System.out.println("Creando sala con:");
             System.out.println("  - Número de jugadores: " + numJugadores);
             System.out.println("  - Número de fichas: " + numFichas);
 
-            // Configurar datos en el modelo
             model.setNumeroFichas(numFichas);
-
-            
             model.setNumeroJugadores(numJugadores);
-            
             model.setServer(server);
-            
-            
-            model.crearSala(); // Enviar el evento al servidor
 
-//            // Confirmación después de enviar el evento
-//            System.out.println("Evento de creación de sala enviado al servidor.");
-//
-            // Transitar al siguiente frame
-            mediador.salaCreada();
+            // Crear sala y obtener el ID
+            String salaId = model.crearSala();
+            if (salaId == null) {
+                JOptionPane.showMessageDialog(view, "Error al crear la sala. Por favor, intente nuevamente.");
+                return;
+            }
+
+            // Abrir el frame de espera
+            EsperaModel esperaModel = new EsperaModel();
+            EsperaView esperaView = new EsperaView(esperaModel);
+            EsperaController esperaController = new EsperaController(esperaModel, esperaView, server, salaId);
+
+            esperaView.setVisible(true); // Mostrar la ventana
+            view.dispose(); // Cerrar la ventana actual
 
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(view, "Por favor ingrese números válidos");

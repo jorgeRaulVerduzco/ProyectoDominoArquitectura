@@ -41,15 +41,13 @@ public class Controller implements KnowdledgeSource {
         this.blackboard = new BlackBoard(server);
         this.knowledgeSources = new ArrayList<>();
         this.server = server;
-        salas= new HashMap<>();
+        salas = new HashMap<>();
     }
 
     /**
      * Registra las fuentes de conocimiento que procesarán los eventos. En este
      * caso, se registra una fuente de conocimiento relacionada con las salas.
      */
-    
-
     /**
      * Procesa la desconexión de un jugador. Se notifica a todas las salas donde
      * el jugador estaba presente, y se actualiza el estado de esas salas o se
@@ -75,62 +73,102 @@ public class Controller implements KnowdledgeSource {
     }
 
     /**
- * Notifica un cambio al servidor. Crea un evento con el tipo de cambio y lo
- * envía al servidor para que se notifique a los clientes.
- *
- * @param tipoEvento El tipo de evento que describe el cambio.
- */
-public void notificarCambio(String tipoEvento) {
-    System.out.println("Enviando mensaje a todos los clientes");
-    System.out.println("Tipo de evento es: " + tipoEvento);
+     * Notifica un cambio al servidor. Crea un evento con el tipo de cambio y lo
+     * envía al servidor para que se notifique a los clientes.
+     *
+     * @param tipoEvento El tipo de evento que describe el cambio.
+     */
+    //HACERLO ANTES
+    public void notificarCambio(String tipoEvento) {
+        try {
+            String mensaje = tipoEvento;
 
-    // Convertir la lista de jugadores a un formato adecuado (por ejemplo, JSON o String)
-    String mensaje = tipoEvento; // Comienza con el tipo de evento
+            if (tipoEvento.equals("REGISTRO_USUARIO")) {
+                String listaJugadores = convertirListaDeJugadoresAString();
+                mensaje += ";" + listaJugadores;
+                server.registrarJugadores(blackboard.getJugadores());  // Usar método getter
+            } else if (tipoEvento.equals("CREAR_SALA")) {
+                System.out.println("CREAR_SALA");
+                String listaSalas = convertirListaDeSalasAString();
+                mensaje += ";" + listaSalas;
+                System.out.println("MENSAJITO " + mensaje);
+                System.out.println("Salas en BlackBoard antes de registrar en el servidor: " + blackboard.getSalas());
 
-    // Si el tipo de evento es 'REGISTRO_USUARIO', incluir la lista de jugadores
-    if (tipoEvento.equals("REGISTRO_USUARIO")) {
-        // Convertir la lista de jugadores a una representación de texto (por ejemplo, un String)
-        String listaJugadores = convertirListaDeJugadoresAString();
-
-        // Concatenar la lista de jugadores al mensaje
-        mensaje += ";" + listaJugadores;
-
-        // Agregar la lista de jugadores registrados al servidor
-        server.registrarJugadores(jugadores);  // Pasar la lista de jugadores de Blackboard al Server
-    }
-    else if(tipoEvento.equals("CREAR_SALA")){
-        //eSTE PUEDE QUE ESTE MAL
-        server.registrarSalas(salas);
-    }
-
-    // Enviar el mensaje a todos los clientes
-    server.enviarMensajeATodosLosClientes(mensaje);
-}
-
-private String convertirListaDeJugadoresAString() {
-    StringBuilder sb = new StringBuilder();
-
-    // Iterar sobre la lista de jugadores y agregar la información de cada uno al String
-    for (Jugador jugador : jugadores.values()) {
-        sb.append(jugador.getNombre()).append(":").append(jugador.getNombre()).append(",");
-    }
-
-    // Eliminar la última coma
-    if (sb.length() > 0) {
-        sb.deleteCharAt(sb.length() - 1);
+                server.registrarSalas(blackboard.getSalas());  // Usar método getter para salas
+            } else if (tipoEvento.equals("UNIR_SALA")) {
+                
+                System.out.println("----------------------------------HOSTIAAAA--------------------------------");
+                  Sala salaActualizada = blackboard.getSalas().values().stream()
+                .filter(sala -> sala.getEstado().equals("ESPERANDO"))
+                .findFirst()
+                .orElse(null);
+            
+            if (salaActualizada != null) {
+                server.actualizarSala(salaActualizada);
+            }
+            }
+            System.out.println("ALV ESTOY LLEGANDO AQUI");
+            server.enviarMensajeATodosLosClientes(mensaje);
+        } catch (Exception e) {
+            System.err.println("Error al notificar cambio: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    return sb.toString();
-}
+    private String convertirListaDeJugadoresAString() {
+        StringBuilder sb = new StringBuilder();
 
+        // Iterar sobre la lista de jugadores y agregar la información de cada uno al String
+        for (Jugador jugador : jugadores.values()) {
+            sb.append(jugador.getNombre()).append(":").append(jugador.getNombre()).append(",");
+        }
 
+        // Eliminar la última coma
+        if (sb.length() > 0) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+
+        return sb.toString();
+    }
+
+    private String convertirListaDeSalasAString() {
+        StringBuilder sb = new StringBuilder();
+
+        // Iterar sobre las salas y agregar la información de cada sala al String
+        for (Sala sala : blackboard.getSalas().values()) {
+            // Suponiendo que quieres representar el ID de la sala, la cantidad de jugadores, el número de fichas y el estado
+            sb.append("ID: ").append(sala.getId())
+                    .append(", Jugadores: ").append(sala.getCantJugadores()) // Número de jugadores
+                    .append(", Fichas: ").append(sala.getNumeroFichas()) // Número de fichas
+                    .append(", Estado: ").append(sala.getEstado())
+                    .append(", Jugadores en sala: ");
+
+            // Agregar los nombres de los jugadores que están en la sala
+            if (sala.getJugador() != null && !sala.getJugador().isEmpty()) {
+                for (Jugador jugador : sala.getJugador()) {
+                    sb.append(jugador.getNombre()).append(" ");
+                }
+            } else {
+                sb.append("No hay jugadores");
+            }
+
+            sb.append("; ");  // Separador entre salas
+        }
+
+        // Eliminar la última coma o punto y coma (si es necesario)
+        if (sb.length() > 2) {
+            sb.delete(sb.length() - 2, sb.length());
+        }
+
+        return sb.toString();
+    }
 
     /**
      * Implementación del método de la interfaz `KnowledgeSource` para que el
      * controlador procese eventos finales generados en el `BlackBoard`.
      *
      * @param evento El evento que se debe procesar.
-     * @return 
+     * @return
      */
     @Override
     public boolean puedeProcesar(Evento evento) {
@@ -139,8 +177,9 @@ private String convertirListaDeJugadoresAString() {
     }
 
     /**
-     * Método que recibe eventos procesados desde el BlackBoard y los envía al servidor.
-     * 
+     * Método que recibe eventos procesados desde el BlackBoard y los envía al
+     * servidor.
+     *
      * @param cliente El socket del cliente que ha generado el evento.
      * @param evento El evento que ha sido procesado.
      */

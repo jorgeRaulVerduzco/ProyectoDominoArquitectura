@@ -3,13 +3,14 @@ Presenctacion\CrearSalaMVC\CrearSalaController$CrearSalaListener.class
 Presenctacion\UnirseAlaSalaMVC\UnirseAlaSalaController.class
 Presenctacion\SeleccionJuego\OpcionesDeJuegoView$1.class
 Presenctacion\MenuPrincipalMVC\CrearUsuarioView$1.class
+Presenctacion\UnirseAlaSalaMVC\ButtonRenderer.class
+Presenctacion\UnirseAlaSalaMVC\UnirseAlaSalaView$ButtonEditor.class
 Presenctacion\MenuPrincipalMVC\CrearUsuarioView$3.class
 Presenctacion\CrearSalaMVC\CrearSalaController$NumeroFichasListener.class
 Presenctacion\CrearSalaMVC\CrearSalaView$2.class
 Presenctacion\CrearSalaMVC\CrearSalaView.class
 Presenctacion\MenuPrincipalMVC\CrearUsuarioController$1.class
 Presenctacion\PozoMVC\PozoController.class
-Presenctacion\UnirseAlaSalaMVC\BotonRenderer.class
 Presentacion\EsperaMVC\EsperaController.class
 Presenctacion\Observer.class
 PresentacionTableroMVC\TableroView$1.class
@@ -37,7 +38,6 @@ Presenctacion\CrearSalaMVC\CrearSalaView$1.class
 PresentacionTableroMVC\TableroController.class
 PresentacionTableroMVC\TableroView.class
 Presenctacion\SeleccionJuego\OpcionesDeJuegoView$3.class
-Presenctacion\UnirseAlaSalaMVC\UnirseAlaSalaView$BotonEditor.class
 Presentacion\EsperaMVC\EsperaView.class
 Presenctacion\SeleccionJuego\OpcionesDeJuegoView.class
 Presenctacion\CrearSalaMVC\CrearSalaModel.class

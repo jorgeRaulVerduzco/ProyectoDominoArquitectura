@@ -5,45 +5,42 @@
 package Presenctacion.UnirseAlaSalaMVC;
 
 import Dominio.Jugador;
-import Dominio.Sala;
-import EventoJuego.Evento;
-import Presenctacion.Observer;
-import Presentacion.EsperaMVC.EsperaModel;
-import Presentacion.EsperaMVC.EsperaView;
-import Server.Server;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.util.List;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.table.TableColumn;
 
 /**
  *
  * @author INEGI
  */
+
+import Dominio.Sala;
+import Presenctacion.Observer;
+import Presentacion.EsperaMVC.EsperaController;
+import Presentacion.EsperaMVC.EsperaModel;
+import Presentacion.EsperaMVC.EsperaView;
+import Server.Server;
+import javax.swing.table.DefaultTableModel;
+import java.util.List;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
-
     private UnirseAlaSalaController controller;
-    private UnirseAlaSalaModel model;  // Modelo de la vista
+    private UnirseAlaSalaModel model;
     private DefaultTableModel tableModel;
+    private Server server; // Agregar el servidor
 
-    // Constructor donde se pasa el modelo
-    public UnirseAlaSalaView(UnirseAlaSalaModel model) {
-        this.model = model;  // Asegúrate de asignar el modelo correctamente
+    public UnirseAlaSalaView(UnirseAlaSalaModel model, Server server) { // Recibir el servidor como argumento
+        this.model = model;
+        this.server = server; // Asignar el servidor
         this.controller = new UnirseAlaSalaController(model, this);
         initComponents();
         configurarTabla();
         System.out.println("Tabla configurada. Columnas: " + tableModel.getColumnCount());
-        System.out.println("Tabla configurada. Columnas: " + tableModel.getColumnCount());
     }
+
 
     @Override
     public void update() {
@@ -60,10 +57,13 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
 
             if (salas != null) {
                 for (Sala sala : salas) {
+                    // Convertir el ID a String explícitamente
+                    String salaId = String.valueOf(sala.getId());
+                    
                     // Solo agregamos las salas que tienen estado válido
                     if (sala.getEstado() != null && !sala.getEstado().isEmpty()) {
                         tableModel.addRow(new Object[]{
-                            sala.getId(),
+                            salaId,  // Usando String para el ID
                             sala.getJugador().size() + "/" + sala.getCantJugadores(),
                             sala.getNumeroFichas(),
                             "Unirse"
@@ -76,7 +76,6 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
         } catch (IOException ex) {
             Logger.getLogger(UnirseAlaSalaView.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
     public void addActualizarListener(ActionListener listener) {
@@ -87,7 +86,6 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
         }
     }
 
-    // En tu clase de manejo de eventos del servidor
     public void handleSalasDisponibles(List<Sala> salas) {
         System.out.println("Servidor: Recibida lista de salas. Cantidad: "
                 + (salas != null ? salas.size() : "null"));
@@ -96,6 +94,8 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
     }
 
     private void configurarTabla() {
+        
+        UnirseAlaSalaController controller = new UnirseAlaSalaController(model, this);
         // Modelo de la tabla
         tableModel = new DefaultTableModel() {
             @Override
@@ -107,7 +107,7 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
             public Class<?> getColumnClass(int columnIndex) {
                 switch (columnIndex) {
                     case 0:
-                        return Integer.class; // ID
+                        return String.class; // ID ahora es String
                     case 1:
                         return String.class;  // Jugadores
                     case 2:
@@ -128,74 +128,81 @@ public class UnirseAlaSalaView extends javax.swing.JFrame implements Observer {
 
         tblUnirseSala.setModel(tableModel);
 
-        UnirseAlaSalaController controller = new UnirseAlaSalaController(model, this);
-        tblUnirseSala.getColumnModel().getColumn(3).setCellRenderer(new BotonRenderer());
-        tblUnirseSala.getColumnModel().getColumn(3).setCellEditor(new BotonEditor(new JCheckBox(), controller));
+    
+         // Modify how the button column is set up
+        tblUnirseSala.getColumnModel().getColumn(3).setCellRenderer(new ButtonRenderer());
+        tblUnirseSala.getColumnModel().getColumn(3).setCellEditor(new ButtonEditor(controller, server));
+
     }
 
-    class BotonEditor extends DefaultCellEditor {
+class ButtonEditor extends DefaultCellEditor {
+    private final JButton button;
+    private int selectedRow;
+    private final UnirseAlaSalaController controller;
+    private final Server server; // Variable para el servidor
+    private boolean isPushed = false;
 
-        private JButton button;
-        private String label;
-        private boolean isPushed;
-        private int selectedRow;
-        private UnirseAlaSalaController controller; // Referencia al controlador
+    public ButtonEditor(UnirseAlaSalaController controller, Server server) {
+        super(new JCheckBox());
+        this.controller = controller;
+        this.server = server; // Asigna el servidor al editor
+        
+        button = new JButton("Unirse");
+        button.setOpaque(true);
+        button.addActionListener(e -> {
+            System.out.println("Button clicked for row: " + selectedRow);
+            isPushed = true;
+            fireEditingStopped();
+        });
+    }
 
-        public BotonEditor(JCheckBox checkBox, UnirseAlaSalaController controller) {
-            super(checkBox);
-            this.controller = controller; // Asignar el controlador
-            button = new JButton();
-            button.setOpaque(true);
-            button.addActionListener(e -> fireEditingStopped());
-        }
-
+    @Override
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        selectedRow = row;
+        button.setText("Unirse");
+        return button;
+    }
         @Override
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                boolean isSelected, int row, int column) {
-            label = (value == null) ? "Unirse" : value.toString();
-            button.setText(label);
-            selectedRow = row;
-            return button;
+public Object getCellEditorValue() {
+    if (isPushed) {
+        try {
+            // Obtener el ID de la sala desde la primera columna
+            String salaId = String.valueOf(tblUnirseSala.getValueAt(selectedRow, 0));
+            System.out.println("Attempting to join sala with ID: " + salaId);
+
+            
+            
+            // Crear o pasar el objeto Jugador actual si es necesario
+            Jugador jugadorActual = new Jugador(); // Reemplazar con el Jugador real
+            controller.unirseASala(salaId, jugadorActual);
+
+             // Crear el modelo, vista y controlador del frame de espera con el ID de la sala
+                EsperaModel esperaModel = new EsperaModel();
+                EsperaView esperaView = new EsperaView(esperaModel);
+                EsperaController esperaController = new EsperaController(esperaModel, esperaView, server, salaId);
+
+                // Mostrar la vista de espera
+                esperaView.setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Error processing 'Unirse' button: " + e.getMessage());
         }
+        isPushed = false;
+    }
+    return "Unirse";
+}
 
-        @Override
-        public Object getCellEditorValue() {
-            if (isPushed) {
-                try {
-                    // Obtener el ID de la sala desde la columna 0 de la fila seleccionada
-                    Integer salaId = (Integer) tblUnirseSala.getValueAt(selectedRow, 0);
 
-                    if (salaId != null) {
-                        System.out.println("Unirse a la sala con ID: " + salaId);
 
-                        // Usar el controlador para gestionar la acción
-                        controller.unirseASala(salaId);
 
-                        // Abrir la pantalla de espera
-                        EsperaView esperaView = new EsperaView(new EsperaModel());
-                        esperaView.setVisible(true);
-                    } else {
-                        System.err.println("Error: El ID de la sala es null.");
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error al procesar el botón 'Unirse': " + e.getMessage());
-                }
-            }
-            isPushed = false;
-            return label;
-        }
 
         @Override
         public boolean stopCellEditing() {
             isPushed = false;
             return super.stopCellEditing();
         }
-
-        @Override
-        protected void fireEditingStopped() {
-            super.fireEditingStopped();
-        }
     }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
