@@ -6,9 +6,14 @@ package Presentacion.EsperaMVC;
 
 import Presenctacion.Mediador;
 import Presenctacion.Observer;
+import Presenctacion.PozoMVC.PozoModel;
+import PresentacionTableroMVC.TableroModel;
+import PresentacionTableroMVC.TableroView;
+import Server.Server;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Frame;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -17,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -33,6 +39,19 @@ public class EsperaView extends javax.swing.JFrame implements Observer {
     private JButton btnIniciarPartida;
     private EsperaModel model;
     private Mediador mediador;
+    private Server server;
+
+    public void setServer(Server server) {
+        if (server == null) {
+            throw new IllegalArgumentException("El servidor no puede ser nulo.");
+        }
+        this.server = server;
+        System.out.println("Servidor asignado correctamente.");
+    }
+
+    public void setMediator(Mediador mediador) {
+        this.mediador = mediador;
+    }
 
     public EsperaView(EsperaModel model) {
         this.model = model;
@@ -82,20 +101,14 @@ public class EsperaView extends javax.swing.JFrame implements Observer {
         }
     }
 
-    public void setMediator(Mediador mediador) {
-        this.mediador = mediador;
-    }
+    TableroModel tableroModel = new TableroModel();
+    PozoModel pozoModel = new PozoModel();
 
     private void iniciarPartida() {
-        if (mediador != null) {
-            
-            
-            mediador.iniciarJuego();
-            this.setVisible(false); // Ocultar la vista actual
-            System.out.println("Partida iniciada");
-        } else {
-            System.out.println("Mediador no está inicializado");
-        }
+        // Directly create and show the TableroView
+        TableroView tableroView = new TableroView(new Frame(), true, tableroModel, pozoModel);
+        tableroView.setVisible(true);
+        this.dispose(); // Close the current waiting view
     }
 
     /**
@@ -116,12 +129,15 @@ public class EsperaView extends javax.swing.JFrame implements Observer {
 
     @Override
     public void update() {
+        // Actualiza la lista de jugadores
         actualizarJugadores(model.getJugadoresConectados());
+
+        // Verifica si hay más de un jugador y muestra el botón de iniciar
         if (model.getJugadoresConectados().size() > 1) {
-            btnIniciarPartida.setVisible(true);
+            btnIniciarPartida.setVisible(true); // Hace visible el botón
             actualizarEstado("Listo para iniciar la partida.");
         } else {
-            btnIniciarPartida.setVisible(false);
+            btnIniciarPartida.setVisible(false); // Esconde el botón si hay menos de 2 jugadores
             actualizarEstado("Esperando más jugadores...");
         }
     }

@@ -43,10 +43,11 @@ public class TableroController {
     public boolean isFichaColocada() {
         return fichaColocada;
     }
-    
+
     public void setServer(Server server) {
         this.server = server;
     }
+
     public void moverFichaArrastrada(MouseEvent e) {
         if (isDragging && fichaSeleccionada != null && !fichaColocada) { // Solo mover si no está colocada
             JPanel panel = (JPanel) e.getSource();
@@ -69,8 +70,6 @@ public class TableroController {
     public void setMediator(Mediador mediador) {
         this.mediador = mediador;
     }
-    
-    
 
     public void detenerArrastreFicha() {
         if (isDragging && fichaSeleccionada != null) {
@@ -84,20 +83,19 @@ public class TableroController {
     }
 
     public boolean colocarFichaEnTablero(Ficha ficha, String lado) {
-          try {
-        tableroModel.agregarFicha(ficha, lado);
-        tableroView.actualizarVista(); // Asegúrate de que esta línea esté presente
-        return true;
-    } catch (IllegalArgumentException e) {
-        JOptionPane.showMessageDialog(tableroView, "Jugada no válida: " + e.getMessage());
-        return false;
-    }    }
-    
-    
+        try {
+            tableroModel.agregarFicha(ficha, lado);
+            tableroView.actualizarVista(); // Asegúrate de que esta línea esté presente
+            return true;
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(tableroView, "Jugada no válida: " + e.getMessage());
+            return false;
+        }
+    }
 
-   /**
+    /**
      * Procesa una jugada enviando el evento "JUGADA".
-     * 
+     *
      * @param ficha La ficha seleccionada.
      * @param lado El lado donde colocar la ficha.
      */
@@ -111,7 +109,7 @@ public class TableroController {
 
     /**
      * Simula el envío de un evento y la recepción del tablero actualizado.
-     * 
+     *
      * @param ficha La ficha colocada.
      * @param lado El lado del tablero.
      */
@@ -125,73 +123,78 @@ public class TableroController {
         // Actualizamos la vista con el tablero actualizado
         actualizarTablero(tableroActualizado);
     }
-    
-    
-   public void procesarJugadaArrastrada(Ficha ficha, String lado, Socket socketJugador) {
-    // Validar si la jugada es correcta
-    if (esJugadaValida(ficha, lado)) {
-        // Actualizar modelo y vista localmente
-        tableroModel.agregarFicha(ficha, lado);
-        tableroView.actualizarVista();
-        
-        // Construir el evento
-        Evento evento = new Evento("JUGADA");
-        evento.agregarDato("ficha", ficha);  // Asegurémonos de que ficha sea del tipo correcto
-        evento.agregarDato("lado", lado);    // Lado debe ser un String, asumiendo que "lado" es un String
 
-        // Enviar el evento al servidor
-        if (socketJugador == null || !socketJugador.isConnected()) {
-            System.err.println("[ERROR] Socket no válido para el jugador actual");
-            return;
+    public void procesarJugadaArrastrada(Ficha ficha, String lado, Socket socketJugador) {
+        try {
+            if (esJugadaValida(ficha, lado)) {
+                // Actualizar modelo y vista localmente
+                tableroModel.agregarFicha(ficha, lado);
+                tableroView.actualizarVista();
+
+                // Construir el evento
+                Evento evento = new Evento("JUGADA");
+                evento.agregarDato("ficha", ficha);
+                evento.agregarDato("lado", lado);
+
+                // Enviar el evento al servidor
+                if (socketJugador == null || !socketJugador.isConnected()) {
+                    System.err.println("[ERROR] Socket no válido para el jugador actual");
+                    return;
+                }
+
+                // Enviar el evento al servidor
+                serverComunicacion.procesarEvento(socketJugador, evento);
+                
+            } else {
+                JOptionPane.showMessageDialog(tableroView, "Jugada no válida: el valor no coincide con el extremo.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); // Capturar el error inesperado
+            JOptionPane.showMessageDialog(tableroView, "Error al procesar la jugada: " + e.getMessage());
         }
-
-        // Enviar el evento al servidor
-        serverComunicacion.procesarEvento(socketJugador, evento);
-        
-        
-    } else {
-        JOptionPane.showMessageDialog(tableroView, "Jugada no válida: el valor no coincide con el extremo.");
     }
-}
-
-
 
     private boolean esJugadaValida(Ficha ficha, String lado) {
-        Ficha extremo = lado.equals("izquierdo")
-            ? tableroModel.obtenerExtremoIzquierdo()
-            : tableroModel.obtenerExtremoDerecho();
+        try {
+            Ficha extremo = null;
 
-        if (extremo == null) {
-            return true; // Tablero vacío, cualquier ficha es válida
+            if (lado.equals("izquierdo")) {
+                extremo = tableroModel.obtenerExtremoIzquierdo();
+            } else if (lado.equals("derecho")) {
+                extremo = tableroModel.obtenerExtremoDerecho();
+            }
+
+            if (extremo == null) {
+                // Si el tablero está vacío, cualquier ficha es válida
+                return true;
+            }
+
+            // Comprobamos la validez de la jugada según el extremo
+            if (lado.equals("izquierdo")) {
+                return ficha.getEspacio2() == extremo.getEspacio1();
+            } else if (lado.equals("derecho")) {
+                return ficha.getEspacio1() == extremo.getEspacio2();
+            }
+
+            return false; // Si no entra en las condiciones anteriores, la jugada no es válida
+        } catch (Exception e) {
+            System.err.println("[ERROR] Error al validar jugada: " + e.getMessage());
+            return false;
         }
-
-        return lado.equals("izquierdo")
-            ? ficha.getEspacio2() == extremo.getEspacio1()
-            : ficha.getEspacio1() == extremo.getEspacio2();
     }
-
 
     private String construirEventoJugada(Ficha ficha, String lado) {
         return String.format("Ficha: [%d, %d], Lado: %s", ficha.getEspacio1(), ficha.getEspacio2(), lado);
     }
 
-
-
-
-    
-
     /**
      * Sincroniza el modelo y la vista con un tablero actualizado.
-     * 
+     *
      * @param tableroActualizado El estado actualizado del tablero.
      */
     private void actualizarTablero(Tablero tableroActualizado) {
-    tableroModel.actualizarFichasTablero(tableroActualizado.getFichasTablero());
-    tableroView.actualizarVista();
-}
+        tableroModel.actualizarFichasTablero(tableroActualizado.getFichasTablero());
+        tableroView.actualizarVista();
+    }
 
 }
-
-    
-    
-

@@ -6,6 +6,7 @@ package PresentacionTableroMVC;
 
 import Dominio.Ficha;
 import Dominio.Jugador;
+import Presenctacion.Observer;
 import Presenctacion.PozoMVC.PozoModel;
 import Presenctacion.PozoMVC.PozoView;
 import Server.Server;
@@ -37,7 +38,7 @@ import javax.swing.JPanel;
  *
  * @author Serva
  */
-public class TableroView extends javax.swing.JFrame {
+public class TableroView extends javax.swing.JFrame implements Observer {
 
     private JButton btnAbrirPozo;
     private JButton btnPasarTurno;
@@ -48,6 +49,7 @@ public class TableroView extends javax.swing.JFrame {
     private List<Ficha> fichasJugadores1;
     private List<Ficha> fichasJugadores2;
     private Ficha fichaSeleccionada;
+    private TableroModel model;
 
     private PozoView pozoView;
     private ServerComunicacion serverComunicacion;
@@ -67,11 +69,21 @@ public class TableroView extends javax.swing.JFrame {
         getContentPane().setBackground(Color.GREEN);
         tableroController = new TableroController(tableroModel, this, serverComunicacion);
         this.pozoView = new PozoView(this, true, pozoModel);
-
+        tableroModel.addObserver(this);
         repartirFichas();
         mostrarFichasEnTablero();
         agregarPanelBotones();
+        this.setServer(server);
     }
+    
+    public void setServer(Server server) {
+    this.server = server;
+}
+
+    public Server getServer() {
+        return server;
+    }
+    
 
     private void agregarPanelBotones() {
         JPanel panelBotones = new JPanel();
@@ -270,6 +282,8 @@ public class TableroView extends javax.swing.JFrame {
                 fichaSeleccionada = null;
                 cambiarTurno();
                 mostrarFichasEnTablero();
+                cambiarTurno();
+
 //                verificarFinJuego();
             } else {
                 JOptionPane.showMessageDialog(this, "No se pudo colocar la ficha.");
@@ -288,7 +302,7 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private ImageIcon cargarImagenPorValor(int valor) {
-        String rutaBase = "C:\\Users\\INEGI\\Documents\\NetBeansProjects\\ProyectoDominoArquitectura\\DominoPresentacion\\src\\imagenes\\";
+        String rutaBase = "C:\\Users\\Serva\\Downloads\\ProyectoDominoArquitectura-CaminoColocarFicha (1)\\ProyectoDominoArquitectura-CaminoColocarFicha\\imagenes\\";
         String rutaImagen = rutaBase + valor + ".png";
         ImageIcon icon = new ImageIcon(rutaImagen);
         if (icon.getIconWidth() == -1) {
@@ -393,6 +407,13 @@ private String obtenerLadoSegunZona(Point dropPoint) {
 //
 //            tableroView.setVisible(true); // Mostrar la vista del tablero
 //        });
+    }
+
+    @Override
+    public void update() {
+       mostrarFichasEnTablero();
+       mostrarTablero();
+               
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
