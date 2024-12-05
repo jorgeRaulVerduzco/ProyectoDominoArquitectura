@@ -296,8 +296,11 @@ server.enviarDatosTablero(tablero, fichasTablero, fichasPozo, cliente);
 
     public void iniciarPartida(Socket cliente, Evento evento) {
         // Extraer sala del evento
+       
         Sala sala = (Sala) evento.obtenerDato("sala");
 
+         System.out.println("La sala extraida es"+ sala);
+         
         if (sala == null) {
             System.err.println("[ERROR] Sala es nula al iniciar partida");
             return;
