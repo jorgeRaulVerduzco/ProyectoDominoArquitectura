@@ -4,6 +4,7 @@
  */
 package Presentacion.EsperaMVC;
 
+import Presenctacion.Mediador;
 import Presenctacion.Observer;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -16,6 +17,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 /**
@@ -28,7 +30,9 @@ public class EsperaView extends javax.swing.JFrame implements Observer {
     private DefaultListModel<String> jugadoresModel;
     private JLabel lblEstado;
     private JButton btnCancelar;
+    private JButton btnIniciarPartida;
     private EsperaModel model;
+    private Mediador mediador;
 
     public EsperaView(EsperaModel model) {
         this.model = model;
@@ -46,14 +50,26 @@ public class EsperaView extends javax.swing.JFrame implements Observer {
         listaJugadores = new JList<>(jugadoresModel);
         listaJugadores.setBackground(new Color(34, 139, 34)); // Color azul claro para la lista
         listaJugadores.setForeground(Color.BLACK); // Texto negro
+        btnCancelar = new JButton("Cancelar");
+        btnIniciarPartida = new JButton("Iniciar Partida");
+        btnIniciarPartida.setVisible(false); // Inicialmente no visible
 
         lblEstado = new JLabel("Esperando más jugadores...", JLabel.CENTER);
         lblEstado.setForeground(Color.WHITE); // Texto blanco
         lblEstado.setFont(new Font("Arial", Font.BOLD, 16)); // Cambia la fuente
 
-        // Agregar los componentes con colores personalizados
+        // Panel de botones
+        JPanel panelBotones = new JPanel();
+        panelBotones.add(btnCancelar);
+        panelBotones.add(btnIniciarPartida);
+
         add(new JScrollPane(listaJugadores), BorderLayout.CENTER);
-        add(lblEstado, BorderLayout.SOUTH);
+        add(lblEstado, BorderLayout.NORTH);
+        add(panelBotones, BorderLayout.SOUTH);
+
+        // Listeners
+        btnCancelar.addActionListener(e -> cancelarEspera());
+        btnIniciarPartida.addActionListener(e -> iniciarPartida());
     }
 
     /**
@@ -63,6 +79,20 @@ public class EsperaView extends javax.swing.JFrame implements Observer {
         jugadoresModel.clear();
         for (String jugador : jugadores) {
             jugadoresModel.addElement(jugador);
+        }
+    }
+
+    public void setMediator(Mediador mediador) {
+        this.mediador = mediador;
+    }
+
+    private void iniciarPartida() {
+        if (mediador != null) {
+            mediador.iniciarJuego();
+            this.setVisible(false); // Ocultar la vista actual
+            System.out.println("Partida iniciada");
+        } else {
+            System.out.println("Mediador no está inicializado");
         }
     }
 
@@ -84,13 +114,13 @@ public class EsperaView extends javax.swing.JFrame implements Observer {
 
     @Override
     public void update() {
-        // Actualizar la lista de jugadores
         actualizarJugadores(model.getJugadoresConectados());
-
-        // Cambiar el estado si la partida se ha iniciado
-        if (model.isPartidaIniciada()) {
-            actualizarEstado("¡La partida ha iniciado!");
-            // Aquí puedes abrir la vista de juego y cerrar la vista de espera
+        if (model.getJugadoresConectados().size() > 1) {
+            btnIniciarPartida.setVisible(true);
+            actualizarEstado("Listo para iniciar la partida.");
+        } else {
+            btnIniciarPartida.setVisible(false);
+            actualizarEstado("Esperando más jugadores...");
         }
     }
 

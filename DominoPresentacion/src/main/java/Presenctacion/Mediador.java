@@ -140,9 +140,13 @@ private EsperaController esperaController;
 
     }
 
-    public void iniciarJuego() {
-        tableroView.setVisible(true);
+public void iniciarJuego() {
+    if (tableroView != null) {
+        tableroView.setVisible(true); // Muestra la vista del tablero
+    } else {
+        System.err.println("TableroView no está inicializado.");
     }
+}
 
     public void finalizarJuego() {
         tableroView.setVisible(false);

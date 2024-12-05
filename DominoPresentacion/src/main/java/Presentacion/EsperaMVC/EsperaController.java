@@ -4,6 +4,7 @@
  */
 package Presentacion.EsperaMVC;
 
+import Presenctacion.Mediador;
 import Server.Server;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -17,7 +18,8 @@ public class EsperaController {
     private final EsperaView view;
     private final Server server;
     private final String salaId; // ID de la sala proporcionado en el constructor
-
+    private Mediador mediador;
+    
     public EsperaController(EsperaModel model, EsperaView view, Server server, String salaId) { 
         this.model = model;
         this.view = view;
@@ -70,7 +72,12 @@ public class EsperaController {
     }
 
     public void iniciarPartida() {
-        // Lógica para iniciar el tablero
         System.out.println("Iniciando la partida...");
+        server.notificarInicioPartida(salaId); // Notifica al servidor
+
+        // Usa el mediador para abrir la vista del tablero
+        mediador.iniciarJuego();
+        view.dispose(); // Cierra la ventana de espera
     }
 }
+

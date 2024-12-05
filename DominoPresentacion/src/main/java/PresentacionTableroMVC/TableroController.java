@@ -62,6 +62,8 @@ public class TableroController {
     public void setMediator(Mediador mediador) {
         this.mediador = mediador;
     }
+    
+    
 
     public void detenerArrastreFicha() {
         if (isDragging && fichaSeleccionada != null) {

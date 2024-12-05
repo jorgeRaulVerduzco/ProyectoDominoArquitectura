@@ -108,6 +108,7 @@ public class Juego {
         unirseAlaSalaController.setMediator(mediador);
         unirseAlaSalaController.setServer(server);
         tableroController.setMediator(mediador);
+        tableroController.setServer(server);
 
         // Iniciar la aplicación
         mediador.iniciarAplicacion();
