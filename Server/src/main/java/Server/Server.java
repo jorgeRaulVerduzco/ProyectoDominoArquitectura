@@ -387,7 +387,26 @@ public class Server {
         blackBoard.setController(controller);
         blackBoard.enviarEventoBlackBoard(socket, evento);
     }
+public void enviarDatosTablero(Tablero tablero, List<Ficha> fichasTablero, List<Ficha> fichasPozo, Socket socket) {
+    // Crear el evento que contiene los datos del tablero
+    Evento evento = new Evento("DATOS_TABLERO");
+    evento.agregarDato("tablero", tablero);
+    evento.agregarDato("fichasTablero", fichasTablero);
+    evento.agregarDato("fichasPozo", fichasPozo);
 
+    // Mostrar los datos del evento para depuración
+    System.out.println("Enviando datos del tablero al cliente:");
+    System.out.println("Tablero: " + tablero);
+    System.out.println("Fichas del tablero: " + fichasTablero);
+    System.out.println("Fichas del pozo: " + fichasPozo);
+
+    // Enviar el evento usando el BlackBoard
+    Controller controller = new Controller(this);
+    blackBoard.setController(controller);
+    blackBoard.enviarEventoBlackBoard(socket, evento);
+
+    System.out.println("Datos del tablero enviados correctamente al cliente.");
+}
     public List<Sala> obtenerSalasActivas() {
         return gestorSalas.obtenerSalasActivas();
     }
