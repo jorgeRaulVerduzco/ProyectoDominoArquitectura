@@ -59,6 +59,8 @@ public class Server {
     private List<Sala> salas; // Lista de salas activas
     private static List<Sala> salasActivas;
     private List<Jugador> jugadoresRegistrados;
+
+    private List<Partida> partidasRegistradas;
     // Thread pool for handling connections
     private final ExecutorService executorService;
 
@@ -73,6 +75,7 @@ public class Server {
         this.serverComunicacion = new ServerComunicacion(this);
         this.running = false;
         this.isConnected = false;
+        partidasRegistradas = new CopyOnWriteArrayList<>();
         this.salasActivas = new CopyOnWriteArrayList<>();
         this.jugadoresRegistrados = new CopyOnWriteArrayList<>();
         cargarDatosMultijugador();
@@ -176,6 +179,18 @@ public class Server {
         // Opción 2 (alternativa): Reemplazar completamente la lista
         // salas = new ArrayList<>(salasBlackBoard.values());
         System.out.println("salas registrados en el servidor: " + salas.size());
+    }
+
+    public void registrarPartidas(Map<String, Partida> PartidasBlackBoard) {
+        System.out.println("SERBER  : Socket del jugador actual" + PartidasBlackBoard);
+
+        // Opción 1: Limpiar la lista antes de agregar
+        partidasRegistradas.clear();
+        partidasRegistradas.addAll(PartidasBlackBoard.values());
+
+        // Opción 2 (alternativa): Reemplazar completamente la lista
+        // salas = new ArrayList<>(salasBlackBoard.values());
+        System.out.println("partidas registrados en el servidor: " + partidasRegistradas.size());
     }
 
     public static List<Sala> cargarSalas() {
@@ -357,7 +372,8 @@ public class Server {
         blackBoard.enviarEventoBlackBoard(socket, evento);
         guardarSalas();
     }
-       public void agregarPartida(Partida partida, Socket socket) {
+
+    public void agregarPartida(Partida partida, Socket socket) {
         Evento evento = new Evento("CREAR_PARTIDA");
         evento.agregarDato("partida", partida);
         System.out.println("DATOS DEL EVENTO DE AGREGAR SALAS");
@@ -368,7 +384,6 @@ public class Server {
         Controller controller = new Controller(this);
         blackBoard.setController(controller);
         blackBoard.enviarEventoBlackBoard(socket, evento);
-        guardarSalas();
     }
 
     public List<Sala> obtenerSalasActivas() {
@@ -879,7 +894,7 @@ public class Server {
                     serverComunicacion.procesarEvento(cliente, evento);
                     break;
                 case "UNIRSE_SALA":
-                    
+
                 case "ABANDONAR_SALA":
 
                 case "JUGADA":
@@ -889,7 +904,7 @@ public class Server {
                     System.out.println("[DEBUG] Recibido evento REGISTRO_USUARIO");
                     serverComunicacion.procesarEvento(cliente, evento);
                     break;
-                case"INICIAR_PARTIDA":
+                case "INICIAR_PARTIDA":
                     serverComunicacion.procesarEvento(cliente, evento);
                 default:
                     System.out.println("Evento no reconocido: " + evento.getTipo());

@@ -1,5 +1,6 @@
 KnowdledgeSource\SalaKnowledgeSource.class
 BlackBoard\BlackBoard.class
 Controller\Controller.class
+KnowdledgeSource\PartidaKnowledgeSource.class
 KnowdledgeSource\JugadorKnowledgeSource.class
 KnowdledgeSource\KnowdledgeSource.class

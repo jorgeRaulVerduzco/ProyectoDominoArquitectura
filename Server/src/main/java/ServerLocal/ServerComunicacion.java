@@ -131,7 +131,7 @@ public class ServerComunicacion {
 
                     break;
                 case "INICIAR_PARTIDA":
-//                obtenerJugadoresPorSala(cliente, evento);
+                    iniciarPartida(cliente, evento);
                     break;
                 default:
                     System.out.println("Evento no reconocido: " + evento.getTipo());
@@ -214,48 +214,51 @@ public class ServerComunicacion {
         }
     }
 
- 
+    public void iniciarPartida(Socket cliente, Evento evento) {
+        // Extraer sala del evento
+        Sala sala = (Sala) evento.obtenerDato("sala");
 
-public void iniciarPartida(Sala sala, Socket cliente, ServicioControlJuego servicioControlJuego) {
-    if (sala == null) {
-        System.err.println("[ERROR] Sala es nula al iniciar partida");
-        return;
+        if (sala == null) {
+            System.err.println("[ERROR] Sala es nula al iniciar partida");
+            return;
+        }
+
+        try {
+            // Crear nueva partida
+            Partida partida = new Partida();
+            partida.setId(UUID.randomUUID().toString());  // Añadir ID único
+            partida.setCantJugadores(sala.getCantJugadores());
+            partida.setCantFichas(calcularFichasPozo(sala));  // Método para calcular fichas del pozo
+            partida.setEstado("EN_CURSO");
+            partida.setJugadores(sala.getJugador());
+            partida.setTablero(new Tablero());
+
+            // Inicializar servicio de pozo
+            ServicioPozo servicioPozo = new ServicioPozo(); // Usar singleton
+            servicioPozo.iniciarNuevoJuego(sala.getJugador());
+            partida.setPozo(servicioPozo.getPozo());
+
+            // Actualizar sala
+            sala.setPartida(partida);
+            sala.setEstado("EN_JUEGO");
+
+            // Crear evento de inicio de partida
+            Evento eventoInicio = new Evento("INICIAR_PARTIDA");
+            eventoInicio.agregarDato("partida", partida);
+            eventoInicio.agregarDato("sala", sala);
+
+            // Registro de inicio de partida
+            System.out.println("[INFO] Partida iniciada - ID: " + partida.getId()
+                    + ", Jugadores: " + sala.getJugador().size());
+
+            // Agregar partida
+            server.agregarPartida(partida, cliente);
+
+        } catch (Exception e) {
+            System.err.println("[ERROR] Error al iniciar partida: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
-
-    try {
-        // Crear nueva partida
-        Partida partida = new Partida();
-        partida.setId(UUID.randomUUID().toString());  // Añadir ID único
-        partida.setCantJugadores(sala.getCantJugadores());
-        partida.setCantFichas(calcularFichasPozo(sala));  // Método para calcular fichas del pozo
-        partida.setEstado("EN_CURSO");
-        partida.setJugadores(sala.getJugador());
-        partida.setTablero(new Tablero());
-
-        // Inicializar servicio de pozo
-        ServicioPozo servicioPozo = new ServicioPozo(); // Considerar usar singleton
-        servicioPozo.iniciarNuevoJuego(sala.getJugador());
-        partida.setPozo(servicioPozo.getPozo());
-
-        // Actualizar sala
-        sala.setPartida(partida);
-        sala.setEstado("EN_JUEGO");
-
-        // Crear evento de inicio de partida
-        Evento eventoInicio = new Evento("INICIAR_PARTIDA");
-        eventoInicio.agregarDato("partida", partida);
-
-        // Enviar evento a todos los jugadores de la sala
-
-        // Registro de inicio de partida
-        System.out.println("[INFO] Partida iniciada - ID: " + partida.getId() + 
-                           ", Jugadores: " + sala.getJugador().size());
-server.agregarPartida(partida, cliente);
-    } catch (Exception e) {
-        System.err.println("[ERROR] Error al iniciar partida: " + e.getMessage());
-        e.printStackTrace();
-    }
-}
 
 // Método para calcular fichas del pozo (ejemplo)
     private int calcularFichasPozo(Sala sala) {
@@ -425,7 +428,6 @@ server.agregarPartida(partida, cliente);
             server.unirseSala(respuesta, socketJugador);
         }
 
-        
     }
 
     public Sala obtenerSalaPorId(String id) {
@@ -451,8 +453,6 @@ server.agregarPartida(partida, cliente);
 
         return null;
     }
-
-
 
     /**
      * Maneja los errores de comunicación, mostrando un mensaje de error en la

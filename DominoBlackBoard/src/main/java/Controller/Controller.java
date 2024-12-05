@@ -6,6 +6,7 @@ package Controller;
 
 import BlackBoard.BlackBoard;
 import Dominio.Jugador;
+import Dominio.Partida;
 import Dominio.Sala;
 import EventoJuego.Evento;
 import KnowdledgeSource.KnowdledgeSource;
@@ -28,6 +29,7 @@ public class Controller implements KnowdledgeSource {
     private Server server;
     private Map<String, Jugador> jugadores;
     private Map<String, Sala> salas;
+    private Map<String, Partida> partidas;
 
     /**
      * Constructor de la clase Controller. Inicializa la pizarra, las fuentes de
@@ -42,6 +44,7 @@ public class Controller implements KnowdledgeSource {
         this.knowledgeSources = new ArrayList<>();
         this.server = server;
         salas = new HashMap<>();
+        partidas = new HashMap<>();
     }
 
     /**
@@ -108,7 +111,13 @@ public class Controller implements KnowdledgeSource {
                 }
 
             } else if (tipoEvento.equals("CREAR_PARTIDA")) {
+                System.out.println("----------------------------------CREANDO PARTIDAS--------------------------------");
 
+                String listaPartidas = convertirListaDePartidasAString();
+                mensaje += ";" + listaPartidas;
+                System.out.println("MENSAJITO " + mensaje);
+                System.out.println("Salas en BlackBoard antes de registrar en el servidor: " + blackboard.getPartidas());
+                server.registrarPartidas(blackboard.getPartidas());
             }
 
             System.out.println("ALV ESTOY LLEGANDO AQUI");
@@ -130,6 +139,37 @@ public class Controller implements KnowdledgeSource {
         // Eliminar la última coma
         if (sb.length() > 0) {
             sb.deleteCharAt(sb.length() - 1);
+        }
+
+        return sb.toString();
+    }
+
+    private String convertirListaDePartidasAString() {
+        StringBuilder sb = new StringBuilder();
+
+        // Iterar sobre las partidas y agregar la información de cada una al String
+        for (Partida partida : partidas.values()) {  // Asumiendo que getPartidas() devuelve una lista de partidas
+            sb.append("ID: ").append(partida.getId())
+                    .append(", Jugadores: ").append(partida.getCantJugadores()) // Número de jugadores en la partida
+                    .append(", Fichas: ").append(partida.getCantFichas()) // Número de fichas en la partida
+                    .append(", Estado: ").append(partida.getEstado())
+                    .append(", Jugadores en partida: ");
+
+            // Agregar los nombres de los jugadores en la partida
+            if (partida.getJugadores() != null && !partida.getJugadores().isEmpty()) {
+                for (Jugador jugador : partida.getJugadores()) {
+                    sb.append(jugador.getNombre()).append(" ");
+                }
+            } else {
+                sb.append("No hay jugadores");
+            }
+
+            sb.append("; ");  // Separador entre partidas
+        }
+
+        // Eliminar el último separador "; " si la cadena no está vacía
+        if (sb.length() > 2) {
+            sb.delete(sb.length() - 2, sb.length());
         }
 
         return sb.toString();

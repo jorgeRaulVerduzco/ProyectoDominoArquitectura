@@ -52,6 +52,10 @@ public class BlackBoard {
 
     }
 
+    public Map<String, Partida> getPartidas() {
+        return partidas;
+    }
+
     // Método setter para asignar el controller después de la creación del objeto
     public void setController(Controller controller) {
         this.controller = controller;
@@ -122,6 +126,24 @@ public class BlackBoard {
             System.err.println("Error: El controlador es null.");
         }
     }
+       public void agregarPartida(Partida partida ) {
+        if (controller != null) {
+            // Verificamos si el jugador tiene un ID válido
+            if (partida != null && partida.getId()!= null) {
+                // Agregamos el jugador al mapa usando su ID como clave
+                partidas.put(partida.getId(),partida);  // Usa el ID del PARTIDA como clave para el mapa
+
+                // Notificamos el cambio al controlador después de agregar el jugador
+                controller.notificarCambio("CREAR_PARTIDA");
+            } else {
+                System.err.println("Error: El jugador o su ID es nulo.");
+            }
+        } else {
+            System.err.println("Error: El controlador es null.");
+        }
+    }
+
+    
 
     public void ActualizarSala(Sala sala) {
         if (controller != null) {
@@ -193,19 +215,6 @@ public class BlackBoard {
     public void enviarEventoBlackBoard(Socket cliente, Evento evento) {
         System.out.println("LLEGUE A BLACKBOARD");
         System.out.println("BLACKBOARD 1  : Socket del jugador actual" + cliente);
-        if ("INICIAR_PARTIDA".equals(evento.getTipo())) {
-            Sala sala = (Sala) evento.obtenerDato("sala");
-            if (sala != null) {
-                sala.setEstado("EN_JUEGO");
-                actualizarEstadoSala(sala.getId(), sala);
-
-                // Notificar al controlador para que inicie el juego
-                controller.notificarCambio("INICIAR_JUEGO"); // Notificar al controller para iniciar el juego
-                System.out.println("Sala actualizada a EN_JUEGO: " + sala.getId());
-            } else {
-                System.err.println("Sala no encontrada en el evento INICIAR_PARTIDA.");
-            }
-        }
         if (evento == null) {
             throw new IllegalArgumentException("El evento no puede ser nulo.");
         }
