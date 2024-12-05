@@ -54,13 +54,13 @@ public class SalaKnowledgeSource implements KnowdledgeSource {
      * @return true si el evento puede ser procesado, false en caso contrario.
      */
     @Override
-public boolean puedeProcesar(Evento evento) {
-    return evento.getTipo().equals("CREAR_SALA")
-            || evento.getTipo().equals("UNIR_SALA")
-            || evento.getTipo().equals("ABANDONAR_SALA")
-            || evento.getTipo().equals("SOLICITAR_SALAS")
-            || evento.getTipo().equals("JUGADORES_ESPERA");
-}
+    public boolean puedeProcesar(Evento evento) {
+        return evento.getTipo().equals("CREAR_SALA")
+                || evento.getTipo().equals("UNIR_SALA")
+                || evento.getTipo().equals("ABANDONAR_SALA")
+                || evento.getTipo().equals("SOLICITAR_SALAS")
+                || evento.getTipo().equals("JUGADORES_ESPERA");
+    }
 
     /**
      * Procesa el evento proporcionado dependiendo de su tipo. Los tipos de
@@ -90,9 +90,9 @@ public boolean puedeProcesar(Evento evento) {
             case "SOLICITAR_SALAS":
                 enviarSalasDisponibles(cliente);
                 break;
-                case "JUGADORES_ESPERA":
+            case "JUGADORES_ESPERA":
 //            obtenerJugadoresPorSala(cliente, evento);
-            break;
+                break;
         }
     }
 
@@ -152,78 +152,77 @@ public boolean puedeProcesar(Evento evento) {
      * sala.
      */
     //este actualiza
-   private void unirseASala(Socket cliente, Evento evento) {
-    try {
-        Sala sala = (Sala) evento.obtenerDato("sala");
-        Jugador jugador = (Jugador) evento.obtenerDato("jugador");
+    private void unirseASala(Socket cliente, Evento evento) {
+        try {
+            Sala sala = (Sala) evento.obtenerDato("sala");
+            Jugador jugador = (Jugador) evento.obtenerDato("jugador");
 
-        if (sala == null || sala.getId() == null || sala.getId().isEmpty()) {
-            throw new IllegalArgumentException("El ID de la sala no puede ser nulo o vacío.");
+            if (sala == null || sala.getId() == null || sala.getId().isEmpty()) {
+                throw new IllegalArgumentException("El ID de la sala no puede ser nulo o vacío.");
+            }
+            if (jugador == null) {
+                throw new IllegalArgumentException("El jugador no puede ser nulo.");
+            }
+
+            // Cargar la sala existente y su lista de jugadores
+            Sala salaExistente = cargarSalaExistente(sala.getId());
+            if (salaExistente != null) {
+                sala.setJugador(new ArrayList<>(salaExistente.getJugador())); // Copiar jugadores existentes
+            }
+
+            // Agregar nuevo jugador si no está ya presente
+            boolean jugadorExiste = sala.getJugador().stream()
+                    .anyMatch(j -> j.getNombre().equals(jugador.getNombre()));
+
+            if (!jugadorExiste) {
+                sala.getJugador().add(jugador);
+            }
+
+            // Actualizar cantidad de jugadores
+            sala.setCantJugadores(sala.getJugador().size());
+
+            // Guardar cambios
+            server.actualizarSala(sala);
+
+            System.out.println("Jugadores en la sala después de agregar: " + sala.getJugador());
+
+           
+
+        } catch (Exception e) {
+            System.err.println("Error en unirseASala: " + e.getMessage());
+            e.printStackTrace();
         }
-        if (jugador == null) {
-            throw new IllegalArgumentException("El jugador no puede ser nulo.");
-        }
-
-        // Cargar la sala existente y su lista de jugadores
-        Sala salaExistente = cargarSalaExistente(sala.getId());
-        if (salaExistente != null) {
-            sala.setJugador(new ArrayList<>(salaExistente.getJugador())); // Copiar jugadores existentes
-        }
-
-        // Agregar nuevo jugador si no está ya presente
-        boolean jugadorExiste = sala.getJugador().stream()
-            .anyMatch(j -> j.getNombre().equals(jugador.getNombre()));
-
-        if (!jugadorExiste) {
-            sala.getJugador().add(jugador);
-        }
-
-        // Actualizar cantidad de jugadores
-        sala.setCantJugadores(sala.getJugador().size());
-
-        // Guardar cambios
-        server.actualizarSala(sala);
-
-        System.out.println("Jugadores en la sala después de agregar: " + sala.getJugador());
-
-        // Comenzar la partida si está llena
-        if (sala.getJugador().size() == sala.getCantJugadores()) {
-            iniciarPartida(sala);
-        }
-
-    } catch (Exception e) {
-        System.err.println("Error en unirseASala: " + e.getMessage());
-        e.printStackTrace();
     }
-}
-   
-   public Sala obtenerSalaPorId(String id) {
-    Path salasPath = Paths.get("salas_multijugador.json");
-    try {
-        List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(Files.readString(salasPath, StandardCharsets.UTF_8));
-        return salasCargadas.stream()
-                .filter(s -> s.getId().equals(id))
-                .findFirst()
-                .orElse(null);
-    } catch (IOException e) {
-        System.err.println("Error al leer las salas: " + e.getMessage());
-        return null;
-    }
-}
-private Sala cargarSalaExistente(String id) {
-    try {
+
+    public Sala obtenerSalaPorId(String id) {
         Path salasPath = Paths.get("salas_multijugador.json");
-        List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(Files.readString(salasPath, StandardCharsets.UTF_8));
-
-        return salasCargadas.stream()
-                .filter(sala -> sala.getId().equals(id))
-                .findFirst()
-                .orElse(null);
-    } catch (IOException e) {
-        System.err.println("Error al cargar las salas: " + e.getMessage());
-        return null;
+        try {
+            List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(Files.readString(salasPath, StandardCharsets.UTF_8));
+            return salasCargadas.stream()
+                    .filter(s -> s.getId().equals(id))
+                    .findFirst()
+                    .orElse(null);
+        } catch (IOException e) {
+            System.err.println("Error al leer las salas: " + e.getMessage());
+            return null;
+        }
     }
-}
+
+    private Sala cargarSalaExistente(String id) {
+        try {
+            Path salasPath = Paths.get("salas_multijugador.json");
+            List<Sala> salasCargadas = ConversorJSON.convertirJsonASalas(Files.readString(salasPath, StandardCharsets.UTF_8));
+
+            return salasCargadas.stream()
+                    .filter(sala -> sala.getId().equals(id))
+                    .findFirst()
+                    .orElse(null);
+        } catch (IOException e) {
+            System.err.println("Error al cargar las salas: " + e.getMessage());
+            return null;
+        }
+    }
+
     /**
      * Permite que un jugador abandone una sala. Si la sala queda vacía, se
      * elimina. Envía una respuesta al cliente con los detalles de la sala.
@@ -275,7 +274,9 @@ private Sala cargarSalaExistente(String id) {
      *
      * @param sala Sala donde se iniciará la partida.
      */
-    private void iniciarPartida(Sala sala) {
+    private void iniciarPartida(Socket cliente, Evento evento) {
+        Sala sala = (Sala) evento.obtenerDato("sala");
+
         Partida partida = new Partida();
         String partidaId = UUID.randomUUID().toString();
         partida.setCantJugadores(sala.getCantJugadores());

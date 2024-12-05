@@ -27,7 +27,7 @@ import javax.swing.JOptionPane;
 public class Mediador {
 
     private UnirseAlaSalaController unirseAlaSalaController;
-private EsperaController esperaController;
+    private EsperaController esperaController;
     private CrearUsuarioController crearUsuarioController;
     private CrearSalaController crearSalaController;
     private CrearSalaView crearSalaView;
@@ -45,7 +45,7 @@ private EsperaController esperaController;
             TableroView tableroView,
             UnirseAlaSalaController unirseAlaSalaController,
             OpcionesDeJuegoView opcionesDeJuegoView, EsperaController esperaController) {
-        this.esperaController  = esperaController;
+        this.esperaController = esperaController;
         this.crearUsuarioController = crearUsuarioController;
         this.crearSalaController = crearSalaController;
         this.crearSalaView = crearSalaView;
@@ -133,20 +133,18 @@ private EsperaController esperaController;
 
     public void salaCreada() {
         crearSalaView.setVisible(false);
-        
+
         esperaController.mostrarVista();
 
-       
-
     }
 
-public void iniciarJuego() {
-    if (tableroView != null) {
-        tableroView.setVisible(true); // Muestra la vista del tablero
-    } else {
-        System.err.println("TableroView no está inicializado.");
+    public void iniciarJuego() {
+        if (tableroView != null) {
+            tableroView.setVisible(true); // Muestra la vista del tablero
+        } else {
+            System.err.println("TableroView no está inicializado.");
+        }
     }
-}
 
     public void finalizarJuego() {
         tableroView.setVisible(false);

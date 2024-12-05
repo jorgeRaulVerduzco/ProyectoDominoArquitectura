@@ -96,17 +96,21 @@ public class Controller implements KnowdledgeSource {
 
                 server.registrarSalas(blackboard.getSalas());  // Usar método getter para salas
             } else if (tipoEvento.equals("UNIR_SALA")) {
-                
+
                 System.out.println("----------------------------------HOSTIAAAA--------------------------------");
-                  Sala salaActualizada = blackboard.getSalas().values().stream()
-                .filter(sala -> sala.getEstado().equals("ESPERANDO"))
-                .findFirst()
-                .orElse(null);
-            
-            if (salaActualizada != null) {
-                server.actualizarSala(salaActualizada);
+                Sala salaActualizada = blackboard.getSalas().values().stream()
+                        .filter(sala -> sala.getEstado().equals("ESPERANDO"))
+                        .findFirst()
+                        .orElse(null);
+
+                if (salaActualizada != null) {
+                    server.actualizarSala(salaActualizada);
+                }
+
+            } else if (tipoEvento.equals("CREAR_PARTIDA")) {
+
             }
-            }
+
             System.out.println("ALV ESTOY LLEGANDO AQUI");
             server.enviarMensajeATodosLosClientes(mensaje);
         } catch (Exception e) {

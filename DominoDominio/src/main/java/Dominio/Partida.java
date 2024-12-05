@@ -7,6 +7,7 @@ package Dominio;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public class Partida implements Serializable {
 
-    private static final long serialVersionUID = 1L; // Asegura la compatibilidad de versiones al serializar/deserializar
+    private String id = UUID.randomUUID().toString();
     private int cantJugadores;
     private int cantFichas;
     private String estado;
@@ -52,6 +53,14 @@ public class Partida implements Serializable {
         this.jugadores = jugadores;
         this.fichas = fichas;
         this.pozo = pozo;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     /**
@@ -184,6 +193,11 @@ public class Partida implements Serializable {
         this.pozo = pozo;
     }
 
+    @Override
+    public String toString() {
+        return "Partida{" + "id=" + id + ", cantJugadores=" + cantJugadores + ", cantFichas=" + cantFichas + ", estado=" + estado + ", tablero=" + tablero + ", jugadores=" + jugadores + ", fichas=" + fichas + ", pozo=" + pozo + '}';
+    }
+
     /**
      * Método sobreescrito para generar una representación en formato String de
      * la partida, que incluye la cantidad de jugadores, cantidad de fichas,
@@ -193,9 +207,6 @@ public class Partida implements Serializable {
      * cantFichas=cantFichas, estado=estado, tablero=tablero,
      * jugadores=jugadores, fichas=fichas, pozo=pozo}".
      */
-    @Override
-    public String toString() {
-        return "Partida{" + "cantJugadores=" + cantJugadores + ", cantFichas=" + cantFichas + ", estado=" + estado + ", tablero=" + tablero + ", jugadores=" + jugadores + ", fichas=" + fichas + ", pozo=" + pozo + '}';
-    }
+    
 
 }

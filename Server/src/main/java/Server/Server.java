@@ -7,6 +7,7 @@ package Server;
 import BlackBoard.BlackBoard;
 import Controller.Controller;
 import Dominio.Jugador;
+import Dominio.Partida;
 import Dominio.Sala;
 import EventoJuego.Evento;
 import ServerLocal.ServerComunicacion;
@@ -350,6 +351,19 @@ public class Server {
         System.out.println(evento.getDatos());
         System.out.println("SI SE GUARDAN LOS DATOS DEL EVENTO");
         System.out.println("PARA CALARLE AGREGAR SALA");
+        //enviarEvento(evento, socket);
+        Controller controller = new Controller(this);
+        blackBoard.setController(controller);
+        blackBoard.enviarEventoBlackBoard(socket, evento);
+        guardarSalas();
+    }
+       public void agregarPartida(Partida partida, Socket socket) {
+        Evento evento = new Evento("CREAR_PARTIDA");
+        evento.agregarDato("partida", partida);
+        System.out.println("DATOS DEL EVENTO DE AGREGAR SALAS");
+        System.out.println(evento.getDatos());
+        System.out.println("SI SE GUARDAN LOS DATOS DEL EVENTO");
+        System.out.println("PARA CALARLE AGREGAR PARTIDA");
         //enviarEvento(evento, socket);
         Controller controller = new Controller(this);
         blackBoard.setController(controller);
@@ -865,6 +879,7 @@ public class Server {
                     serverComunicacion.procesarEvento(cliente, evento);
                     break;
                 case "UNIRSE_SALA":
+                    
                 case "ABANDONAR_SALA":
 
                 case "JUGADA":
@@ -874,7 +889,8 @@ public class Server {
                     System.out.println("[DEBUG] Recibido evento REGISTRO_USUARIO");
                     serverComunicacion.procesarEvento(cliente, evento);
                     break;
-
+                case"INICIAR_PARTIDA":
+                    serverComunicacion.procesarEvento(cliente, evento);
                 default:
                     System.out.println("Evento no reconocido: " + evento.getTipo());
             }
