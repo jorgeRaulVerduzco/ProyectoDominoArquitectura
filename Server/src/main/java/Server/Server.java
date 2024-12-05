@@ -744,10 +744,11 @@ public class Server {
      * @param evento El evento a enviar.
      */
     public void enviarEventoAJugador(Jugador jugador, Evento evento) {
-
         Socket socket = getSocketJugador(jugador);
         if (socket != null) {
             enviarMensajeACliente(socket, evento);
+        } else {
+            System.err.println("No se encontró el socket para el jugador: " + jugador.getNombre());
         }
     }
 
@@ -1038,4 +1039,29 @@ public class Server {
         }
 
     }
+
+    public Sala obtenerSalaPorId(String salaId) {
+        return salas.stream()
+                .filter(sala -> sala.getId().equals(salaId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void notificarInicioPartida(String salaId) {
+        Sala sala = obtenerSalaPorId(salaId);
+        if (sala != null) {
+            Evento eventoInicio = new Evento("INICIAR_PARTIDA");
+            eventoInicio.agregarDato("sala", sala);
+
+            // Notifica a todos los jugadores en la sala
+            for (Jugador jugador : sala.getJugador()) {
+                enviarEventoAJugador(jugador, eventoInicio);
+            }
+
+            System.out.println("Evento de inicio de partida enviado para la sala: " + salaId);
+        } else {
+            System.err.println("Sala no encontrada: " + salaId);
+        }
+    }
+
 }
