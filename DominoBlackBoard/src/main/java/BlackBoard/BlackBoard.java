@@ -5,6 +5,7 @@
 package BlackBoard;
 
 import Controller.Controller;
+import Dominio.Ficha;
 import Dominio.Jugador;
 import Dominio.Partida;
 import Dominio.Sala;
@@ -33,7 +34,52 @@ public class BlackBoard {
     private Controller controller;
     private List<KnowdledgeSource> observers;
     private Server server;  // Asegúrate de tener una referencia al Server
+    private Tablero tablero;
+    private List<Ficha> fichasTablero;
+    private List<Ficha> fichasPozo;
 
+    // Actualizar el estado del tablero
+    public void actualizarTablero(Tablero nuevoTablero) {
+        if (nuevoTablero == null) {
+            System.err.println("Error: Tablero no válido para actualizar.");
+            return;
+        }
+        this.tablero = nuevoTablero;
+        System.out.println("Tablero actualizado en el BlackBoard: " + tablero);
+    }
+
+    // Actualizar las fichas del tablero
+    public void actualizarFichasTablero(List<Ficha> nuevasFichasTablero) {
+        if (nuevasFichasTablero == null || nuevasFichasTablero.isEmpty()) {
+            System.err.println("Error: Lista de fichas del tablero no válida para actualizar.");
+            return;
+        }
+        this.fichasTablero = nuevasFichasTablero;
+        System.out.println("Fichas del tablero actualizadas en el BlackBoard: " + fichasTablero);
+    }
+
+    // Actualizar las fichas del pozo
+    public void actualizarFichasPozo(List<Ficha> nuevasFichasPozo) {
+        if (nuevasFichasPozo == null || nuevasFichasPozo.isEmpty()) {
+            System.err.println("Error: Lista de fichas del pozo no válida para actualizar.");
+            return;
+        }
+        this.fichasPozo = nuevasFichasPozo;
+        System.out.println("Fichas del pozo actualizadas en el BlackBoard: " + fichasPozo);
+    }
+
+    // Métodos para obtener los datos almacenados
+    public Tablero obtenerTablero() {
+        return this.tablero;
+    }
+
+    public List<Ficha> obtenerFichasTablero() {
+        return this.fichasTablero;
+    }
+
+    public List<Ficha> obtenerFichasPozo() {
+        return this.fichasPozo;
+    }
     public Map<String, Jugador> getJugadores() {
         return new HashMap<>(jugadores);  // Devolver una copia para evitar modificaciones externas
     }
@@ -162,12 +208,13 @@ public class BlackBoard {
             System.err.println("Error: El controlador es null.");
         }
     }
-       public void agregarPartida(Partida partida ) {
+
+    public void agregarPartida(Partida partida) {
         if (controller != null) {
             // Verificamos si el jugador tiene un ID válido
-            if (partida != null && partida.getId()!= null) {
+            if (partida != null && partida.getId() != null) {
                 // Agregamos el jugador al mapa usando su ID como clave
-                partidas.put(partida.getId(),partida);  // Usa el ID del PARTIDA como clave para el mapa
+                partidas.put(partida.getId(), partida);  // Usa el ID del PARTIDA como clave para el mapa
 
                 // Notificamos el cambio al controlador después de agregar el jugador
                 controller.notificarCambio("CREAR_PARTIDA");
@@ -178,8 +225,6 @@ public class BlackBoard {
             System.err.println("Error: El controlador es null.");
         }
     }
-
-    
 
     public void ActualizarSala(Sala sala) {
         if (controller != null) {

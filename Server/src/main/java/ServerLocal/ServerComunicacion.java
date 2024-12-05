@@ -134,6 +134,9 @@ public class ServerComunicacion {
                 case "INICIAR_PARTIDA":
                     iniciarPartida(cliente, evento);
                     break;
+                case "DATOS_TABLERO":
+                    obtenerDatosTablero(cliente, evento);
+                    break;
                 default:
                     System.out.println("Evento no reconocido: " + evento.getTipo());
             }
@@ -255,6 +258,40 @@ public class ServerComunicacion {
             System.err.println("[ERROR] Error creando sala: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void obtenerDatosTablero(Socket cliente, Evento evento) {
+        // Obtener los datos necesarios desde el evento
+        Tablero tablero = (Tablero) evento.obtenerDato("tablero");
+        List<Ficha> fichasTablero = (List<Ficha>) evento.obtenerDato("fichasTablero");
+        List<Ficha> fichasPozo = (List<Ficha>) evento.obtenerDato("fichasPozo");
+
+        // Verificar que los datos no sean null
+        if (tablero == null) {
+            System.err.println("Error: Tablero no válido");
+            return;
+        }
+        if (fichasTablero == null) {
+            System.err.println("Error: Lista de fichas del tablero no válida");
+            return;
+        }
+        if (fichasPozo == null) {
+            System.err.println("Error: Lista de fichas del pozo no válida");
+            return;
+        }
+
+        // Mostrar los datos para depuración
+        System.out.println("Datos recibidos:");
+        System.out.println("Tablero: " + tablero);
+        System.out.println("Fichas del tablero: " + fichasTablero);
+        System.out.println("Fichas del pozo: " + fichasPozo);
+
+        // Crear la respuesta con los datos del tablero
+        Evento respuesta = new Evento("DATOS_TABLERO");
+        respuesta.agregarDato("tablero", tablero);
+        respuesta.agregarDato("fichasTablero", fichasTablero);
+        respuesta.agregarDato("fichasPozo", fichasPozo);
+server.enviarDatosTablero(tablero, fichasTablero, fichasPozo, cliente);
     }
 
     public void iniciarPartida(Socket cliente, Evento evento) {
