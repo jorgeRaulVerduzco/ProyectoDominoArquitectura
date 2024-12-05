@@ -38,6 +38,10 @@ public class EsperaController {
         iniciarEscucha();
     }
 
+    public void setMediator(Mediador mediador) {
+        this.mediador = mediador;
+    }
+
     public void iniciarEscucha() {
         new Thread(() -> {
             while (!model.isPartidaIniciada()) {
@@ -82,9 +86,9 @@ public class EsperaController {
             ServerComunicacion serverC = new ServerComunicacion(server);
             int puerto = ConfiguracionSocket.getInstance().getPuertoSocket();
             Socket cliente = new Socket("localhost", puerto);
-            
+
             Sala sala = serverC.obtenerSalaPorId(salaId);
-            
+
             Evento evento = new Evento("CREAR_SALA");
             evento.agregarDato("sala", sala);
             serverC.iniciarPartida(cliente, evento);

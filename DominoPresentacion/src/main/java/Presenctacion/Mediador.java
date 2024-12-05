@@ -15,6 +15,7 @@ import Presenctacion.CrearSalaMVC.CrearSalaModel;
 import Presenctacion.SeleccionJuego.OpcionesDeJuegoView;
 import Presenctacion.UnirseAlaSalaMVC.UnirseAlaSalaController;
 import Presentacion.EsperaMVC.EsperaController;
+import Presentacion.EsperaMVC.EsperaView;
 import PresentacionTableroMVC.TableroController;
 import PresentacionTableroMVC.TableroView;
 import Server.Server;
@@ -33,6 +34,7 @@ public class Mediador {
     private CrearSalaView crearSalaView;
     private TableroController tableroController;
     private TableroView tableroView;
+    private EsperaView esperaView;
     private Server server;
     private CrearUsuarioModel usuarioActual;
     private OpcionesDeJuegoView opcionesDeJuegoView;
@@ -44,7 +46,8 @@ public class Mediador {
             TableroController tableroController,
             TableroView tableroView,
             UnirseAlaSalaController unirseAlaSalaController,
-            OpcionesDeJuegoView opcionesDeJuegoView, EsperaController esperaController) {
+            OpcionesDeJuegoView opcionesDeJuegoView, EsperaController esperaController,
+            EsperaView esperaView) {
         this.esperaController = esperaController;
         this.crearUsuarioController = crearUsuarioController;
         this.crearSalaController = crearSalaController;
@@ -53,8 +56,10 @@ public class Mediador {
         this.tableroView = tableroView;
         this.unirseAlaSalaController = unirseAlaSalaController;
         this.opcionesDeJuegoView = opcionesDeJuegoView; // Inicializar
+        this.esperaView = esperaView;
         // Establecer el mediador en la vista de opciones de juego
         opcionesDeJuegoView.setMediator(this);
+        esperaView.setMediator(this);
     }
 
     public void setServer(Server server) {

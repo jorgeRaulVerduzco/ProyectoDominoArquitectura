@@ -15,6 +15,7 @@ Presentacion\EsperaMVC\EsperaController.class
 Presenctacion\Observer.class
 PresentacionTableroMVC\TableroView$1.class
 Presenctacion\CrearSalaMVC\CrearSalaController$RegresarListener.class
+PresentacionTableroMVC\TableroView$3.class
 Main\Juego.class
 Presenctacion\CrearSalaMVC\CrearSalaController$NumeroJugadoresListener.class
 Presenctacion\UnirseAlaSalaMVC\UnirseAlaSalaView.class
