@@ -45,6 +45,31 @@ public class TableroModel {
     public List<Ficha> getFichasPozo() {
         return fichasPozo;
     }
+    
+    public Tablero getTablero() {
+    return tablero;
+}
+
+public void setTablero(Tablero tablero) {
+    this.tablero = tablero;
+}
+
+public Ficha obtenerExtremoIzquierdo() {
+    return fichasTablero.isEmpty() ? null : fichasTablero.get(0);
+}
+
+public Ficha obtenerExtremoDerecho() {
+    return fichasTablero.isEmpty() ? null : fichasTablero.get(fichasTablero.size() - 1);
+}
+
+public void setFichasTablero(List<Ficha> fichasTablero) {
+    this.tablero.setFichasTablero(fichasTablero);
+}
+
+public void actualizarFichasTablero(List<Ficha> nuevasFichas) {
+    this.tablero.setFichasTablero(nuevasFichas);
+}
+
 
    
 
@@ -52,13 +77,6 @@ public class TableroModel {
         servicioTablero.moverFicha(tablero, indexOrigen, indexDestino);
     }
 
-    public Ficha obtenerExtremoIzquierdo() {
-        return servicioTablero.obtenerExtremoIzquierdo(tablero);
-    }
-
-    public Ficha obtenerExtremoDerecho() {
-        return servicioTablero.obtenerExtremoDerecho(tablero);
-    }
 
     public boolean puedeAgregarAlDerecho(Ficha ficha) {
         return !tablero.getFichasTablero().isEmpty()

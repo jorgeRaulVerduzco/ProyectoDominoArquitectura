@@ -5,12 +5,14 @@
 package PresentacionTableroMVC;
 
 import Dominio.Ficha;
+import Dominio.Jugador;
 import Presenctacion.PozoMVC.PozoModel;
 import Presenctacion.PozoMVC.PozoView;
+import Server.Server;
+import ServerLocal.ServerComunicacion;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -18,6 +20,7 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -45,8 +48,16 @@ public class TableroView extends javax.swing.JFrame {
     private List<Ficha> fichasJugadores1;
     private List<Ficha> fichasJugadores2;
     private Ficha fichaSeleccionada;
-    private int jugadorActual = 1; // 1 para jugador 1, 2 para jugador 2
+
     private PozoView pozoView;
+    private ServerComunicacion serverComunicacion;
+    private Server server;
+
+    private Jugador jugadorActual;
+
+    public void setJugadorActual(Jugador jugador) {
+        this.jugadorActual = jugador;
+    }
 
     public TableroView(Frame parent, boolean modal, TableroModel tableroModel, PozoModel pozoModel) {
         this.pozoModel = pozoModel;
@@ -54,7 +65,7 @@ public class TableroView extends javax.swing.JFrame {
         initComponents();
         setBackground(Color.GREEN);
         getContentPane().setBackground(Color.GREEN);
-        tableroController = new TableroController(tableroModel, this);
+        tableroController = new TableroController(tableroModel, this, serverComunicacion);
         this.pozoView = new PozoView(this, true, pozoModel);
 
         repartirFichas();
@@ -63,38 +74,30 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void agregarPanelBotones() {
-        // Crear un JPanel para los botones
         JPanel panelBotones = new JPanel();
-        panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.Y_AXIS)); // Organizar verticalmente
+        panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.Y_AXIS));
 
-        // Crear botones
         btnAbrirPozo = new JButton("Abrir Pozo");
         btnPasarTurno = new JButton("Pasar Turno");
         btnTerminarJuego = new JButton("Terminar Juego");
 
-        // Configurar colores
         btnAbrirPozo.setBackground(Color.BLUE);
         btnAbrirPozo.setForeground(Color.WHITE);
-        btnPasarTurno.setBackground(Color.GRAY);  // Color neutral para "Pasar Turno"
+        btnPasarTurno.setBackground(Color.GRAY);
         btnPasarTurno.setForeground(Color.WHITE);
         btnTerminarJuego.setBackground(Color.RED);
         btnTerminarJuego.setForeground(Color.WHITE);
 
-        // Añadir botones al panel
         panelBotones.add(btnAbrirPozo);
-        panelBotones.add(Box.createVerticalStrut(10)); // Espacio entre botones
+        panelBotones.add(Box.createVerticalStrut(10));
         panelBotones.add(btnPasarTurno);
-        panelBotones.add(Box.createVerticalStrut(10)); // Espacio entre botones
+        panelBotones.add(Box.createVerticalStrut(10));
         panelBotones.add(btnTerminarJuego);
 
-        // Establecer ubicación del panel (más a la derecha)
-        panelBotones.setBounds(this.getWidth() - 150, 70, 130, 200);  // Ajusta la coordenada X (más a la derecha)
-
-        // Añadir el panel a la ventana principal
-        this.setLayout(null); // Usar layout nulo para posicionamiento absoluto
+        panelBotones.setBounds(this.getWidth() - 150, 70, 130, 200);
+        this.setLayout(null);
         this.add(panelBotones);
 
-        // Añadir listeners para las acciones de los botones
         btnAbrirPozo.addActionListener(e -> abrirPozo());
         btnPasarTurno.addActionListener(e -> pasarTurno());
         btnTerminarJuego.addActionListener(e -> terminarJuego());
@@ -120,7 +123,11 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void agregarFichaAJugadorActual(Ficha ficha) {
-        if (jugadorActual == 1) {
+        if (jugadorActual == null) {
+            return;
+        }
+
+        if (jugadorActual.getPuntuacion() == 1) {
             fichasJugadores1.add(ficha);
         } else {
             fichasJugadores2.add(ficha);
@@ -128,24 +135,13 @@ public class TableroView extends javax.swing.JFrame {
     }
 
     private void pasarTurno() {
-        // Lógica para pasar el turno
         cambiarTurno();
         mostrarFichasEnTablero();
     }
 
     private void terminarJuego() {
-        // Lógica para terminar el juego
         JOptionPane.showMessageDialog(this, "El juego ha terminado.");
-        System.exit(0);  // Terminar el juego y cerrar la aplicación
-    }
-
-    private void inicializarPozo() {
-        for (int i = 0; i <= 6; i++) {
-            for (int j = i; j <= 6; j++) {
-                Ficha ficha = new Ficha(i, j);
-                pozoModel.getFichasPozo().add(ficha);
-            }
-        }
+        System.exit(0);
     }
 
     private void repartirFichas() {
@@ -160,37 +156,29 @@ public class TableroView extends javax.swing.JFrame {
             fichasJugadores2.add(fichas.remove(random.nextInt(fichas.size())));
         }
 
-        // Actualizar el pozo con las fichas restantes
         pozoModel.setFichasPozo(fichas);
     }
 
     private void mostrarFichasEnTablero() {
-        // Mantener el panel de botones
         Component[] components = this.getContentPane().getComponents();
         boolean panelBotonesVisible = false;
 
-        // Eliminar solo componentes de fichas y del tablero
         for (Component component : components) {
-            // Verificar si el componente es un JPanel y que no sea nulo
             if (component instanceof JPanel) {
                 String componentName = component.getName();
-                // Eliminar componentes que no son el panel de botones
                 if (componentName == null || !componentName.equals("panelBotones")) {
                     this.getContentPane().remove(component);
                 }
             }
-            // Asegurarse de que el panel de botones siga estando visible
             if (!panelBotonesVisible) {
-                agregarPanelBotones(); // Solo agregar si no está visible
+                agregarPanelBotones();
             }
         }
 
-        // Mostrar fichas en el tablero
         mostrarFichasJugador(fichasJugadores1, 1);
         mostrarFichasJugador(fichasJugadores2, 2);
         mostrarTablero();
 
-        // Redibujar la interfaz
         this.revalidate();
         this.repaint();
     }
@@ -201,15 +189,7 @@ public class TableroView extends javax.swing.JFrame {
             Ficha ficha = fichasJugador.get(i);
             JPanel panelFicha = crearPanelFicha(ficha);
             panelFicha.setBounds(i * 110, y, 100, 50);
-            final int index = i;
-            panelFicha.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (jugadorActual == numJugador) {
-                        seleccionarFicha(ficha, index, numJugador);
-                    }
-                }
-            });
+            habilitarArrastrarYSoltarFicha(panelFicha, ficha);
             this.add(panelFicha);
         }
     }
@@ -229,27 +209,23 @@ public class TableroView extends javax.swing.JFrame {
         });
         this.add(tableroPanel);
 
-        // Aquí colocamos las fichas
         List<Ficha> fichasTablero = tableroModel.getFichasTablero();
-        int x = 10;  // Comenzamos en un margen
+        int x = 10;
         for (Ficha ficha : fichasTablero) {
             JPanel panelFicha = crearPanelFicha(ficha);
-            panelFicha.setBounds(x, 25, 100, 50);  // Centrado en el panel
+            panelFicha.setBounds(x, 25, 100, 50);
             tableroPanel.add(panelFicha);
-            x += 110;  // Espaciado entre fichas
+            x += 110;
         }
 
-        // Establecer un límite para el tamaño del tablero
-        int maxPanelWidth = this.getWidth() - 20; // Ancho máximo permitido
+        int maxPanelWidth = this.getWidth() - 20;
         if (x > maxPanelWidth) {
-            x = maxPanelWidth; // Limitar el ancho si es necesario
+            x = maxPanelWidth;
         }
 
-        // Ajustar el tamaño del tablero
-        tableroPanel.setPreferredSize(new Dimension(x, 200)); // Ajustamos el tamaño a las fichas
-        tableroPanel.setSize(new Dimension(x, 200)); // Establecer el tamaño del panel basado en el ancho calculado
+        tableroPanel.setPreferredSize(new Dimension(x, 200));
+        tableroPanel.setSize(new Dimension(x, 200));
 
-        // Asegúrate de que el panel se ajuste a la ventana
         this.add(tableroPanel);
         this.revalidate();
         this.repaint();
@@ -266,14 +242,8 @@ public class TableroView extends javax.swing.JFrame {
         return panelFicha;
     }
 
-    private void seleccionarFicha(Ficha ficha, int index, int numJugador) {
-        fichaSeleccionada = ficha;
-        // Añadir efecto visual para la ficha seleccionada
-    }
-
     private void colocarFichaEnTablero(Point point) {
         if (fichaSeleccionada != null) {
-            // Pedir al jugador que elija el lado donde quiere colocar la ficha
             String[] opciones = {"Izquierdo", "Derecho"};
             int eleccion = JOptionPane.showOptionDialog(
                     this,
@@ -286,36 +256,34 @@ public class TableroView extends javax.swing.JFrame {
                     opciones[0]
             );
 
-            String lado = (eleccion == 0) ? "izquierdo" : "derecho"; // Elección del jugador
+            String lado = (eleccion == 0) ? "izquierdo" : "derecho";
 
-            // Colocar la ficha en el lado seleccionado
             if (tableroController.colocarFichaEnTablero(fichaSeleccionada, lado)) {
-                // Eliminar la ficha seleccionada de las fichas del jugador actual
-                if (jugadorActual == 1) {
-                    fichasJugadores1.remove(fichaSeleccionada);
-                } else {
-                    fichasJugadores2.remove(fichaSeleccionada);
+                if (jugadorActual != null) {
+                    if (jugadorActual.getPuntuacion() == 1) {
+                        fichasJugadores1.remove(fichaSeleccionada);
+                    } else {
+                        fichasJugadores2.remove(fichaSeleccionada);
+                    }
                 }
 
-                fichaSeleccionada = null;  // Limpiar la selección de ficha
-                cambiarTurno();  // Cambiar el turno al otro jugador
-                mostrarFichasEnTablero();  // Actualizar el tablero con las nuevas fichas
-                verificarFinJuego();  // Verificar si el juego ha terminado
+                fichaSeleccionada = null;
+                cambiarTurno();
+                mostrarFichasEnTablero();
+//                verificarFinJuego();
             } else {
-                // Mensaje en caso de que no se pueda colocar la ficha
-                JOptionPane.showMessageDialog(this, "No se puede colocar la ficha en el lado seleccionado.");
+                JOptionPane.showMessageDialog(this, "No se pudo colocar la ficha.");
             }
         }
     }
 
-    private void cambiarTurno() {
-        jugadorActual = jugadorActual == 1 ? 2 : 1;
-    }
 
-    private void verificarFinJuego() {
-        if (fichasJugadores1.isEmpty() || fichasJugadores2.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "¡Juego terminado! Ganó el jugador " + jugadorActual);
-            // Aquí puedes añadir lógica para reiniciar el juego si lo deseas
+
+    private void cambiarTurno() {
+        if (jugadorActual.getPuntuacion() == 1) {
+            jugadorActual = new Jugador("2"); // Cambiar a jugador 2
+        } else {
+            jugadorActual = new Jugador("1"); // Cambiar a jugador 1
         }
     }
 
@@ -335,6 +303,53 @@ public class TableroView extends javax.swing.JFrame {
     public void actualizarVista() {
         mostrarFichasEnTablero();
     }
+    
+    
+    private void habilitarArrastrarYSoltarFicha(JPanel panelFicha, Ficha ficha) {
+    panelFicha.addMouseMotionListener(new MouseMotionAdapter() {
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            JPanel panel = (JPanel) e.getSource();
+            int newX = panel.getX() + e.getX();
+            int newY = panel.getY() + e.getY();
+            panel.setLocation(newX, newY);
+        }
+    });
+
+   panelFicha.addMouseListener(new MouseAdapter() {
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        Point dropPoint = e.getPoint();
+        if (esZonaValidaParaColocar(dropPoint)) {
+            // Obtener el socket del jugador
+            Socket socketJugador = server.getSocketJugador(jugadorActual); // Suponiendo que tienes un método para esto
+            
+            if (socketJugador != null) {
+                // Llamar al método con el socket del jugador
+                tableroController.procesarJugadaArrastrada(ficha, obtenerLadoSegunZona(dropPoint), socketJugador);
+            } else {
+                JOptionPane.showMessageDialog(TableroView.this, "No se pudo obtener el socket del jugador.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(TableroView.this, "No puedes colocar la ficha aquí.", "Jugada inválida", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+});
+    }
+
+private boolean esZonaValidaParaColocar(Point dropPoint) {
+    // Define las zonas válidas para los lados izquierdo y derecho del tablero.
+    int margenIzquierdo = 50;
+    int margenDerecho = this.getWidth() - 150;
+
+    return dropPoint.x <= margenIzquierdo || dropPoint.x >= margenDerecho;
+}
+
+private String obtenerLadoSegunZona(Point dropPoint) {
+    int margenIzquierdo = 50;
+    return dropPoint.x <= margenIzquierdo ? "izquierdo" : "derecho";
+}
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -363,21 +378,21 @@ public class TableroView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(() -> {
-            PozoModel pozoModel = new PozoModel(); // Crear un modelo de pozo
-            pozoModel.getPozo().inicializarFichas(); // Asegúrate de inicializar las fichas aquí
-
-            PozoView pozoView = new PozoView(new Frame(), true, pozoModel);
-            pozoView.setVisible(false); // Mantener el pozo invisible
-
-            TableroModel tableroModel = new TableroModel(); // Crear un modelo de tablero
-            TableroView tableroView = new TableroView(new Frame(), true, tableroModel, pozoModel);
-
-            // Repartir fichas a los jugadores
-            tableroView.repartirFichas(); // Asegúrate de que este método se ejecute después de inicializar el pozo
-
-            tableroView.setVisible(true); // Mostrar la vista del tablero
-        });
+//        java.awt.EventQueue.invokeLater(() -> {
+//            PozoModel pozoModel = new PozoModel(); // Crear un modelo de pozo
+//            pozoModel.getPozo().inicializarFichas(); // Asegúrate de inicializar las fichas aquí
+//
+//            PozoView pozoView = new PozoView(new Frame(), true, pozoModel);
+//            pozoView.setVisible(false); // Mantener el pozo invisible
+//
+//            TableroModel tableroModel = new TableroModel(); // Crear un modelo de tablero
+//            TableroView tableroView = new TableroView(new Frame(), true, tableroModel, pozoModel);
+//
+//            // Repartir fichas a los jugadores
+//            tableroView.repartirFichas(); // Asegúrate de que este método se ejecute después de inicializar el pozo
+//
+//            tableroView.setVisible(true); // Mostrar la vista del tablero
+//        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

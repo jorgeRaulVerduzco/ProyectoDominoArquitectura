@@ -4,6 +4,7 @@
  */
 package ServerLocal;
 
+import Dominio.Ficha;
 import Dominio.Jugador;
 import Dominio.Partida;
 import Dominio.Sala;
@@ -121,7 +122,7 @@ public class ServerComunicacion {
                     // abandonarSala(cliente, evento);
                     break;
                 case "JUGADA":
-                    // procesarJugada(cliente, evento);
+                     procesarJugada(cliente, evento);
                     break;
                 case "RESPUESTA_SALAS":
                     enviarSalasDisponibles();
@@ -141,6 +142,48 @@ public class ServerComunicacion {
             e.printStackTrace();
         }
     }
+    
+    /**
+     * Procesa el evento "JUGADA" recibido del cliente.
+     * Verifica los datos y los reenvía al servidor principal.
+     *
+     * @param cliente El socket del cliente que envió el evento.
+     * @param evento  El evento que contiene los datos de la jugada.
+     */
+    public void procesarJugada(Socket cliente, Evento evento) {
+    try {
+        // Validar que el evento sea del tipo esperado
+        if (!evento.getTipo().equals("JUGADA")) {
+            throw new IllegalArgumentException("Evento no válido: " + evento.getTipo());
+        }
+
+        // Obtener los datos del evento
+        Ficha ficha = (Ficha) evento.obtenerDato("ficha");
+        String lado = (String) evento.obtenerDato("lado");
+
+        // Verificar si los datos son válidos
+        if (ficha == null || lado == null) {
+            throw new IllegalArgumentException("[ERROR] Datos incompletos en el evento.");
+        }
+
+        System.out.println("[DEBUG] Procesando jugada: Ficha " + ficha + ", Lado " + lado);
+
+        // Construir el evento para reenviarlo al servidor principal
+        Evento eventoServidor = new Evento("JUGADA");
+        eventoServidor.agregarDato("ficha", ficha);
+        eventoServidor.agregarDato("lado", lado);
+
+        // Reenviar el evento al servidor principal
+        server.agregarTablero(eventoServidor, cliente);
+
+        
+
+    } catch (Exception e) {
+        System.err.println("[ERROR] Error al procesar la jugada: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+
 
 //    private void obtenerJugadoresPorSala(Socket cliente, Evento evento) {
 //    // Delegar al servidor para obtener los jugadores por sala

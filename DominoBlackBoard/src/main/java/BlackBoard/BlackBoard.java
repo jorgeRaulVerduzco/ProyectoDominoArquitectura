@@ -8,6 +8,7 @@ import Controller.Controller;
 import Dominio.Jugador;
 import Dominio.Partida;
 import Dominio.Sala;
+import Dominio.Tablero;
 import EventoJuego.Evento;
 import KnowdledgeSource.JugadorKnowledgeSource;
 import KnowdledgeSource.KnowdledgeSource;
@@ -108,6 +109,41 @@ public class BlackBoard {
 
         return jugadoresPorSala;
     }
+    
+    public Tablero obtenerTablero(String partidaId, String jugadorId) {
+    // Recuperar la partida con el ID dado
+    Partida partida = partidas.get(partidaId);
+    if (partida == null) {
+        System.err.println("Error: No se encontró la partida con ID " + partidaId);
+        return null;
+    }
+
+    // Obtener el tablero desde la partida (suponiendo que cada partida tiene un tablero)
+    return partida.getTablero(jugadorId); // Este método debe estar implementado en la clase Partida
+}
+    
+    public void agregarTablero(String jugadorId, Tablero tablero) {
+    Jugador jugador = jugadores.get(jugadorId);
+    if (jugador != null) {
+        jugador.setTablero(tablero);  // Establecer el tablero en el jugador
+        controller.notificarCambio("TABLERO_AGREGADO");
+    } else {
+        System.err.println("Error: Jugador no encontrado.");
+    }
+}
+    
+    public void actualizarTablero(String jugadorId, Tablero tablero) {
+    Jugador jugador = jugadores.get(jugadorId);
+    if (jugador != null) {
+        jugador.setTablero(tablero);  // Actualizar el tablero en el jugador
+        controller.notificarCambio("TABLERO_ACTUALIZADO");
+    } else {
+        System.err.println("Error: Jugador no encontrado.");
+    }
+}
+
+
+
 
     // Método para agregar un jugador
     public void agregarJugador(Jugador jugador) {

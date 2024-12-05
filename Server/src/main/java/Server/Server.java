@@ -6,9 +6,11 @@ package Server;
 
 import BlackBoard.BlackBoard;
 import Controller.Controller;
+import Dominio.Ficha;
 import Dominio.Jugador;
 import Dominio.Partida;
 import Dominio.Sala;
+import Dominio.Tablero;
 import EventoJuego.Evento;
 import ServerLocal.ServerComunicacion;
 import java.io.FileInputStream;
@@ -1094,5 +1096,161 @@ public class Server {
             System.err.println("Sala no encontrada: " + salaId);
         }
     }
+    
+    
+    
+    //TODO LO DE AGREGAR FICHA AL TABLERO 
+    public void actualizarTablero(Tablero tableroActualizado) {
+    try {
+        Path tableroPath = Paths.get("tablero_multijugador.json");
+        List<Tablero> tablerosCargados = ConversorJSON.convertirJsonATableros(Files.readString(tableroPath, StandardCharsets.UTF_8));
+
+        boolean tableroEncontrado = false;
+        for (int i = 0; i < tablerosCargados.size(); i++) {
+            if (tablerosCargados.get(i).getFichasTablero().equals(tableroActualizado.getFichasTablero())) {
+                tablerosCargados.set(i, tableroActualizado);
+                tableroEncontrado = true;
+                break;
+            }
+        }
+
+        if (tableroEncontrado) {
+            String jsonActualizado = ConversorJSON.convertirTablerosAJson(tablerosCargados);
+            Files.writeString(tableroPath, jsonActualizado, StandardCharsets.UTF_8);
+            System.out.println("Tablero actualizado correctamente: " + jsonActualizado);
+        } else {
+            System.err.println("No se encontró el tablero con ID: " + tableroActualizado);
+        }
+    } catch (IOException e) {
+        System.err.println("Error al actualizar el tablero: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+    
+    
+//    public void persistirTablero() {
+//    try {
+//         List<Tablero> tableros;
+//        // Persistir tablero
+//        String jsonTablero = ConversorJSON.convertirTableroAJson(tableros);
+//        Files.write(Paths.get("tablero_multijugador.json"),
+//                jsonTablero.getBytes(StandardCharsets.UTF_8));
+//
+//        System.out.println("Tablero persistido exitosamente.");
+//    } catch (IOException e) {
+//        System.err.println("Error al persistir el tablero: " + e.getMessage());
+//    }
+//}
+
+    public void cargarTablero() {
+    try {
+  
+        // Cargar tablero
+        Path tableroPath = Paths.get("tablero_multijugador.json");
+        if (Files.exists(tableroPath)) {
+            String jsonTablero = Files.readString(tableroPath, StandardCharsets.UTF_8);
+            List<Tablero> tablerosCargados = ConversorJSON.convertirJsonATableros(jsonTablero);
+
+            // Limpiar la lista actual y agregar los tableros cargados
+            tablerosCargados.clear();
+            tablerosCargados.addAll(tablerosCargados);
+
+            System.out.println("Tableros cargados: " + tablerosCargados.size());
+        }
+    } catch (IOException e) {
+        System.err.println("Error al cargar el tablero: " + e.getMessage());
+    }
+}
+    
+    
+    
+     public void agregarTablero(Evento evento, Socket cliente) {
+    // Obtener el tablero desde el evento
+    Tablero tablero = (Tablero) evento.obtenerDato("tablero");
+
+    // Verificar que el tablero no sea nulo
+    if (tablero != null) {
+        // Si el tablero no tiene fichas, inicializamos la lista
+        if (tablero.getFichasTablero() == null) {
+            tablero.setFichasTablero(new ArrayList<>());
+        }
+
+        // Obtener la ficha desde el evento y agregarla al tablero
+        Ficha ficha = (Ficha) evento.obtenerDato("ficha");
+        if (ficha != null) {
+            tablero.getFichasTablero().add(ficha);
+        }
+
+        // Obtener el lado del evento
+        String lado = (String) evento.obtenerDato("lado");
+
+        // Crear un evento de jugada con los datos de la ficha y el lado
+        Evento eventoJugada = new Evento("JUGADA");
+        eventoJugada.agregarDato("ficha", ficha);
+        eventoJugada.agregarDato("lado", lado);
+
+        // Mostrar los datos del evento para depuración
+        System.out.println("DATOS DEL EVENTO DE AGREGAR TABLERO");
+        System.out.println(evento.getDatos());
+        System.out.println("DATOS DEL EVENTO DE JUGADA");
+        System.out.println(eventoJugada.getDatos());
+
+        // Enviar el evento al BlackBoard
+        blackBoard.enviarEventoBlackBoard(cliente, eventoJugada);
+
+        
+
+        // Guardar los tableros después de la actualización
+        guardarTableros();
+    }
+
+    
+}
+
+
+
+    
+    
+    public void guardarTableros() {
+    try {
+        // Primero, leer los tableros existentes si el archivo ya existe
+        List<Tablero> tablerosExistentes = new ArrayList<>();
+        Path tablerosPath = Paths.get("tableros_multijugador.json");
+
+        if (Files.exists(tablerosPath)) {
+            String jsonExistente = new String(Files.readAllBytes(tablerosPath), StandardCharsets.UTF_8);
+            if (!jsonExistente.trim().isEmpty()) {
+                tablerosExistentes = ConversorJSON.convertirJsonATableros(jsonExistente);
+            }
+        }
+
+        // Crear un nuevo conjunto de tableros que incluya los existentes y los nuevos
+        Set<Tablero> conjuntoTableros = new LinkedHashSet<>(tablerosExistentes);
+        conjuntoTableros.addAll(tablerosExistentes);
+
+        // Convertir el conjunto de tableros a una lista para mantener el orden
+        List<Tablero> tablerosFinales = new ArrayList<>(conjuntoTableros);
+
+        // Guardar todos los tableros
+        String json = ConversorJSON.convertirTablerosAJson(tablerosFinales);
+
+        // Escribir el archivo con los tableros actualizados
+        try (FileWriter writer = new FileWriter("tableros_multijugador.json")) {
+            writer.write(json);
+            System.out.println("Tableros guardados exitosamente: " + tablerosFinales.size());
+        }
+    } catch (IOException e) {
+        System.err.println("Error al guardar los tableros: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+
+
+
+
+    
+    
+    
+    
 
 }

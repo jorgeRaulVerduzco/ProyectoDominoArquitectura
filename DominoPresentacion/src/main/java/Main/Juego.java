@@ -23,8 +23,8 @@ import PresentacionTableroMVC.TableroController;
 import PresentacionTableroMVC.TableroModel;
 import PresentacionTableroMVC.TableroView;
 import Server.Server;
+import ServerLocal.ServerComunicacion;
 import java.awt.Frame;
-import java.io.IOException;
 
 /**
  *
@@ -34,6 +34,7 @@ public class Juego {
 
     private Server server;
     private String salaId;
+    private ServerComunicacion serverC;
     public  static void main(String[] args) {
     Juego juego = new Juego();
         juego.iniciar();
@@ -75,7 +76,7 @@ public class Juego {
         // Inicializar controladores
         CrearUsuarioController crearUsuarioController = new CrearUsuarioController(crearUsuarioView);
         CrearSalaController crearSalaController = new CrearSalaController(crearSalaModel, crearSalaView);
-        TableroController tableroController = new TableroController(tableroModel, tableroView);
+        TableroController tableroController = new TableroController(tableroModel, tableroView,serverC);
         EsperaController esperaController = new EsperaController(esperaModel,esperaView,server,salaId); 
         UnirseAlaSalaModel unirseAlaSalaModel = new UnirseAlaSalaModel();
         UnirseAlaSalaView unirseAlaSalaView = new UnirseAlaSalaView(unirseAlaSalaModel,  server);

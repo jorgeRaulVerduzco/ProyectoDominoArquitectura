@@ -4,22 +4,25 @@
  */
 package Dominio;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  * @author INEGI
  */
-public class Tablero implements Serializable  {
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import com.google.gson.Gson;
+
+public class Tablero implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private List<Ficha> fichasTablero;
 
     /**
-     * Constructor por defecto de la clase Tablero. Inicializa la lista de
-     * fichas en el tablero como una lista vacía.
+     * Constructor por defecto de la clase Tablero.
+     * Inicializa la lista de fichas en el tablero como una lista vacía.
      */
     public Tablero() {
         fichasTablero = new ArrayList<>();
@@ -35,8 +38,7 @@ public class Tablero implements Serializable  {
     }
 
     /**
-     * Método setter para modificar la lista de fichas en el tablero. Permite
-     * establecer una nueva lista de fichas en el tablero.
+     * Método setter para modificar la lista de fichas en el tablero.
      *
      * @param fichasTablero La nueva lista de fichas que estarán en el tablero.
      */
@@ -44,4 +46,5 @@ public class Tablero implements Serializable  {
         this.fichasTablero = fichasTablero;
     }
 
+    
 }
