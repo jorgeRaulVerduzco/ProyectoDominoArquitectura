@@ -90,19 +90,21 @@ public class BlackBoard {
     public void actualizarEstadoPartida(String partidaId, Partida partida) {
         actualizarEstadoEntidad(partidas, partidaId, partida, "PARTIDA");
     }
-public Map<String, List<String>> obtenerJugadoresPorSala() {
-    Map<String, List<String>> jugadoresPorSala = new HashMap<>();
 
-    for (Sala sala : salas.values()) {
-        List<String> nombresJugadores = sala.getJugador().stream()
-            .map(Jugador::getNombre)
-            .collect(Collectors.toList());
-        
-        jugadoresPorSala.put(sala.getId(), nombresJugadores);
+    public Map<String, List<String>> obtenerJugadoresPorSala() {
+        Map<String, List<String>> jugadoresPorSala = new HashMap<>();
+
+        for (Sala sala : salas.values()) {
+            List<String> nombresJugadores = sala.getJugador().stream()
+                    .map(Jugador::getNombre)
+                    .collect(Collectors.toList());
+
+            jugadoresPorSala.put(sala.getId(), nombresJugadores);
+        }
+
+        return jugadoresPorSala;
     }
 
-    return jugadoresPorSala;
-}
     // Método para agregar un jugador
     public void agregarJugador(Jugador jugador) {
         if (controller != null) {
@@ -191,6 +193,19 @@ public Map<String, List<String>> obtenerJugadoresPorSala() {
     public void enviarEventoBlackBoard(Socket cliente, Evento evento) {
         System.out.println("LLEGUE A BLACKBOARD");
         System.out.println("BLACKBOARD 1  : Socket del jugador actual" + cliente);
+        if ("INICIAR_PARTIDA".equals(evento.getTipo())) {
+            Sala sala = (Sala) evento.obtenerDato("sala");
+            if (sala != null) {
+                sala.setEstado("EN_JUEGO");
+                actualizarEstadoSala(sala.getId(), sala);
+
+                // Notificar al controlador para que inicie el juego
+                controller.notificarCambio("INICIAR_JUEGO"); // Notificar al controller para iniciar el juego
+                System.out.println("Sala actualizada a EN_JUEGO: " + sala.getId());
+            } else {
+                System.err.println("Sala no encontrada en el evento INICIAR_PARTIDA.");
+            }
+        }
         if (evento == null) {
             throw new IllegalArgumentException("El evento no puede ser nulo.");
         }
@@ -224,5 +239,4 @@ public Map<String, List<String>> obtenerJugadoresPorSala() {
         System.out.println("BLACKBOARD 3  : Socket del jugador actual" + cliente);
         System.out.println("Recibiendo respuesta de una fuente de conocimiento: " + eventoRespuesta.getDatos());
     }
-    
 }
