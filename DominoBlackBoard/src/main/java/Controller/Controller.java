@@ -10,7 +10,6 @@ import Dominio.Partida;
 import Dominio.Sala;
 import EventoJuego.Evento;
 import KnowdledgeSource.KnowdledgeSource;
-import KnowdledgeSource.SalaKnowledgeSource;
 import Server.Server;
 import java.net.Socket;
 import java.util.ArrayList;

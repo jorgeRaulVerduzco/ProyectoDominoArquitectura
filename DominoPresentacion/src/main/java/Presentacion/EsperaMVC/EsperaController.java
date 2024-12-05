@@ -4,6 +4,8 @@
  */
 package Presentacion.EsperaMVC;
 
+import Dominio.Ficha;
+import Dominio.Jugador;
 import Dominio.Sala;
 import EventoJuego.Evento;
 import Presenctacion.ConfiguracionSocket;
@@ -12,6 +14,7 @@ import Server.Server;
 import ServerLocal.ServerComunicacion;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,21 +84,46 @@ public class EsperaController {
     }
 
     public void iniciarPartida() {
-        try {
-            System.out.println("Iniciando la partida...");
-            ServerComunicacion serverC = new ServerComunicacion(server);
-            int puerto = ConfiguracionSocket.getInstance().getPuertoSocket();
-            Socket cliente = new Socket("localhost", puerto);
+    try {
+        System.out.println("Iniciando la partida...");
+        ServerComunicacion serverC = new ServerComunicacion(server);
+        int puerto = ConfiguracionSocket.getInstance().getPuertoSocket();
+        Socket cliente = new Socket("localhost", puerto);
 
-            Sala sala = serverC.obtenerSalaPorId(salaId);
+        // Obtiene la sala desde el servidor
+        Sala sala = serverC.obtenerSalaPorId(salaId);
 
-            Evento evento = new Evento("CREAR_SALA");
-            evento.agregarDato("sala", sala);
-            serverC.iniciarPartida(cliente, evento);
-            // Usa el mediador para abrir la vista del tablero
-            view.dispose(); // Cierra la ventana de espera
-        } catch (IOException ex) {
-            Logger.getLogger(EsperaController.class.getName()).log(Level.SEVERE, null, ex);
+        // Obtiene las fichas del pozo de la sala
+        List<Ficha> fichasPozo = sala.getFichasPozo();
+
+        // Repartir las fichas a los jugadores
+        List<Jugador> jugadores = sala.getJugador();
+        int fichasPorJugador = 6;
+
+        if (fichasPozo.size() < fichasPorJugador * jugadores.size()) {
+            throw new IllegalStateException("No hay suficientes fichas en el pozo para todos los jugadores.");
         }
+
+        for (Jugador jugador : jugadores) {
+            List<Ficha> fichasJugador = new ArrayList<>();
+            for (int i = 0; i < fichasPorJugador; i++) {
+                fichasJugador.add(fichasPozo.remove(0)); // Asigna una ficha del pozo al jugador
+            }  
+             jugador.setFichasJugador(fichasJugador); // Actualiza las fichas del jugador
+        } 
+
+        // Actualiza el estado del pozo en la sala
+        sala.setFichasPozo(fichasPozo);
+
+        // Inicia la partida en el servidor
+        Evento evento = new Evento("INICIAR_PARTIDA");
+        evento.agregarDato("sala", sala);
+        serverC.iniciarPartida(cliente, evento);
+
+        // Usa el mediador para abrir la vista del tablero
+        view.dispose(); // Cierra la ventana de espera
+    } catch (IOException ex) {
+        Logger.getLogger(EsperaController.class.getName()).log(Level.SEVERE, null, ex);
     }
+}
 }

@@ -34,12 +34,27 @@ public class Sala implements Serializable {
     @JsonProperty("partida")
     private Partida partida;
 
+    @JsonProperty("fichasPozo")
+    private List<Ficha> fichasPozo = new ArrayList<>(); // Nueva lista para las fichas del pozo
+
+
     /**
      * Constructor por defecto de la clase Sala. Inicializa los atributos de la
      * sala sin parámetros adicionales.
      */
     public Sala() {
     }
+    
+     // Getters y Setters para las fichas del pozo
+    public List<Ficha> getFichasPozo() {
+        return fichasPozo;
+    }
+
+    public void setFichasPozo(List<Ficha> fichasPozo) {
+        this.fichasPozo = fichasPozo;
+    }
+    
+    
 
     /**
      * Método getter para obtener la cantidad de jugadores en la sala.

@@ -6,6 +6,7 @@ package Server;
 
 import Dominio.Jugador;
 import Dominio.Sala;
+import Dominio.Tablero;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -36,21 +37,30 @@ import java.util.stream.Collectors;
 public class ConversorJSON {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final Gson gson = new Gson();
 
-public static String convertirSalasAJson(List<Sala> salas) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    // Conversores para las salas
+    public static String convertirSalasAJson(List<Sala> salas) {
         return gson.toJson(salas);
     }
 
-    // Convertir JSON a lista de salas
     public static List<Sala> convertirJsonASalas(String json) {
-        Gson gson = new Gson();
         Type tipoListaSalas = new TypeToken<List<Sala>>(){}.getType();
         return gson.fromJson(json, tipoListaSalas);
     }
 
+    // Conversores para los tableros
+    public static String convertirTablerosAJson(List<Tablero> tableros) {
+        return gson.toJson(tableros);
+    }
+
+    public static List<Tablero> convertirJsonATableros(String json) {
+        Type tipoListaTableros = new TypeToken<List<Tablero>>(){}.getType();
+        return gson.fromJson(json, tipoListaTableros);
+    }
+
+    // Conversores para los sockets
     public static String convertirSocketsAJson(List<Socket> sockets) throws IOException {
-        // Serializar los datos esenciales de cada socket (ejemplo: host y puerto)
         List<String> datosSockets = new ArrayList<>();
         for (Socket socket : sockets) {
             datosSockets.add(socket.getInetAddress().getHostAddress() + ":" + socket.getPort());
@@ -59,10 +69,8 @@ public static String convertirSalasAJson(List<Sala> salas) {
     }
 
     public static List<Socket> convertirJsonASockets(String json) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         try {
-            // Attempt to parse as a list of strings
-            return mapper.readValue(json, new TypeReference<List<String>>() {
+            return objectMapper.readValue(json, new TypeReference<List<String>>() {
             })
                     .stream()
                     .map(address -> {
@@ -82,43 +90,18 @@ public static String convertirSalasAJson(List<Sala> salas) {
         }
     }
 
-    // Método para convertir la lista de jugadores a formato JSON
+    // Conversores para los jugadores
     public static String convertirJugadoresAJson(List<Jugador> jugadores) {
-        Gson gson = new Gson();
         return gson.toJson(jugadores);
     }
 
-// Método para convertir un JSON en una lista de jugadores
     public static List<Jugador> convertirJsonAJugadores(String json) {
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(Jugador.class, new JsonDeserializer<Jugador>() {
-                    @Override
-                    public Jugador deserialize(JsonElement json, Type typeOfT,
-                            JsonDeserializationContext context) throws JsonParseException {
-                        JsonObject jsonObject = json.getAsJsonObject();
-                        // Add specific field mapping if needed
-                        Jugador jugador = new Jugador();
-                        // Manually set fields from jsonObject
-                        if (jsonObject.has("nombre")) {
-                            jugador.setNombre(jsonObject.get("nombre").getAsString());
-                        }
-                        // Add more field mappings as necessary
-                        return jugador;
-                    }
-                })
-                .create();
-
         try {
-            Type listType = new TypeToken<List<Jugador>>() {
-            }.getType();
-            List<Jugador> jugadores = gson.fromJson(json, listType);
-            return jugadores != null ? jugadores : new ArrayList<>();
+            Type listType = new TypeToken<List<Jugador>>(){}.getType();
+            return gson.fromJson(json, listType);
         } catch (JsonSyntaxException e) {
             System.err.println("Error parsing JSON: " + e.getMessage());
-            System.err.println("JSON content: " + json);
             return new ArrayList<>();
         }
     }
-    
-    
 }

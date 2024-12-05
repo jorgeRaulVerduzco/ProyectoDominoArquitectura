@@ -7,6 +7,7 @@ package Dominio;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -23,12 +24,15 @@ public class Partida implements Serializable {
     private List<Jugador> jugadores;
     private List<Ficha> fichas;
     private Pozo pozo;
+    private Map<String, Tablero> tableros;
+    
 
     /**
      * Constructor por defecto de la clase Partida. Inicializa las listas de
      * jugadores y fichas vacías.
      */
     public Partida() {
+        
         jugadores = new ArrayList<>();
         fichas = new ArrayList<>();
     }
@@ -54,6 +58,10 @@ public class Partida implements Serializable {
         this.fichas = fichas;
         this.pozo = pozo;
     }
+     // Método para obtener el tablero del jugador
+    public Tablero getTablero(String jugadorId) {
+        return tableros.get(jugadorId);
+    }
 
     public String getId() {
         return id;
@@ -71,6 +79,8 @@ public class Partida implements Serializable {
     public int getCantJugadores() {
         return cantJugadores;
     }
+    
+    
 
     /**
      * Método setter para modificar la cantidad de jugadores.

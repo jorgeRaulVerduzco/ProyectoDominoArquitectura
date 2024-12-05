@@ -19,6 +19,7 @@ public class Jugador implements Serializable {
     private String estado; //para cuando dicida abandonar partida osea si esta sale activo sino inactivo
     private int puntuacion;
     private List<Ficha> fichasJugador = new ArrayList<>();
+    private Tablero tablero;
 
     /**
      * Constructor por defecto de la clase Jugador. Inicializa una lista vacía
@@ -77,6 +78,14 @@ public class Jugador implements Serializable {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
+    
+    public void setTablero(Tablero tablero) {
+    this.tablero = tablero;
+}
+
+public Tablero getTablero() {
+    return this.tablero;
+}
 
     /**
      * Método getter para obtener el avatar del jugador.
