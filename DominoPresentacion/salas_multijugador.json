@@ -233,7 +233,7 @@
   },
   {
     "id": "3f7ee667-abc8-43b8-8193-695bcb4263de",
-    "cantJugadores": 2,
+    "cantJugadores": 3,
     "numeroFichas": 28,
     "jugador": [
       {
@@ -244,6 +244,12 @@
       },
       {
         "nombre": "58731",
+        "estado": "ACTIVO",
+        "puntuacion": 0,
+        "fichasJugador": []
+      },
+      {
+        "nombre": "7680",
         "estado": "ACTIVO",
         "puntuacion": 0,
         "fichasJugador": []

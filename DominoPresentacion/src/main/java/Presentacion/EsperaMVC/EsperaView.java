@@ -88,6 +88,8 @@ public class EsperaView extends javax.swing.JFrame implements Observer {
 
     private void iniciarPartida() {
         if (mediador != null) {
+            
+            
             mediador.iniciarJuego();
             this.setVisible(false); // Ocultar la vista actual
             System.out.println("Partida iniciada");

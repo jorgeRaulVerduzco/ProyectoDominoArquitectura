@@ -35,43 +35,41 @@ public class PartidaKnowledgeSource implements KnowdledgeSource {
     }
 
     @Override
-public void procesarEvento(Socket cliente, Evento evento) {
-    System.out.println("Procesando evento desde la fuente");
+    public void procesarEvento(Socket cliente, Evento evento) {
+        System.out.println("Procesando evento desde la fuente");
 
-    // Obtener el tipo de evento
-    String tipoEvento = evento.getTipo();
+        // Obtener el tipo de evento
+        String tipoEvento = evento.getTipo();
 
-    if ("JUGADA".equals(tipoEvento)) {
-        String partidaId = (String) evento.obtenerDato("partidaId");
-        String jugadorId = (String) evento.obtenerDato("jugadorId");
-        Ficha ficha = (Ficha) evento.obtenerDato("ficha");
-        int lado = (int) evento.obtenerDato("lado");
+        if ("JUGADA".equals(tipoEvento)) {
+            String partidaId = (String) evento.obtenerDato("partidaId");
+            String jugadorId = (String) evento.obtenerDato("jugadorId");
+            Ficha ficha = (Ficha) evento.obtenerDato("ficha");
+            int lado = (int) evento.obtenerDato("lado");
 
-        if (partidaId == null || jugadorId == null || ficha == null ) {
-            System.err.println("Error: El evento 'JUGADA' no contiene datos válidos.");
-            return;
-        }
+            if (partidaId == null || jugadorId == null || ficha == null) {
+                System.err.println("Error: El evento 'JUGADA' no contiene datos válidos.");
+                return;
+            }
 
-        // Obtener el tablero de la partida
-        Tablero tablero = blackboard.obtenerTablero(partidaId, jugadorId);
-        if (tablero == null) {
-            System.err.println("Error: No se encontró el tablero para el jugador.");
-            return;
-        }
+            // Obtener el tablero de la partida
+            Tablero tablero = blackboard.obtenerTablero(partidaId, jugadorId);
+            if (tablero == null) {
+                System.err.println("Error: No se encontró el tablero para el jugador.");
+                return;
+            }
 
-        // Agregar la ficha al tablero
-       
+            // Agregar la ficha al tablero
             System.out.println("Ficha agregada correctamente al tablero.");
             // Actualizar el estado del tablero en el BlackBoard
             blackboard.actualizarTablero(partidaId, tablero);
             // Notificar el cambio a los jugadores o servidores si es necesario
             blackboard.respuestaFuenteC(cliente, evento);  // Método ficticio que responde a los jugadores o servidores
-        
-            System.err.println("Error: No se pudo agregar la ficha al tablero.");
-       
-    }
-}
 
+            System.err.println("Error: No se pudo agregar la ficha al tablero.");
+
+        }
+    }
 
     private void registrarPartida(Partida partida) {
         blackboard.agregarPartida(partida);
